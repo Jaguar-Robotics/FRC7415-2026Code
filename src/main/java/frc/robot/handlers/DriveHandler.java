@@ -1,0 +1,133 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.handlers;
+
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants;
+import frc.robot.handlers.ShooterHandler.ShooterState;
+import frc.robot.handlers.StateSubsystem.State;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.HopperSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
+
+public class DriveHandler extends SubsystemBase {
+
+    public enum DriveState implements State {
+        TELEOPDRIVE,
+        AUTOALLIGN,
+        SHOOTONTHEMOVE,
+        PASSING,
+        SNAKE,
+        XDRIVE
+  }
+
+
+  private CommandSwerveDrivetrain drivetrain;
+  private CommandXboxController joystick;
+  private SwerveRequest.FieldCentric drive;
+  private double maxSpeed;
+  private double maxAngularRate;
+  private static DriveHandler instance;
+
+
+
+  private DriveState desiredState = DriveState.AUTOALLIGN; 
+  private DriveState currentState = DriveState.TELEOPDRIVE;
+  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+
+  /** Creates a new IntakeHandler. */
+  private DriveHandler() {}
+
+  public static DriveHandler getInstance(){
+    if (instance == null){
+      instance = new DriveHandler();
+    }
+    return instance;
+  }
+
+    public void initialize(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, SwerveRequest.FieldCentric drive,  double maxSpeed,  double maxAngularRate) {
+    this.drivetrain = drivetrain;
+    this.joystick = joystick;
+    this.drive = drive;
+    this.maxSpeed = maxSpeed;
+    this.maxAngularRate = maxAngularRate;
+
+    update();
+    }
+
+  
+  public void setDesiredState(DriveState state){
+        if (desiredState != state) {
+        desiredState = state;
+        updateStates();
+    }
+  }
+
+  public void updateStates(){
+    if (currentState != desiredState) {
+        currentState = desiredState;
+        update();
+    }
+  }
+
+
+  
+
+
+  public void handleStateTransition() {
+    update();
+  }
+
+    public void update() {
+
+    Command currentCmd = drivetrain.getCurrentCommand(); //removes current command
+    if (currentCmd != null) {
+        CommandScheduler.getInstance().cancel(currentCmd);
+    }
+        switch (desiredState) {
+            case TELEOPDRIVE:
+                System.out.print("TELEOP");
+                drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
+                break;
+            case AUTOALLIGN:
+                drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, maxSpeed, maxAngularRate, "no"));
+                break;
+            case SHOOTONTHEMOVE:
+                drivetrain.setDefaultCommand(drivetrain.shootOnTheMoveIterative(joystick, maxSpeed, maxAngularRate, "no"));
+                break;
+            case PASSING:
+                drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain)); //make code for
+                break;
+            case SNAKE:
+            System.out.print("SNAKE");
+                drivetrain.setDefaultCommand(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate));
+                break;
+            case XDRIVE:
+                drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> brake));
+                break;
+            default:
+                drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
+                break;
+        }
+        currentState = desiredState;
+    }
+
+      public DriveState getCurrentState() {
+      return currentState;
+  }
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putString("DriveState", currentState.toString());
+    SmartDashboard.putString("Current Command", drivetrain.getCurrentCommand() != null ? drivetrain.getCurrentCommand().getName() : "null");
+    // This method will be called once per scheduler run
+  }
+}
