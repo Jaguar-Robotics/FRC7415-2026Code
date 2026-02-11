@@ -37,8 +37,10 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
 import frc.robot.handlers.IntakeHandler;
 import frc.robot.handlers.ShooterHandler;
+import frc.robot.handlers.ClimbHandler;
 import frc.robot.handlers.Superstructure;
 import frc.robot.handlers.Superstructure.SuperstructureState;
+import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
@@ -75,6 +77,8 @@ public class RobotContainer {
     public final HopperSubsystem hopper = new HopperSubsystem();
     public final IndexerHighSubsystem HighIndexer = new IndexerHighSubsystem();
     public final IndexerLowSubsystem LowIndexer = new IndexerLowSubsystem();
+    public final ClimbSubsystem climb = new ClimbSubsystem();
+
 
     public final Superstructure superstructure = Superstructure.getInstance(); 
 
@@ -86,7 +90,7 @@ public class RobotContainer {
     public RobotContainer() {
         DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate);
         ShooterHandler.getInstance().initialize(drivetrain, shooter);
-        Superstructure.getInstance().initialize(shooter, drivetrain);
+        Superstructure.getInstance().initialize(shooter, drivetrain, climb);
         ShooterSubsystem.getInstance().initialize(drivetrain);
 
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
@@ -155,7 +159,7 @@ public class RobotContainer {
 
         joystick.rightStick().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
 
-        
+        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.CLIMBPREP)));
         //FOR HESHEL
         /*
         joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));

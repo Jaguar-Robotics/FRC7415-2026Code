@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.RPM;
 
@@ -12,6 +13,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 
 /** Add your docs here. */
 public class Constants {
@@ -54,6 +56,18 @@ public class Constants {
         public static final double FastOutRoll = -0.5;
         public static final double SlowOutRoll = -0.3;
 
+    }
+
+    public static abstract class ClimberConstants {
+        public static final int ClimberMotorID = 32; //change me ts NOT a real motor
+        public static final double ClimbSpeed = 0.7;
+        public static final double DescendSpeed = -0.5;
+
+        public static final Distance HighSetPoint = Inches.of(63.0);
+        public static final Distance MiddleSetPoint = Inches.of(45.0);
+        public static final Distance LowSetPoint = Inches.of(27.0);
+
+        public static final Distance LowSetPointDown = Inches.of(23.0);
     }
 
         public static abstract class FieldConstants{
