@@ -41,7 +41,8 @@ import frc.robot.handlers.Superstructure;
 import frc.robot.handlers.Superstructure.SuperstructureState;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HopperSubsystem;
-import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.subsystems.IndexerHighSubsystem;
+import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.Vision;
@@ -72,8 +73,8 @@ public class RobotContainer {
     public final ShooterSubsystem shooter = new ShooterSubsystem(); 
     public final IntakeSubsystem intake = new IntakeSubsystem();
     public final HopperSubsystem hopper = new HopperSubsystem();
-    public final IndexerSubsystem indexer = new IndexerSubsystem();
-
+    public final IndexerHighSubsystem HighIndexer = new IndexerHighSubsystem();
+    public final IndexerLowSubsystem LowIndexer = new IndexerLowSubsystem();
 
     public final Superstructure superstructure = Superstructure.getInstance(); 
 

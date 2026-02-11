@@ -47,7 +47,8 @@ public class Constants {
     }
 
         public static abstract class IndexerConstants {
-        public static final int IndexerMotorID = 33; //
+        public static final int IndexerLowMotorID = 33; //
+        public static final int IndexerHighMotorID = 34; //NOT RIGHTFAKE FIX NOW
         public static final double FastRoll = 1;
         public static final double SlowRoll = 0.6;
         public static final double FastOutRoll = -0.5;

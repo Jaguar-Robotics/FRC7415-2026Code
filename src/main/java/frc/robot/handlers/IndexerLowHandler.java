@@ -15,7 +15,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 
 public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
 
-    public enum IndexerState implements State {
+    public enum IndexerLowState implements State {
       FAST,
       SLOWINTAKE,
       FASTREVERSE,
@@ -26,8 +26,8 @@ public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
   private static IndexerLowHandler instance;
   private final IndexerHighSubsystem index = new IndexerHighSubsystem();
 
-  private IndexerState desiredState = IndexerState.OFF;
-  private IndexerState currentState = IndexerState.OFF;
+  private IndexerLowState desiredState = IndexerLowState.OFF;
+  private IndexerLowState currentState = IndexerLowState.OFF;
   /** Creates a new IntakeHandler. */
   private IndexerLowHandler() {}
 
@@ -40,7 +40,7 @@ public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
 
   @Override
   public void setDesiredState(State state){
-        if (state instanceof IndexerState indexerState && desiredState != indexerState) {
+        if (state instanceof IndexerLowState indexerState && desiredState != indexerState) {
         desiredState = indexerState;
     }
   }
@@ -77,7 +77,7 @@ public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
     }
   }
 
-      public IndexerState getCurrentState() {
+      public IndexerLowState getCurrentState() {
       return currentState;
   }
 

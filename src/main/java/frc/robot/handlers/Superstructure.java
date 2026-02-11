@@ -4,10 +4,12 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.handlers.IndexerHandler.IndexerState;
+import frc.robot.handlers.IndexerHighHandler.IndexerHighState;
+import frc.robot.handlers.IndexerLowHandler.IndexerLowState;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HopperSubsystem;
-import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.subsystems.IndexerHighSubsystem;
+import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -21,7 +23,7 @@ public class Superstructure extends SubsystemBase {
 
   // Define your states
   public enum SuperstructureState {
-    STATOINARYSHOT,
+    STATIONARYSHOT,
     INTAKE,
     SLOWSHOT,
     REVERSE,
@@ -49,7 +51,8 @@ public class Superstructure extends SubsystemBase {
   private final HopperHandler hopperHandler = HopperHandler.getInstance();
 
   //private final IndexerSubsystem Indexer = new IndexerSubsystem();
-  private final IndexerHandler indexerHandler = IndexerHandler.getInstance();
+  private final IndexerHighHandler indexerHighHandler = IndexerHighHandler.getInstance();
+  private final IndexerLowHandler indexerLowHandler = IndexerLowHandler.getInstance();
 
   private final DriveHandler driveHandler = DriveHandler.getInstance();
 
@@ -91,81 +94,93 @@ public class Superstructure extends SubsystemBase {
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
         break;
       case INTAKE:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.FASTINTAKE);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.SNAKE);
         break;
       case SPINUP:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
-      case STATOINARYSHOT:
+      case STATIONARYSHOT:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.FASTINTAKE);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.SLOWINTAKE);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
       case SPINUPSLOW:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SLOW);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
       case SLOWSHOT:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SLOW);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.SLOW);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.SLOWINTAKE);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
       case SPINUPFAST:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.FAST);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerHighHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
          break;
       case FASTSHOT:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.SLOWINTAKE);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.FAST);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
       case TUNING:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.TUNING);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.FAST);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
+        indexerHighHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
       case REVERSE:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.FASTREVERSE);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         break;
       case OFF:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
         break;
       default:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHandler.setDesiredState(IndexerHandler.IndexerState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
         break;
     }
@@ -181,7 +196,7 @@ public class Superstructure extends SubsystemBase {
         }
         
         if (currentState == SuperstructureState.SPINUP && (shooter.isAtTargetVelo() || drivetrain.isAimedAtTarget())){ //checks if its at target velo and angle
-          setDesiredState(SuperstructureState.STATOINARYSHOT);
+          setDesiredState(SuperstructureState.STATIONARYSHOT);
         }
 
         SmartDashboard.putBoolean("shooterAtVelo?", shooter.isAtTargetVelo());
