@@ -177,6 +177,9 @@ public class Superstructure extends SubsystemBase {
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
         climbHandler.setDesiredState(ClimbHandler.ClimbState.LOW);
         break;
+      case CLIMBED:
+        climbHandler.setDesiredState(ClimbHandler.ClimbState.LOWPULL);
+        break;
       case TUNING:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.TUNING);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
@@ -194,8 +197,6 @@ public class Superstructure extends SubsystemBase {
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         climbHandler.setDesiredState(ClimbHandler.ClimbState.OFF);
         break;
-      case CLIMBED:
-        climbHandler.setDesiredState(ClimbHandler.ClimbState.LOWPULL);
       case OFF:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
@@ -228,6 +229,10 @@ public class Superstructure extends SubsystemBase {
         
         if (currentState == SuperstructureState.SPINUP && (shooter.isAtTargetVelo() || drivetrain.isAimedAtTarget())){ //checks if its at target velo and angle
           setDesiredState(SuperstructureState.STATIONARYSHOT);
+        }
+
+        if (currentState == SuperstructureState.CLIMBPREP && climbHandler.extendedClimb){
+          setDesiredState(SuperstructureState.CLIMBED);
         }
 
         /*if (currentState == SuperstructureState.CLIMBPREP && climber.atTarget()){

@@ -29,6 +29,8 @@ public class ClimbHandler extends SubsystemBase implements StateSubsystem {
 
   private ClimbState desiredState = ClimbState.OFF;
   private ClimbState currentState = ClimbState.OFF;
+
+  public Boolean extendedClimb = false;
   /** Creates a new IntakeHandler. */
   private ClimbHandler() {}
 
@@ -59,6 +61,9 @@ public class ClimbHandler extends SubsystemBase implements StateSubsystem {
                 break;
             case LOW:
                 climb.setHeight(Constants.ClimberConstants.LowSetPoint);
+                if (climb.atTarget()) {
+                  extendedClimb = true;
+                }
                 break;
             case LOWPULL:
                 climb.setHeight(Constants.ClimberConstants.LowSetPointDown);
