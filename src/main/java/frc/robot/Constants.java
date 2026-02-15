@@ -4,13 +4,10 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Feet;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meter;
-import static edu.wpi.first.units.Units.RPM;
-
+import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -19,28 +16,32 @@ import edu.wpi.first.units.measure.Distance;
 public class Constants {
 
     public static abstract class ShooterConstants {
-        public static final int ShooterLeaderID = 20; //all IDs should be changed  (I think theyre 40-43 and 0?)
-        public static final int ShooterFollowerID = 21;
-        public static final int ShooterFollowerReversedID = 22;
-        public static final int ShooterFollowerReversed2ID = 23;
+        public static final int ShooterLeaderID = 27; 
+        public static final int ShooterFollowerID = 28;
+        public static final int ShooterFollowerReversedID = 23; //
+        public static final int ShooterFollowerReversed2ID = 24; //
         public static final AngularVelocity FastShot = RPM.of(3000); //HESHEL CHANGE ME FAST
         public static final AngularVelocity SlowShot = RPM.of(1500); //HESKEL CHANGE ME SLOW
         public static final AngularVelocity SetRPMHardStop = RPM.of(3200);
-        public static  double ShootingDistance = Feet.of(6).in(Meter); //6ft starting
         public static int RPMTolarance = 50;
     }
 
     public static abstract class IntakeConstants {
-        public static final int IntakeMotorID = 31; 
+        public static final int IntakeMotorID = 31; //change
         public static final int IntakeFollowerReversedMotorID = 30; 
         public static final double FastIntake = 1;
         public static final double SlowIntake = 0.5;
         public static final double SlowReverse = -0.3;
         public static final double FastReverse = -1;
+
+        public static final int IntakeSlideMotorID = 21; //changeme
+        public static final Distance IntakeSlideOutSetPoint = Inches.of(13.3); //Changememaybe
+        public static final Distance IntakeSlideMiddleSetPoint = Inches.of(3);
+        public static Distance IntakeSlideInSetPoint = Inches.of(0); //change?
     }
 
     public static abstract class HopperConstants {
-        public static final int HopperMotorID = 32; //
+        public static final int HopperMotorID = 26; //
         public static final double FastRoll = -0.3; 
         public static final double SlowRoll = -0.2;
         public static final double FastOutRoll = 0.8;
@@ -49,8 +50,8 @@ public class Constants {
     }
 
         public static abstract class IndexerConstants {
-        public static final int IndexerLowMotorID = 33; //
-        public static final int IndexerHighMotorID = 34; //NOT RIGHTFAKE FIX NOW
+        public static final int HighIndexerMotorID = 22; //
+        public static final int LowIndexerMotorID = 20; //
         public static final double FastRoll = 1;
         public static final double SlowRoll = 0.6;
         public static final double FastOutRoll = -0.5;
@@ -59,7 +60,7 @@ public class Constants {
     }
 
     public static abstract class ClimberConstants {
-        public static final int ClimberMotorID = 32; //change me ts NOT a real motor
+        public static final int ClimberMotorID = 696969; //change me ts NOT a real motor
         public static final double ClimbSpeed = 0.7;
         public static final double DescendSpeed = -0.5;
 

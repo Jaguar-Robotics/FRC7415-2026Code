@@ -345,7 +345,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
-    // Hub poses for each alliance
+    // --------------------- END GENERATED CODE -------------------
+    
     
     // Get hub pose based on alliance
     public static Pose3d getHubPose() {
@@ -359,24 +360,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      *
      * @return The closest point on the circle to the current robot position
      */
-    public Pose2d getClosestPointOnHub() {
-
-        Pose2d hub = getHubPose().toPose2d();
-        Pose2d currentPose = getPose();
-        
-        // Calculate vector from center to current position
-        double deltaX = currentPose.getX() - hub.getX();
-        double deltaY = currentPose.getY() - hub.getY();
-        
-        // Calculate angle from center to current position
-        double angle = Math.atan2(deltaY, deltaX);
-        
-        // Calculate the closest point on the circle
-        double closestX = hub.getX() + Constants.ShooterConstants.ShootingDistance * Math.cos(angle);
-        double closestY = hub.getY() + Constants.ShooterConstants.ShootingDistance * Math.sin(angle);
-        
-        return new Pose2d(closestX, closestY, new Rotation2d(angle));
-    }
 
     public static final PIDController rotationController = getRotationController();
 
@@ -563,20 +546,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // Visualization
         ShootingLocation = new Pose2d(lookaheadShooterPosition, aimAngle);
         
-        // Debug
-        SmartDashboard.putNumber("Shot/Robot Vx", robotRelativeSpeeds.vxMetersPerSecond);
-        SmartDashboard.putNumber("Shot/Robot Vy", robotRelativeSpeeds.vyMetersPerSecond);
-        SmartDashboard.putNumber("Shot/Field Vx", fieldVelocity.vxMetersPerSecond);
-        SmartDashboard.putNumber("Shot/Field Vy", fieldVelocity.vyMetersPerSecond);
-        SmartDashboard.putNumber("Shot/Lookahead Distance", lookaheadDistance);
-        SmartDashboard.putNumber("Shot/Time of Flight", timeOfFlight);
-        SmartDashboard.putNumber("Shot/Current Angle", currentAngle.getDegrees());
-        SmartDashboard.putNumber("Shot/Aim Angle", aimAngle.getDegrees());
-        SmartDashboard.putNumber("Shot/Rotational Rate", rotationalRate);
-        SmartDashboard.putNumber("Shot/Prediction Offset X", lookaheadShooterPosition.getX() - currentPose.getX());
-        SmartDashboard.putNumber("Shot/Prediction Offset Y", lookaheadShooterPosition.getY() - currentPose.getY());
-        SmartDashboard.putNumber("Shot/Angle Error Deg", aimAngle.minus(currentAngle).getDegrees());
-        
         return alignRequest
             .withVelocityX(veloX * maxSpeed) 
             .withVelocityY(veloY * maxSpeed) 
@@ -644,7 +613,6 @@ public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwe
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("ShootingDistance", Constants.ShooterConstants.ShootingDistance*3.28084); //3.28084 Feet per Meter (converting Meters to Feet)
         if(ShootingLocation != null){field.getObject("Shooting Target").setPose(ShootingLocation);}
         field.setRobotPose(getPose());
 

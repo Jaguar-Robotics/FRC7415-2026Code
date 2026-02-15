@@ -19,7 +19,7 @@ public class Vision extends SubsystemBase {
    * Called automatically in periodic().
    */
   
-  private final String PosLimelight = "limelight-front";
+  private final String PosLimelight = "limelight-fr";
   public void updateVisionMeasurements() {
     boolean doRejectUpdate = false;
     

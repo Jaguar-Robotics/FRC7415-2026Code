@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands; 
 public class IndexerHighSubsystem extends SubsystemBase {
 
-  private final TalonFX indexerHighMotor = new TalonFX(Constants.IndexerConstants.IndexerHighMotorID);
+  private final TalonFX indexerHighMotor = new TalonFX(Constants.IndexerConstants.HighIndexerMotorID);
   /** Creates a new Intake. */
   public IndexerHighSubsystem() {}
 

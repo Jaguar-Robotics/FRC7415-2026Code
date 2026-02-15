@@ -91,7 +91,11 @@
   ],
   "robotJoysticks": [
     {
+<<<<<<< Updated upstream
       "guid": "Keyboard0"
+=======
+      "guid": "030000004c050000c405000000000000"
+>>>>>>> Stashed changes
     }
   ]
 }

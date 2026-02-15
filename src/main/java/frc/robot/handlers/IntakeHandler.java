@@ -12,6 +12,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 
 public class IntakeHandler extends SubsystemBase implements StateSubsystem {
 
+    
     public enum IntakeState implements State {
       FASTINTAKE,
       SLOWINTAKE,
@@ -25,7 +26,7 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
   private IntakeState desiredState = IntakeState.OFF;
   private IntakeState currentState = IntakeState.OFF;
 
-  /** Creates a new IntakeHandler. */
+
   private IntakeHandler() {}
 
   public static IntakeHandler getInstance(){
@@ -82,4 +83,4 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
     update();
     // This method will be called once per scheduler run
   }
-}
+} 
