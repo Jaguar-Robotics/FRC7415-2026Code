@@ -20,18 +20,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import frc.robot.Constants;
 import frc.robot.handlers.IntakeHandler;
 import frc.robot.handlers.Superstructure.SuperstructureState;
-import yams.gearing.GearBox;
-import yams.gearing.MechanismGearing;
-import yams.mechanisms.SmartMechanism;
-import yams.motorcontrollers.SmartMotorControllerConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
-import yams.motorcontrollers.SmartMotorController;
-import yams.mechanisms.config.FlyWheelConfig;
-import yams.mechanisms.velocity.FlyWheel;
-import yams.motorcontrollers.SmartMotorControllerConfig.ControlMode;
-import yams.motorcontrollers.SmartMotorControllerConfig.MotorMode;
-import yams.motorcontrollers.SmartMotorControllerConfig.TelemetryVerbosity;
-import yams.motorcontrollers.remote.TalonFXWrapper;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.controls.Follower;
@@ -44,119 +33,26 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 public class ShooterSubsystem extends SubsystemBase {
 
-  
-  private SmartMotorControllerConfig smcConfig = new SmartMotorControllerConfig(this)
-  .withControlMode(ControlMode.CLOSED_LOOP)
-  // Feedback Constants (PID Constants)
-  .withClosedLoopController(0.48, 0, 0, DegreesPerSecond.of(180), DegreesPerSecondPerSecond.of(45))
-  .withSimClosedLoopController(0.48, 0, 0, DegreesPerSecond.of(180), DegreesPerSecondPerSecond.of(45))
-  // Feedforward Constants
-  .withFeedforward(new SimpleMotorFeedforward(0, 0.19, 1.13))
-  .withSimFeedforward(new SimpleMotorFeedforward(0, 0.19, 1.13))
-  // Telemetry name and verbosity level
-  .withTelemetry("ShooterMotor", TelemetryVerbosity.HIGH)
-  // Gearing from the motor rotor to final shaft.
-  // In this example GearBox.fromReductionStages(3,4) is the same as GearBox.fromStages("3:1","4:1") which corresponds to the gearbox attached to your motor.
-  // You could also use .withGearing(12) which does the same thing.
-  .withGearing(new MechanismGearing(GearBox.fromReductionStages(1)))
-  // Motor properties to prevent over currenting.
-  .withMotorInverted(false)
-  .withIdleMode(MotorMode.COAST)
-  .withStatorCurrentLimit(Amps.of(40));
-
-  // Vendor motor controller object
+  // motors
   private TalonFX shooterLeader = new TalonFX(Constants.ShooterConstants.ShooterLeaderID);
-  private TalonFX shooterFollower = new TalonFX(Constants.ShooterConstants.ShooterFollowerID);
-  private TalonFX shooterFollowerReversed = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversedID);
-  private TalonFX shooterFollowerReversed2 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversed2ID);
+  private TalonFX shooterFollower1 = new TalonFX(Constants.ShooterConstants.ShooterFollowerID);
+  private TalonFX shooterFollower2 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversedID);
+  private TalonFX shooterFollower3 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversed2ID);
 
   private TalonFXSimState shooterMotorSim = shooterLeader.getSimState();
 
-  // Create our SmartMotorController from our Spark and config with the NEO.
-  private SmartMotorController SmartMotorController = new TalonFXWrapper(shooterLeader, DCMotor.getKrakenX60(4), smcConfig);
-
-  
-  private final FlyWheelConfig shooterConfig = new FlyWheelConfig(SmartMotorController)
-  // Diameter of the flywheel.
-  .withDiameter(Inches.of(4))
-  // Mass of the flywheel.
-  .withMass(Pounds.of(5.2)) //CHangle later maybe
-  // Maximum speed of the shooter.
-  .withUpperSoftLimit(RPM.of(3200))
-  // Telemetry name and verbosity for the arm.
-  .withTelemetry("ShooterMech", TelemetryVerbosity.HIGH);
-
-  // Shooter Mechanism
-  private FlyWheel shooter = new FlyWheel(shooterConfig);
-
+  private double f = 0.4;
   
   AngularVelocity setVelo = RPM.of(0);
-   /**
-   * Gets the current velocity of the shooter.
-   *
-   * @return Shooter velocity.
-   */
-  public AngularVelocity getVelocity() {
-    return shooter.getSpeed();}
-
-  public Command stop() {
-    setVelo = RPM.of(0); 
-    return shooter.set(0);}
-
-    /**
-   * Set the shooter velocity WITHOUT creating a command.
-   * Use this for continuous updates (like distance-based shooting).
-   *
-   * @param speed Speed to set.
-   */
-  public void setVelocityDirect(AngularVelocity speed) {
-    if (speed.gte(Constants.ShooterConstants.SetRPMHardStop)) {speed = Constants.ShooterConstants.SetRPMHardStop;}
-    System.out.println("new speed" + speed);
-    setVelo = speed;
-  }
-  
-    /**
-   * Set the shooter velocity.
-   *
-   * @param speed Speed to set.
-   * @return {@link edu.wpi.first.wpilibj2.command.RunCommand}
-   */
-  public Command setVelocity(AngularVelocity speed) {
-    if (speed.gte(Constants.ShooterConstants.SetRPMHardStop)){ speed = Constants.ShooterConstants.SetRPMHardStop;}
-    setVelo = speed;
-    return shooter.setSpeed(speed);}
-
-
-  /**
-   * Set the dutycycle of the shooter.
-   *
-   * @param dutyCycle DutyCycle to set.
-   * @return {@link edu.wpi.first.wpilibj2.command.RunCommand}
-   */
-  public Command set(double dutyCycle) { return shooter.set(dutyCycle);}
 
   private CommandSwerveDrivetrain drivetrain;
 
-    public ShooterSubsystem() {
-
-    //-------------COMMENT ALL THIS OUT IF TESTING WITH PHYNEX TUNER-----------------
-    shooterFollower.setControl(new Follower(Constants.ShooterConstants.ShooterLeaderID, MotorAlignmentValue.Aligned));
-
-    // 2. Reversed Followers (Opposite direction of leader)
-    shooterFollowerReversed.setControl(new Follower(Constants.ShooterConstants.ShooterLeaderID, MotorAlignmentValue.Opposed));
-    shooterFollowerReversed2.setControl(new Follower(Constants.ShooterConstants.ShooterLeaderID, MotorAlignmentValue.Opposed));
+  public ShooterSubsystem(){
+    shooterFollower1.setControl(new Follower(Constants.ShooterConstants.ShooterLeaderID, MotorAlignmentValue.Aligned));
+    shooterFollower2.setControl(new Follower(Constants.ShooterConstants.ShooterLeaderID, MotorAlignmentValue.Aligned));
+    shooterFollower3.setControl(new Follower(Constants.ShooterConstants.ShooterLeaderID, MotorAlignmentValue.Aligned));
   }
 
-  /** Creates a new ShooterSubsystem. with drivetrain perameters */
-  public ShooterSubsystem(CommandSwerveDrivetrain drivetrin) {
-    //-------------COMMENT ALL THIS OUT IF TESTING WITH PHYNEX TUNER-----------------
-    shooterFollower.setControl(new Follower(Constants.ShooterConstants.ShooterLeaderID, MotorAlignmentValue.Aligned));
-
-    // 2. Reversed Followers (Opposite direction of leader)
-    // Use 'true' for the opposeLeader parameter
-    shooterFollowerReversed.setControl(new Follower(Constants.ShooterConstants.ShooterLeaderID, MotorAlignmentValue.Opposed));
-    shooterFollowerReversed2.setControl(new Follower(Constants.ShooterConstants.ShooterLeaderID, MotorAlignmentValue.Opposed));
-  }
   private static ShooterSubsystem instance;
   public static ShooterSubsystem getInstance(){
       if (instance == null){
@@ -165,9 +61,42 @@ public class ShooterSubsystem extends SubsystemBase {
       return instance;
   }
 
-    public void initialize(CommandSwerveDrivetrain drivetrain) {
+  public void initialize(CommandSwerveDrivetrain drivetrain) {
     this.drivetrain = drivetrain;
+  }
+
+  // Get current velocity from the motor
+  public AngularVelocity getVelocity() {
+    // TalonFX getVelocity() returns rotations per second, convert to RPM
+    double rps = shooterLeader.getVelocity().getValueAsDouble(); 
+    return RPM.of(rps * 60.0);
+  }
+
+  public Command setVelocity(AngularVelocity speed) {
+    return Commands.runOnce(() -> {
+        AngularVelocity finalSpeed = speed;
+        if (speed.gte(Constants.ShooterConstants.SetRPMHardStop)) {
+            finalSpeed = Constants.ShooterConstants.SetRPMHardStop;
+        }
+        setVelo = finalSpeed;
+    }, this);
+}
+
+  // Stop the shooter
+  public Command stop() {
+    return Commands.runOnce(() -> {
+        setVelo = RPM.of(0);
+        shooterLeader.set(0);
+    }, this);
+}
+
+  public double BangBangChicken(double cur, double vel) {
+    if (cur < vel) {
+        return 1.0;
+    } else {
+        return f * vel;
     }
+  }
 
   //Checking if shooter RPM is at threashold (waiting for it to spinup)
   public boolean isAtTargetVelo(){
@@ -178,45 +107,26 @@ public class ShooterSubsystem extends SubsystemBase {
 
     return currentRPM >= targetRPM;
   }
- 
+
   public AngularVelocity getCalcedRPM(double DistMeters){
     
     //double distanceMeters = drivetrain.getDistance();
     double distanceInches = DistMeters * 39.3701;
-
-        AngularVelocity velo = RPM.of(-0.0312466 * Math.pow(distanceInches, 2) + 29.07009 * distanceInches + 828.29202);
+    AngularVelocity velo = RPM.of(-0.0312466 * Math.pow(distanceInches, 2) + 29.07009 * distanceInches + 828.29202);
     
-    if (velo.gte(Constants.ShooterConstants.SetRPMHardStop)){ velo = Constants.ShooterConstants.SetRPMHardStop;}
-    setVelo = velo; 
+    if (velo.gte(Constants.ShooterConstants.SetRPMHardStop)) { 
+        velo = Constants.ShooterConstants.SetRPMHardStop;
+    }
+    
     return velo;
 }
 
-  public Command setIdleMode(Pose2d RobotPose){
-    Pose2d currentPose = RobotPose;
-    double robotX = currentPose.getX();
-    
-    // Define field zones (adjust these values based on your field layout)
-    // Assuming field is ~16.5 meters long (54 feet)
-    double ourZoneMax = 5.5;      // meters - our third of the field
-    double middleZoneMax = 11.0;  // meters - middle third
-    // Anything beyond middleZoneMax is "their" zone
-    
-    // Determine which zone we're in and set appropriate state
-    if (robotX < ourZoneMax) {
-        return setVelocity(Constants.ShooterConstants.SlowShot);
-    } else if (robotX < middleZoneMax) {
-        return stop();
-    } else {
-        return stop();
-    }
-}
-
-public boolean isReadyToShoot() {
+  public boolean isReadyToShoot() {
     // Check if at target velocity and drivetrain is aimed
     return isAtTargetVelo() && drivetrain != null && isAimedAtTarget();
-}
+  }
 
-public boolean isAimedAtTarget() {
+  public boolean isAimedAtTarget() {
     if (drivetrain == null) return false;
     
     Pose2d robotPose = drivetrain.getPose();
@@ -232,39 +142,31 @@ public boolean isAimedAtTarget() {
     SmartDashboard.putNumber("Shooter/Aim Error (deg)", errorDegrees);
     
     return errorDegrees < 2.0; // Within 2 degrees
-}
-
-
+  }
 
   @Override
   public void periodic() {
-
+    double output = BangBangChicken(getVelocity().in(RPM), setVelo.in(RPM));
+    shooterLeader.set(output);  // Send percentage to motor (0.0 to 1.0)
+    
     SmartDashboard.putNumber("Request RPM", setVelo.in(RPM));
     SmartDashboard.putNumber("Real RPM", getVelocity().in(RPM));
-    
-    // This method will be called once per scheduler run
-    shooter.updateTelemetry();
+    SmartDashboard.putNumber("Bang-Bang Output", output);
   }
   
-@Override
-public void simulationPeriodic() {
+  @Override
+  public void simulationPeriodic() {
     // This method will be called once per scheduler run during simulation
-    shooter.simIterate();
-    //SmartDashboard.putNumber("Request RPM", setVelo.in(RPM));
-    //SmartDashboard.putNumber("Real RPM", getVelocity().in(RPM));
 
-    
-
-    //System.out.println("Sim periodic running - Leader voltage: " + shooterLeader.getSimState().getMotorVoltage());
     // Log voltages for all motors
     double leaderVoltage = shooterLeader.getSimState().getMotorVoltage();
-    shooterFollower.getSimState().setSupplyVoltage(leaderVoltage);
-    shooterFollowerReversed.getSimState().setSupplyVoltage(leaderVoltage);
-    shooterFollowerReversed2.getSimState().setSupplyVoltage(leaderVoltage);
+    shooterFollower1.getSimState().setSupplyVoltage(leaderVoltage);
+    shooterFollower2.getSimState().setSupplyVoltage(leaderVoltage);
+    shooterFollower3.getSimState().setSupplyVoltage(leaderVoltage);
 
     SmartDashboard.putNumber("Shooter/Leader Voltage", shooterLeader.getSimState().getMotorVoltage());
-    SmartDashboard.putNumber("Shooter/Follower Voltage", shooterFollower.getSimState().getMotorVoltage());
-    SmartDashboard.putNumber("Shooter/FollowerReversed Voltage", shooterFollowerReversed.getSimState().getMotorVoltage());
-    SmartDashboard.putNumber("Shooter/FollowerReversed2 Voltage", shooterFollowerReversed2.getSimState().getMotorVoltage());
+    SmartDashboard.putNumber("Shooter/Follower Voltage", shooterFollower1.getSimState().getMotorVoltage());
+    SmartDashboard.putNumber("Shooter/FollowerReversed Voltage", shooterFollower2.getSimState().getMotorVoltage());
+    SmartDashboard.putNumber("Shooter/FollowerReversed2 Voltage", shooterFollower3.getSimState().getMotorVoltage());
   }
 }

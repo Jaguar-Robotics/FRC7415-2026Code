@@ -240,7 +240,7 @@ public class Superstructure extends SubsystemBase {
         }*/
 
         SmartDashboard.putBoolean("shooterAtVelo?", shooter.isAtTargetVelo());
-        SmartDashboard.putBoolean("Drivetrain aimed?",drivetrain.isAimedAtTarget());
+        SmartDashboard.putBoolean("Drivetrain aimed?", drivetrain.isAimedAtTarget());
          
   }
 

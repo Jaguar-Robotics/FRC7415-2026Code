@@ -23,11 +23,12 @@ public class Constants {
         public static final int ShooterFollowerID = 21;
         public static final int ShooterFollowerReversedID = 22;
         public static final int ShooterFollowerReversed2ID = 23;
-        public static final AngularVelocity FastShot = RPM.of(3000); //HESHEL CHANGE ME FAST
-        public static final AngularVelocity SlowShot = RPM.of(1500); //HESKEL CHANGE ME SLOW
+        public static final AngularVelocity FastShot = RPM.of(5000); //HESHEL CHANGE ME FAST
+        public static final AngularVelocity SlowShot = RPM.of(3500); //HESKEL CHANGE ME SLOW
         public static final AngularVelocity SetRPMHardStop = RPM.of(3200);
         public static  double ShootingDistance = Feet.of(6).in(Meter); //6ft starting
         public static int RPMTolarance = 50;
+
     }
 
     public static abstract class IntakeConstants {
