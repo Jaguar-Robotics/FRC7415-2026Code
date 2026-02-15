@@ -4,6 +4,7 @@
 
 package frc.robot.handlers;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.handlers.DriveHandler.DriveState;
@@ -83,6 +84,7 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
   @Override
   public void periodic() {
     update();
+    SmartDashboard.putString("IntakeSlide State", currentState.toString());
     // This method will be called once per scheduler run
   }
 }

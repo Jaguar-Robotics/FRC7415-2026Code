@@ -46,6 +46,8 @@ public class Superstructure extends SubsystemBase {
   //private final IntakeSubsystem Intake = new IntakeSubsystem();
   private final IntakeHandler intakeHandler = IntakeHandler.getInstance();
 
+  private final IntakeSlideHandler intakeSlideHandler = IntakeSlideHandler.getInstance();
+
   //private final HopperSubsystem Hopper = new HopperSubsystem();
   private final HopperHandler hopperHandler = HopperHandler.getInstance();
 
@@ -96,6 +98,7 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.IN);
         break;
       case INTAKE:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
@@ -104,6 +107,7 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.SNAKE);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.OUT);
         break;
       case SPINUP:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
@@ -112,6 +116,7 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.MIDDLE);
         break;
       case STATIONARYSHOT:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
@@ -120,8 +125,9 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
         break;
-      case SPINUPSLOW:
+      case SPINUPSLOW: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SLOW);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
@@ -129,7 +135,7 @@ public class Superstructure extends SubsystemBase {
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
-      case SLOWSHOT:
+      case SLOWSHOT: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SLOW);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.SLOW);
@@ -137,14 +143,14 @@ public class Superstructure extends SubsystemBase {
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
-      case SPINUPFAST:
+      case SPINUPFAST: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.FAST);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerHighHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
          break;
-      case FASTSHOT:
+      case FASTSHOT: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.SLOWINTAKE);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
@@ -166,6 +172,7 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.IN);
         break;
       default:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
@@ -174,6 +181,7 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.IN);
         break;
     }
     currentState = desiredState;

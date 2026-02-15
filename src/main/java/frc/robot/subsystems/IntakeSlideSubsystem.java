@@ -47,7 +47,7 @@ public class IntakeSlideSubsystem extends SubsystemBase {
     .withFeedforward(new ElevatorFeedforward(0, 0, 0))
     .withSimFeedforward(new ElevatorFeedforward(0, 0, 0))
     // Telemetry name and verbosity level
-    .withTelemetry("ElevatorMotor", TelemetryVerbosity.HIGH)
+    .withTelemetry("IntakeSlide", TelemetryVerbosity.HIGH)
     // Gearing from the motor rotor to final shaft.
     // In this example GearBox.fromReductionStages(3,4) is the same as GearBox.fromStages("3:1","4:1") which corresponds to the gearbox attached to your motor.
     // You could also use .withGearing(12) which does the same thing.

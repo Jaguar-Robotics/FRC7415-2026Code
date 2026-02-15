@@ -15,6 +15,7 @@ import edu.wpi.first.units.measure.Distance;
 /** Add your docs here. */
 public class Constants {
 
+    
     public static abstract class ShooterConstants {
         public static final int ShooterLeaderID = 27; 
         public static final int ShooterFollowerID = 28;
@@ -29,10 +30,10 @@ public class Constants {
     public static abstract class IntakeConstants {
         public static final int IntakeMotorID = 31; //change
         public static final int IntakeFollowerReversedMotorID = 30; 
-        public static final double FastIntake = 1;
+        public static final double FastIntake = 0.87; //used to be 1 but 0.87 is more effechient or sum
         public static final double SlowIntake = 0.5;
         public static final double SlowReverse = -0.3;
-        public static final double FastReverse = -1;
+        public static final double FastReverse = -0.87;
 
         public static final int IntakeSlideMotorID = 21; //changeme
         public static final Distance IntakeSlideOutSetPoint = Inches.of(13.3); //Changememaybe
@@ -52,7 +53,7 @@ public class Constants {
         public static abstract class IndexerConstants {
         public static final int HighIndexerMotorID = 22; //
         public static final int LowIndexerMotorID = 20; //
-        public static final double FastRoll = 1;
+        public static final double FastRoll = 0.87;
         public static final double SlowRoll = 0.6;
         public static final double FastOutRoll = -0.5;
         public static final double SlowOutRoll = -0.3;

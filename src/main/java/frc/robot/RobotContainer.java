@@ -45,6 +45,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
 import frc.robot.subsystems.IndexerLowSubsystem;
+import frc.robot.subsystems.IntakeSlideSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.Vision;
@@ -77,10 +78,9 @@ public class RobotContainer {
     public final HopperSubsystem hopper = new HopperSubsystem();
     public final IndexerHighSubsystem HighIndexer = new IndexerHighSubsystem();
     public final IndexerLowSubsystem LowIndexer = new IndexerLowSubsystem();
+    public final IntakeSlideSubsystem IntakeSlide = new IntakeSlideSubsystem();
 
     public final Superstructure superstructure = Superstructure.getInstance(); 
-
-    //private TalonFX intakeMotor = new TalonFX(Constants.IntakeConstants.IntakeMotorID);
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
