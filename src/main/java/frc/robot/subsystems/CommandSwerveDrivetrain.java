@@ -442,7 +442,7 @@ public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, doub
         // Apply 10% deadband to joystick inputs
         double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
         double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
-        double rotSpeed = MathUtil.applyDeadband(joystick.getRightX(), 0.1);
+        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
         
         return alignRequest
             .withVelocityX(xSpeed * MaxSpeed)
@@ -576,7 +576,7 @@ public boolean isAimedAtTarget() {
     // Calculate required aim angle (same as headingLocktoHub)
     Translation2d target = getHubPose().toPose2d().getTranslation();
     Translation2d toTarget = target.minus(currentPose.getTranslation());
-    Rotation2d targetAngle = toTarget.getAngle(); // Face toward hub
+    Rotation2d targetAngle = toTarget.getAngle().plus(Rotation2d.k180deg); // Face away from hub
     
     // Calculate angle error
     double errorDegrees = Math.abs(targetAngle.minus(currentAngle).getDegrees());

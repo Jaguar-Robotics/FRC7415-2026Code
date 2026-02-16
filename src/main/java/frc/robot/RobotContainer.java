@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.events.OneShotTriggerEvent;
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -120,8 +121,27 @@ public class RobotContainer {
 
 
 
-        
-        joystick.start().whileTrue(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, MaxSpeed, MaxAngularRate));
+        // Create the constraints to use while pathfinding
+        PathConstraints constraints = new PathConstraints(
+                3.0, 4.0,
+                Units.degreesToRadians(540), Units.degreesToRadians(720));
+
+        //ROTATE 90 degreese
+        joystick.leftBumper().onTrue(Commands.runOnce(() -> {
+            Rotation2d targetRotation = drivetrain.getPose().getRotation().plus(Rotation2d.fromDegrees(90));
+            
+            // Use your existing rotation controller
+            drivetrain.applyRequest(() -> {
+                double rotationalRate = CommandSwerveDrivetrain.rotationController.calculate(
+                    drivetrain.getPose().getRotation().getRadians(),
+                    targetRotation.getRadians()
+                );
+                return new SwerveRequest.FieldCentric()
+                    .withVelocityX(0)
+                    .withVelocityY(0)
+                    .withRotationalRate(rotationalRate * 6); // Max angular rate
+            }).withTimeout(2.0).schedule();
+        }));
 
         
         joystick.rightBumper().whileTrue(drivetrain.shootOnTheMoveIterative(joystick, MaxSpeed, MaxAngularRate, "no")); //Shoot while moving
@@ -135,7 +155,7 @@ public class RobotContainer {
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
         joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
-        joystick.leftTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
+        joystick.leftTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
         joystick.leftStick().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
         
@@ -179,9 +199,11 @@ public class RobotContainer {
         joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-250))); //in RPM
         joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(250)));
         
-        joystick.povLeft().whileTrue(drivetrain.shootOnTheMoveIterative(joystick, MaxSpeed, MaxAngularRate, "PovLeft")); //Shoot while moving
-        
-        joystick.povRight().whileTrue(drivetrain.shootOnTheMoveIterative(joystick, MaxSpeed, MaxAngularRate, "PovRight")); //Shoot while moving
+        joystick.povLeft().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.OUT));
+        joystick.povRight().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.IN));
+
+        //joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.3)); // Should extend
+        //joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.3));
     
     }        
 

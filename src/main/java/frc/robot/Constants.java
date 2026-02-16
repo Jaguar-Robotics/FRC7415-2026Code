@@ -80,9 +80,9 @@ public class Constants {
             public static final double xyI = 0;
             public static final double xyD = 0;
 
-            public static final double rotP = 0.05; //0.05
+            public static final double rotP = 3; //0.05
             public static final double rotI = 0;
-            public static final double rotD = 0.05;
+            public static final double rotD = 0.18; //0.05
 
             public static final double TranslationDeadband = 0.1;
             public static final double RotationDeadband = 0.1;

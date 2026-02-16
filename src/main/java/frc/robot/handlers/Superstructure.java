@@ -208,7 +208,6 @@ public class Superstructure extends SubsystemBase {
         SmartDashboard.putBoolean("Drivetrain aimed?",drivetrain.isAimedAtTarget());
          
   }
-
   public SuperstructureState getCurrentState() {
     return currentState;
   }

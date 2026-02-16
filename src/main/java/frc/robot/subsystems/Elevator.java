@@ -57,7 +57,7 @@ public class Elevator extends SubsystemBase {
 
     private static final double kGearRatio = 2;
     private static final Distance kDrumRadius = Meters.of(0.0254);
-    private static final Distance kMaxHeight = Meters.of(0);
+    private static final Distance kMaxHeight = Inches.of(13.3);
 
     /* leader and follower motors */
     private final CANBus kCANBus = new CANBus("Upper");
@@ -85,7 +85,7 @@ public class Elevator extends SubsystemBase {
     private final ElevatorSim elevatorSim_motor_id_35 = new ElevatorSim(
         DCMotor.getKrakenX60Foc(1),
         kGearRatio, 5, kDrumRadius.in(Meters),
-        0.0, kMaxHeight.in(Meters), true, 0.0
+        0.0, kMaxHeight.in(Meters), false, 0.0
     );
 
     private static final double kSimLoopPeriod = 0.002; // 2 ms
@@ -94,8 +94,8 @@ public class Elevator extends SubsystemBase {
 
     /* Mechanism2d visualization of the elevator */
     private final Mechanism2d mech2d = new Mechanism2d(1, kMaxHeight.in(Meters));
-    private final MechanismLigament2d motor_id_35Mech2d = mech2d.getRoot("motor_id_35 Root", 0.500, 0)
-        .append(new MechanismLigament2d("motor_id_35", elevatorSim_motor_id_35.getPositionMeters(), 90));
+    private final MechanismLigament2d motor_id_35Mech2d = mech2d.getRoot("motor_id_35 Root", 0.500, 0.4)
+        .append(new MechanismLigament2d("motor_id_35", elevatorSim_motor_id_35.getPositionMeters(), 200));
 
     /** Configs common across all motors. */
     private static final TalonFXConfiguration motorInitialConfigs = new TalonFXConfiguration();
@@ -105,6 +105,17 @@ public class Elevator extends SubsystemBase {
 
     /** Configs for {@link #motor_id_35}. */
     private final TalonFXConfiguration motor_id_35Configs = leaderInitialConfigs.clone();
+
+    static {
+    // Configure MotionMagic for the leader motors
+    leaderInitialConfigs.Slot0.kP = 8.0;  // Tune these values!
+    leaderInitialConfigs.Slot0.kI = 0.0;
+    leaderInitialConfigs.Slot0.kD = 0.1;
+    
+    leaderInitialConfigs.MotionMagic.MotionMagicCruiseVelocity = 50; // rps
+    leaderInitialConfigs.MotionMagic.MotionMagicAcceleration = 160; // rps/s
+    leaderInitialConfigs.MotionMagic.MotionMagicJerk = 1600; // rps/s/s
+    }
 
     public Elevator() {
         for (int i = 0; i < kNumConfigAttempts; ++i) {
@@ -172,6 +183,12 @@ public class Elevator extends SubsystemBase {
         });
     }
 
+    public Command goToSetpointClaude(Supplier<Setpoint> setpoint) {
+    return run(() -> {
+        motor_id_35.setControl(setpointRequest.withPosition(setpoint.get().target));
+    });
+}
+
     /**
      * Manually drives the elevator with the provided duty cycle output.
      *
@@ -212,7 +229,7 @@ public class Elevator extends SubsystemBase {
             motor_id_35Position,
             motor_id_35Velocity,
             motor_id_35TorqueCurrent
-        );
+        ); 
 
         motor_id_35Mech2d.setLength(
             motor_id_35Position.getValueAsDouble() * kDrumRadius.in(Meters) * 2 * Math.PI
