@@ -6,50 +6,35 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.Set;
-
-import org.w3c.dom.traversal.TreeWalker;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.path.PathConstraints;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
 import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
-import frc.robot.handlers.IntakeHandler;
-import frc.robot.handlers.IntakeSlideHandler;
 import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.Superstructure;
-import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
-import frc.robot.handlers.Superstructure.SuperstructureState;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
 import frc.robot.subsystems.IndexerLowSubsystem;
-import frc.robot.subsystems.IntakeSlideSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.Vision;
-import pabeles.concurrency.IntOperatorTask.Max;
 
 public class RobotContainer {
 
@@ -78,7 +63,7 @@ public class RobotContainer {
     public final HopperSubsystem hopper = new HopperSubsystem();
     public final IndexerHighSubsystem HighIndexer = new IndexerHighSubsystem();
     public final IndexerLowSubsystem LowIndexer = new IndexerLowSubsystem();
-    public final IntakeSlideSubsystem IntakeSlide = new IntakeSlideSubsystem();
+    public final Elevator IntakeSlide = new Elevator();
 
     public final Superstructure superstructure = Superstructure.getInstance(); 
 
@@ -132,9 +117,10 @@ public class RobotContainer {
         joystick.rightStick().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
         drivetrain.registerTelemetry(logger::telemeterize);
 
-        PathConstraints constraints = new PathConstraints(3, 4,
-        Degrees.of(540).in(Radians), Degrees.of(720).in(Radians));
 
+
+
+        
         joystick.start().whileTrue(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, MaxSpeed, MaxAngularRate));
 
         
@@ -152,11 +138,17 @@ public class RobotContainer {
         joystick.leftTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
         joystick.leftStick().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
+        
 
-        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
+       joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
+       joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
+
+
         
 
         joystick.rightStick().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
+
+        
 
         
         //FOR HESHEL
@@ -164,14 +156,8 @@ public class RobotContainer {
         joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
         joystick.leftTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
         
-        joystick.a().onTrue(
-            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPSLOW))
-            .andThen(new WaitCommand(1.0))
-            .andThen(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SLOWSHOT))));
-        joystick.y().onTrue(
-            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST))
-            .andThen(new WaitCommand(1.0))
-            .andThen(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT))));
+        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
+        joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));  
         */
 

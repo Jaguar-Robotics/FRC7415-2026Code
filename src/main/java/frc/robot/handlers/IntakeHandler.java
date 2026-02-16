@@ -81,6 +81,7 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
 
   @Override
   public void periodic() {
+    SmartDashboard.putString("IntakeHandlerState", currentState.toString());
     update();
     // This method will be called once per scheduler run
   }

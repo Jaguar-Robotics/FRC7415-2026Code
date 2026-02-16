@@ -10,6 +10,7 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -18,16 +19,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 public class IntakeSubsystem extends SubsystemBase {
 
-  private final TalonFX intakeMotor = new TalonFX(Constants.IntakeConstants.IntakeMotorID);
-  private final TalonFX intakeFollowerMotor = new TalonFX(Constants.IntakeConstants.IntakeFollowerReversedMotorID);
+  private final TalonFX intakeMotor = new TalonFX(Constants.IntakeConstants.IntakeMotorID, "Upper");
+  private final TalonFX intakeFollowerMotor = new TalonFX(Constants.IntakeConstants.IntakeFollowerReversedMotorID, "Upper");
 
   public IntakeSubsystem() {
     intakeFollowerMotor.setControl(new Follower(Constants.IntakeConstants.IntakeMotorID, MotorAlignmentValue.Opposed));
   }
-
   public void set(double speed){
-    //System.out.print(speed);
     intakeMotor.set(speed);
+    SmartDashboard.putBoolean("ranSetMethod", true);
     //return Commands.run(() -> intakeMotor.set(speed));
   }
 

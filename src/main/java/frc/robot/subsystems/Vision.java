@@ -7,7 +7,7 @@ import frc.robot.LimelightHelpers;
 public class Vision extends SubsystemBase {
   
   private final CommandSwerveDrivetrain drivetrain;
-  private boolean useMegaTag2 = false; // Set to false to use MegaTag1 SWITCHING BECAUSE MT1 more reliable somehow
+  private boolean useMegaTag2 = true; // Set to false to use MegaTag1 SWITCHING BECAUSE MT1 more reliable somehow
   
   /** Creates a new Vision subsystem */
   public Vision(CommandSwerveDrivetrain drivetrain) {
@@ -19,7 +19,7 @@ public class Vision extends SubsystemBase {
    * Called automatically in periodic().
    */
   
-  private final String PosLimelight = "limelight-fr";
+  private final String PosLimelight = "limelight-fl";
   public void updateVisionMeasurements() {
     boolean doRejectUpdate = false;
     

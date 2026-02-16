@@ -48,7 +48,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private SmartMotorControllerConfig smcConfig = new SmartMotorControllerConfig(this)
   .withControlMode(ControlMode.CLOSED_LOOP)
   // Feedback Constants (PID Constants)
-  .withClosedLoopController(0.48, 0, 0, DegreesPerSecond.of(180), DegreesPerSecondPerSecond.of(45))
+  .withClosedLoopController(1, 0, 0, DegreesPerSecond.of(3600), DegreesPerSecondPerSecond.of(3600))
   .withSimClosedLoopController(0.48, 0, 0, DegreesPerSecond.of(180), DegreesPerSecondPerSecond.of(45))
   // Feedforward Constants
   .withFeedforward(new SimpleMotorFeedforward(0, 0.19, 1.13))
@@ -65,10 +65,10 @@ public class ShooterSubsystem extends SubsystemBase {
   .withStatorCurrentLimit(Amps.of(40));
 
   // Vendor motor controller object
-  private TalonFX shooterLeader = new TalonFX(Constants.ShooterConstants.ShooterLeaderID);
-  private TalonFX shooterFollower = new TalonFX(Constants.ShooterConstants.ShooterFollowerID);
-  private TalonFX shooterFollowerReversed = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversedID);
-  private TalonFX shooterFollowerReversed2 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversed2ID);
+  private TalonFX shooterLeader = new TalonFX(Constants.ShooterConstants.ShooterLeaderID, "Upper");
+  private TalonFX shooterFollower = new TalonFX(Constants.ShooterConstants.ShooterFollowerID, "Upper");
+  private TalonFX shooterFollowerReversed = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversedID, "Upper");
+  private TalonFX shooterFollowerReversed2 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversed2ID, "Upper");
 
   private TalonFXSimState shooterMotorSim = shooterLeader.getSimState();
 
@@ -103,21 +103,14 @@ public class ShooterSubsystem extends SubsystemBase {
     setVelo = RPM.of(0); 
     return shooter.set(0);}
 
-    /**
-   * Set the shooter velocity WITHOUT creating a command.
-   * Use this for continuous updates (like distance-based shooting).
+/**
+   * Set the shooter velocity setpoint.
    *
-   * @param speed Speed to set.
+   * @param speed Speed to set
    */
-  public void setVelocityDirect(AngularVelocity speed) {
-    if (speed.gte(Constants.ShooterConstants.SetRPMHardStop)) {speed = Constants.ShooterConstants.SetRPMHardStop;}
-    System.out.println("new speed" + speed);
-    setVelo = speed;
-  }
+  public void setVelocitySetpoint(AngularVelocity speed) {shooter.setMechanismVelocitySetpoint(speed);}
   
-    /**
-   * Set the shooter velocity.
-   *
+  /**
    * @param speed Speed to set.
    * @return {@link edu.wpi.first.wpilibj2.command.RunCommand}
    */

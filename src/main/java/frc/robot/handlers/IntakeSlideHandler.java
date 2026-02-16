@@ -5,14 +5,17 @@
 package frc.robot.handlers;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.handlers.DriveHandler.DriveState;
+import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
 import frc.robot.handlers.ShooterHandler.ShooterState;
 import frc.robot.handlers.StateSubsystem.State;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
-import frc.robot.subsystems.IntakeSlideSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 
 public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem {
@@ -26,7 +29,8 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
   }
 
   private static IntakeSlideHandler instance;
-  private final IntakeSlideSubsystem intakeSlide = new IntakeSlideSubsystem(); //name it correct 
+  private final Elevator intakeSlide = new Elevator(); //name it correct 
+
 
   private IntakeSlideState desiredState = IntakeSlideState.IN;
   private IntakeSlideState currentState = IntakeSlideState.IN;
@@ -57,20 +61,21 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
       if((currentState != desiredState)){
         switch (desiredState) {
             case OUT:
-                intakeSlide.setHeight(Constants.IntakeConstants.IntakeSlideOutSetPoint);
+                intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT).schedule();
                 break;
             case MIDDLE:
-                intakeSlide.setHeight(Constants.IntakeConstants.IntakeSlideMiddleSetPoint);
+                intakeSlide.goToSetpoint(() -> Elevator.Setpoint.Middle).schedule();
                 break;
             case IN:
-                intakeSlide.setHeight(Constants.IntakeConstants.IntakeSlideInSetPoint);
-            case SLOWIN:
-                intakeSlide.runUntilStall(-0.1); //should set the motor to 10% power, waituntill current spike (when linearslide's fully in) then stop, (or after 5 secconds)
+                 intakeSlide.goToSetpoint(() -> Elevator.Setpoint.IN).schedule();
                 break;
+            case SLOWIN:
+                // break; CHANGE FOR REAL CODE LATER ITS NOT TOO HARD
             case BRAKE:
-                intakeSlide.set(0);
+                intakeSlide.holdPosition();
+                break;
             default:
-                intakeSlide.set(0); 
+                intakeSlide.holdPosition(); 
                 break;
         }
         currentState = desiredState;

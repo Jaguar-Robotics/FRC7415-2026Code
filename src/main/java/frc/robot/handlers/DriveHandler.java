@@ -39,7 +39,7 @@ public class DriveHandler extends SubsystemBase {
 
 
 
-  private DriveState desiredState = DriveState.AUTOALLIGN; 
+  private DriveState desiredState = DriveState.TELEOPDRIVE; 
   private DriveState currentState = DriveState.TELEOPDRIVE;
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
 
@@ -94,11 +94,10 @@ public class DriveHandler extends SubsystemBase {
     }
         switch (desiredState) {
             case TELEOPDRIVE:
-                System.out.print("TELEOP");
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
                 break;
             case AUTOALLIGN:
-                drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, maxSpeed, maxAngularRate, "no"));
+                drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, maxSpeed, maxAngularRate));
                 break;
             case SHOOTONTHEMOVE:
                 drivetrain.setDefaultCommand(drivetrain.shootOnTheMoveIterative(joystick, maxSpeed, maxAngularRate, "no"));
@@ -107,7 +106,6 @@ public class DriveHandler extends SubsystemBase {
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain)); //make code for
                 break;
             case SNAKE:
-            System.out.print("SNAKE");
                 drivetrain.setDefaultCommand(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate));
                 break;
             case XDRIVE:

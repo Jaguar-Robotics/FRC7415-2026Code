@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.RPM;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -89,7 +90,6 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
         return;
         }
     if (currentState != desiredState) {
-        System.out.println(" State changing from " + currentState + " to " + desiredState);
         handleStateChange(); // switch states
         }
     updateContinuousStates();
@@ -108,7 +108,7 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
                 CommandScheduler.getInstance().schedule(shooter.setVelocity(Constants.ShooterConstants.FastShot)); 
                 break;
             case TUNING:
-                //shooter.setVelocity(TuneablefastShot).schedule();
+                CommandScheduler.getInstance().schedule(shooter.setVelocity(TuneablefastShot)); 
                 break;
             case OFF:
                 CommandScheduler.getInstance().schedule(shooter.stop()); 
@@ -143,5 +143,6 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     @Override
 public void periodic() {
     update(); // Handle state transitions
+    SmartDashboard.putString("ShooterState", currentState.toString());
 }
 }

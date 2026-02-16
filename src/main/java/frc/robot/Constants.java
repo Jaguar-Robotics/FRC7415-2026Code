@@ -28,14 +28,14 @@ public class Constants {
     }
 
     public static abstract class IntakeConstants {
-        public static final int IntakeMotorID = 31; //change
+        public static final int IntakeMotorID = 25; 
         public static final int IntakeFollowerReversedMotorID = 30; 
         public static final double FastIntake = 0.87; //used to be 1 but 0.87 is more effechient or sum
         public static final double SlowIntake = 0.5;
         public static final double SlowReverse = -0.3;
         public static final double FastReverse = -0.87;
 
-        public static final int IntakeSlideMotorID = 21; //changeme
+        public static final int IntakeSlideMotorID = 35; //
         public static final Distance IntakeSlideOutSetPoint = Inches.of(13.3); //Changememaybe
         public static final Distance IntakeSlideMiddleSetPoint = Inches.of(3);
         public static Distance IntakeSlideInSetPoint = Inches.of(0); //change?
@@ -43,33 +43,21 @@ public class Constants {
 
     public static abstract class HopperConstants {
         public static final int HopperMotorID = 26; //
-        public static final double FastRoll = -0.3; 
-        public static final double SlowRoll = -0.2;
-        public static final double FastOutRoll = 0.8;
-        public static final double SlowOutRoll = 0.4;
+        public static final double FastRoll = 0.4; 
+        public static final double SlowRoll = 0.2;
+        public static final double FastOutRoll = -0.4;
+        public static final double SlowOutRoll = -0.2;
 
     }
 
         public static abstract class IndexerConstants {
-        public static final int HighIndexerMotorID = 22; //
-        public static final int LowIndexerMotorID = 20; //
+        public static final int HighIndexerMotorID = 37; //
+        public static final int LowIndexerMotorID = 36; //
         public static final double FastRoll = 0.87;
         public static final double SlowRoll = 0.6;
         public static final double FastOutRoll = -0.5;
         public static final double SlowOutRoll = -0.3;
 
-    }
-
-    public static abstract class ClimberConstants {
-        public static final int ClimberMotorID = 696969; //change me ts NOT a real motor
-        public static final double ClimbSpeed = 0.7;
-        public static final double DescendSpeed = -0.5;
-
-        public static final Distance HighSetPoint = Inches.of(63.0);
-        public static final Distance MiddleSetPoint = Inches.of(45.0);
-        public static final Distance LowSetPoint = Inches.of(27.0);
-
-        public static final Distance LowSetPointDown = Inches.of(23.0);
     }
 
         public static abstract class FieldConstants{
@@ -88,13 +76,13 @@ public class Constants {
         );
     }
         public static abstract class DriveConstants{
-            public static final double xyP = 10;
+            public static final double xyP = 1;
             public static final double xyI = 0;
             public static final double xyD = 0;
 
-            public static final double rotP = 3;
+            public static final double rotP = 0.05; //0.05
             public static final double rotI = 0;
-            public static final double rotD = 0.175;
+            public static final double rotD = 0.05;
 
             public static final double TranslationDeadband = 0.1;
             public static final double RotationDeadband = 0.1;

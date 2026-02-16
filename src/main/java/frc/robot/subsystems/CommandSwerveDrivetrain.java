@@ -384,7 +384,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     Pose2d ShootingLocation;
-    public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate, String tuning) {
+    public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate) {
     return applyRequest(() -> {
         
         // Get current pose and target hub position
@@ -395,13 +395,25 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         
         // Calculate angle from hub to robot
         Translation2d toRobot = drivePose.getTranslation().minus(targetPose.getTranslation());
+        
+        if (toRobot.getNorm() < 0.1) {  // Within 10cm of hub
+            double veloX = -controller.getLeftY();
+            if (Math.abs(veloX) < 0.1) veloX = 0;
+            
+            double veloY = -controller.getLeftX();
+            if (Math.abs(veloY) < 0.1) veloY = 0;
+            
+            return alignRequest 
+                .withVelocityX(veloX * maxSpeed) 
+                .withVelocityY(veloY * maxSpeed) 
+                .withRotationalRate(0); 
+        } 
+
         Rotation2d angleToRobot = toRobot.getAngle();
         
         // Calculate desired rotation (face the hub)
-        Rotation2d desiredAngle = angleToRobot.rotateBy(Rotation2d.k180deg); // Face toward hub | Take RotateBy out for back to face Hub
+        Rotation2d desiredAngle = angleToRobot; // Face toward hub | Take RotateBy out for back to face Hub
         Rotation2d currentAngle = drivePose.getRotation();
-
-        if(Math.abs(desiredAngle.getDegrees() - currentAngle.getDegrees()) <= 1) {desiredAngle = currentAngle;}
         
         // Calculate rotational rate to face hub
         double rotationalRate = rotationController.calculate(
@@ -417,9 +429,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Math.abs(veloY) < 0.1 ){
             veloY = 0;
         }
-
-        if (tuning.equals("PovLeft")) { veloX = 0; veloY = 0.3;}
-        if (tuning.equals("PovRight")) { veloX = 0; veloY = -0.3;} 
         // Apply the request: radial (distance maintenance) + tangential (circling)
         return alignRequest 
             .withVelocityX(veloX * maxSpeed) 
@@ -428,12 +437,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     });
 }
 
-    public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
-        return applyRequest(() ->{
-                return alignRequest.withVelocityX(-joystick.getLeftY() * MaxSpeed).withDeadband(Constants.DriveConstants.TranslationDeadband) // Drive forward with negative Y (forward) DriveStraight = robot centric 
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed).withDeadband(Constants.DriveConstants.TranslationDeadband) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate).withDeadband(Constants.DriveConstants.RotationDeadband);} // Drive counterclockwise with negative X (left)
-            ); }
+public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
+    return applyRequest(() -> {
+        // Apply 10% deadband to joystick inputs
+        double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
+        double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
+        double rotSpeed = MathUtil.applyDeadband(joystick.getRightX(), 0.1);
+        
+        return alignRequest
+            .withVelocityX(xSpeed * MaxSpeed)
+            .withVelocityY(ySpeed * MaxSpeed)
+            .withRotationalRate(rotSpeed * MaxAngularRate);
+    });
+}
 
     double futureDistance = 0.0;
     public double GetFutureDistMeters(){
