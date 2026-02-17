@@ -61,7 +61,7 @@ public class Elevator extends SubsystemBase {
 
     /* leader and follower motors */
     private final CANBus kCANBus = new CANBus("Upper");
-    private final TalonFX motor_id_35 = new TalonFX(Constants.IntakeConstants.IntakeSlideMotorID);
+    private final TalonFX motor_id_35 = new TalonFX(Constants.IntakeConstants.IntakeSlideMotorID, "Upper");
 
     /* device status signals */
     private final StatusSignal<Angle> motor_id_35Position = motor_id_35.getPosition(false);
@@ -182,12 +182,6 @@ public class Elevator extends SubsystemBase {
             motor_id_35.setControl(setpointRequest);
         });
     }
-
-    public Command goToSetpointClaude(Supplier<Setpoint> setpoint) {
-    return run(() -> {
-        motor_id_35.setControl(setpointRequest.withPosition(setpoint.get().target));
-    });
-}
 
     /**
      * Manually drives the elevator with the provided duty cycle output.

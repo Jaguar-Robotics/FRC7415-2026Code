@@ -2,6 +2,7 @@ package frc.robot.handlers;
 
 import static edu.wpi.first.units.Units.RPM;
 
+import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Joystick;
@@ -11,13 +12,12 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.RobotContainer;
 
 public class ShooterHandler extends SubsystemBase implements StateSubsystem {
-
-    public  Joystick leftJoystick = new Joystick(2);
 
 
     public enum ShooterState implements State {
@@ -31,13 +31,11 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
 
     private static ShooterHandler instance;
     // AFTER:
-    private CommandSwerveDrivetrain drivetrain; // ← ADDED THIS
-    private ShooterSubsystem shooter; // ← REMOVED "= new ShooterSubsystem()"
+    private CommandSwerveDrivetrain drivetrain; 
+    private BangBangShooterSubsystem shooter; 
 
     private ShooterState desiredState = ShooterState.OFF;
     private ShooterState currentState = ShooterState.OFF;
-    private Command shooterCommand = null; // ← ADD THIS
-
 
     private ShooterHandler() {}
 
@@ -48,17 +46,17 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
         return instance;
     }
 
-    public void initialize(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter) {
+    public void initialize(CommandSwerveDrivetrain drivetrain, BangBangShooterSubsystem shooter) {
     this.drivetrain = drivetrain;
     this.shooter = shooter;
     }
 
-    AngularVelocity TuneablefastShot = Constants.ShooterConstants.FastShot;
+    double TuneablefastShot = 50;
     public void adjustFastShot(double valu){
-        TuneablefastShot = TuneablefastShot.plus(RPM.of(valu));
+        TuneablefastShot = TuneablefastShot + (valu);
 
         if(currentState == ShooterState.TUNING){
-            shooter.setVelocity(TuneablefastShot);
+            shooter.setTargetVelocity(TuneablefastShot);
         }
     }
 
@@ -92,7 +90,6 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     if (currentState != desiredState) {
         handleStateChange(); // switch states
         }
-    updateContinuousStates();
     }
 
     private void handleStateChange(){ 
@@ -102,40 +99,24 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
                 //shooter.setVelocityWithCalc(DistMeters).schedule(); 
                 break;
             case SLOW:
-                CommandScheduler.getInstance().schedule(shooter.setVelocity(Constants.ShooterConstants.SlowShot)); 
+                shooter.setTargetVelocity(20);
                 break;
             case FAST:
-                CommandScheduler.getInstance().schedule(shooter.setVelocity(Constants.ShooterConstants.FastShot)); 
+                shooter.setTargetVelocity(50);
                 break;
             case TUNING:
-                CommandScheduler.getInstance().schedule(shooter.setVelocity(TuneablefastShot)); 
+                shooter.setTargetVelocity(TuneablefastShot);
                 break;
             case OFF:
-                CommandScheduler.getInstance().schedule(shooter.stop()); 
+                shooter.coast(); 
                 break;
             default:
-                CommandScheduler.getInstance().schedule(shooter.stop()); 
+                //CommandScheduler.getInstance().schedule(shooter.stop()); 
                 break;
         }
         currentState = desiredState;
     }
 
-    private void updateContinuousStates() {
-        switch (currentState) {
-            case SHOOTING:
-                double DistMeters = drivetrain.GetFutureDistMeters();
-                AngularVelocity targetSpeed = shooter.getCalcedRPM(DistMeters);
-                CommandScheduler.getInstance().schedule(shooter.setVelocity(targetSpeed));
-                break;
-            
-            case TUNING:
-                CommandScheduler.getInstance().schedule(shooter.setVelocity(TuneablefastShot));
-                break;
-        
-            default:
-                break;
-        }
-    }
     public ShooterState getCurrentState() {
         return currentState;
     }

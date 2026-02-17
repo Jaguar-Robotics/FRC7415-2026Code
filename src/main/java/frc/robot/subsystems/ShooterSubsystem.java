@@ -1,7 +1,7 @@
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
-
+/* */
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
@@ -115,7 +115,7 @@ public class ShooterSubsystem extends SubsystemBase {
    * @return {@link edu.wpi.first.wpilibj2.command.RunCommand}
    */
   public Command setVelocity(AngularVelocity speed) {
-    if (speed.gte(Constants.ShooterConstants.SetRPMHardStop)){ speed = Constants.ShooterConstants.SetRPMHardStop;}
+    if (speed.gte(RPM.of(3200))){ speed = RPM.of(3200);}
     setVelo = speed;
     return shooter.setSpeed(speed);}
 
@@ -179,7 +179,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
         AngularVelocity velo = RPM.of(-0.0312466 * Math.pow(distanceInches, 2) + 29.07009 * distanceInches + 828.29202);
     
-    if (velo.gte(Constants.ShooterConstants.SetRPMHardStop)){ velo = Constants.ShooterConstants.SetRPMHardStop;}
+    if (velo.gte(RPM.of(3200))){ velo = RPM.of(3200);}
     setVelo = velo; 
     return velo;
 }

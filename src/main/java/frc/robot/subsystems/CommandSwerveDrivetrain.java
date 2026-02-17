@@ -412,7 +412,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Rotation2d angleToRobot = toRobot.getAngle();
         
         // Calculate desired rotation (face the hub)
-        Rotation2d desiredAngle = angleToRobot; // Face toward hub | Take RotateBy out for back to face Hub
+        Rotation2d desiredAngle = angleToRobot.rotateBy(Rotation2d.k180deg); // Face toward hub | Take RotateBy out for back to face Hub
         Rotation2d currentAngle = drivePose.getRotation();
         
         // Calculate rotational rate to face hub
@@ -576,7 +576,7 @@ public boolean isAimedAtTarget() {
     // Calculate required aim angle (same as headingLocktoHub)
     Translation2d target = getHubPose().toPose2d().getTranslation();
     Translation2d toTarget = target.minus(currentPose.getTranslation());
-    Rotation2d targetAngle = toTarget.getAngle().plus(Rotation2d.k180deg); // Face away from hub
+    Rotation2d targetAngle = toTarget.getAngle(); // Face towards from hub .plus(Krot180) or sum idk
     
     // Calculate angle error
     double errorDegrees = Math.abs(targetAngle.minus(currentAngle).getDegrees());

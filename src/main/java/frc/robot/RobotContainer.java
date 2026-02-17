@@ -28,6 +28,8 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
 import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.Superstructure;
+import frc.robot.handlers.Superstructure.SuperstructureState;
+import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.HopperSubsystem;
@@ -59,7 +61,7 @@ public class RobotContainer {
     
     public final Vision vision = new Vision(drivetrain);
 
-    public final ShooterSubsystem shooter = new ShooterSubsystem(); 
+    public final BangBangShooterSubsystem shooter = new BangBangShooterSubsystem(); 
     public final IntakeSubsystem intake = new IntakeSubsystem();
     public final HopperSubsystem hopper = new HopperSubsystem();
     public final IndexerHighSubsystem HighIndexer = new IndexerHighSubsystem();
@@ -144,13 +146,14 @@ public class RobotContainer {
         }));
 
         
-        joystick.rightBumper().whileTrue(drivetrain.shootOnTheMoveIterative(joystick, MaxSpeed, MaxAngularRate, "no")); //Shoot while moving
-        joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
-        joystick.rightBumper().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+       
+        joystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
+        joystick.rightTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
         //joystick.leftBumper().onTrue(new InstantCommand(() -:drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no"))); //shoot while stationary
         
-        joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
+        joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
+        joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
         
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
@@ -161,7 +164,7 @@ public class RobotContainer {
         
 
        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
-       joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
+       //joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
 
         
@@ -196,14 +199,14 @@ public class RobotContainer {
         
 
         
-        joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-250))); //in RPM
-        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(250)));
+        joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1))); //in RPM
+        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
         
-        joystick.povLeft().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.OUT));
-        joystick.povRight().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.IN));
+        //joystick.povLeft().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.OUT));
+        //joystick.povRight().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.IN));
 
-        //joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.3)); // Should extend
-        //joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.3));
+        joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.3)); //  out
+        joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.3)); //in
     
     }        
 

@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.handlers.IndexerHighHandler.IndexerHighState;
 import frc.robot.handlers.IndexerLowHandler.IndexerLowState;
+import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
@@ -37,7 +38,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   private static Superstructure instance;
-  private ShooterSubsystem shooter; 
+  private BangBangShooterSubsystem shooter; 
   private CommandSwerveDrivetrain drivetrain;
   
   //private final ShooterSubsystem Shooter = new ShooterSubsystem();
@@ -72,7 +73,7 @@ public class Superstructure extends SubsystemBase {
     /**
    * Initialize superstructure with required subsystems
    */
-  public void initialize(ShooterSubsystem shooter, CommandSwerveDrivetrain drivetrain) {
+  public void initialize(BangBangShooterSubsystem shooter, CommandSwerveDrivetrain drivetrain) {
       this.shooter = shooter;
       this.drivetrain = drivetrain;
   }
@@ -98,7 +99,6 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
-        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.IN);
         break;
       case INTAKE:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
@@ -116,7 +116,6 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
-        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.MIDDLE);
         break;
       case STATIONARYSHOT:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
@@ -128,12 +127,12 @@ public class Superstructure extends SubsystemBase {
         intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
         break;
       case TUNING: //dont use
-        shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.TUNING);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
-        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
-        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
-        driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
+        driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
         break;
       case SLOWSHOT: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SLOW);
@@ -157,6 +156,7 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
         //driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
         break;
       case REVERSE:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
@@ -195,7 +195,7 @@ public class Superstructure extends SubsystemBase {
         return;
         }
         
-        if (currentState == SuperstructureState.SPINUP && (shooter.isAtTargetVelo() || drivetrain.isAimedAtTarget())){ //checks if its at target velo and angle
+        if (currentState == SuperstructureState.SPINUP && (shooter.atTargetVelo() || drivetrain.isAimedAtTarget())){ //checks if its at target velo and angle
           setDesiredState(SuperstructureState.STATIONARYSHOT);
         }
 
@@ -204,7 +204,7 @@ public class Superstructure extends SubsystemBase {
           setDesiredState(SuperS);
         }*/
 
-        SmartDashboard.putBoolean("shooterAtVelo?", shooter.isAtTargetVelo());
+        SmartDashboard.putBoolean("shooterAtVelo?", shooter.atTargetVelo());
         SmartDashboard.putBoolean("Drivetrain aimed?",drivetrain.isAimedAtTarget());
          
   }

@@ -23,8 +23,10 @@ public class Constants {
         public static final int ShooterFollowerReversed2ID = 24; //
         public static final AngularVelocity FastShot = RPM.of(3000); //HESHEL CHANGE ME FAST
         public static final AngularVelocity SlowShot = RPM.of(1500); //HESKEL CHANGE ME SLOW
-        public static final AngularVelocity SetRPMHardStop = RPM.of(3200);
-        public static int RPMTolarance = 50;
+        public static final Double RPSHardStop = 53.0;
+        public static final int RPSTolarance = 1;
+        public static final double kS = 0.1; //volt to overcome static friction feedforawd
+        public static final double kV = 0.12; //volts per rps
     }
 
     public static abstract class IntakeConstants {
@@ -80,9 +82,9 @@ public class Constants {
             public static final double xyI = 0;
             public static final double xyD = 0;
 
-            public static final double rotP = 3; //0.05
+            public static final double rotP = 0.85; //0.05
             public static final double rotI = 0;
-            public static final double rotD = 0.18; //0.05
+            public static final double rotD = 0.05; //0.05
 
             public static final double TranslationDeadband = 0.1;
             public static final double RotationDeadband = 0.1;
