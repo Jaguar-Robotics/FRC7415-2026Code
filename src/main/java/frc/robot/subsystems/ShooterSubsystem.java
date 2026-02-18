@@ -1,12 +1,14 @@
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+
+import edu.wpi.first.math.controller.BangBangController;
+import edu.wpi.first.wpilibj.Encoder;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -46,6 +48,10 @@ public class ShooterSubsystem extends SubsystemBase {
   AngularVelocity setVelo = RPM.of(0);
 
   private CommandSwerveDrivetrain drivetrain;
+
+
+  // Creates a BangBangController
+  BangBangController controller = new BangBangController();
 
   public ShooterSubsystem(){
     shooterFollower1.setControl(new Follower(Constants.ShooterConstants.ShooterLeaderID, MotorAlignmentValue.Aligned));
@@ -90,13 +96,6 @@ public class ShooterSubsystem extends SubsystemBase {
     }, this);
 }
 
-  public double BangBangChicken(double cur, double vel) {
-    if (cur < vel) {
-        return 1.0;
-    } else {
-        return f * vel;
-    }
-  }
 
   //Checking if shooter RPM is at threashold (waiting for it to spinup)
   public boolean isAtTargetVelo(){
@@ -145,9 +144,9 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-    double output = BangBangChicken(getVelocity().in(RPM), setVelo.in(RPM));
-    shooterLeader.set(output);  // Send percentage to motor (0.0 to 1.0)
+  public void periodic(){
+    double output = controller.calculate(getVelocity().in(RPM), setVelo.in(RPM));
+    shooterLeader.set(output);
     
     SmartDashboard.putNumber("Request RPM", setVelo.in(RPM));
     SmartDashboard.putNumber("Real RPM", getVelocity().in(RPM));

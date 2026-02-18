@@ -75,6 +75,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
+
+
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -354,6 +356,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .orElse(Constants.FieldConstants.blueHubPose); // Default to blue if alliance unknown
     }
 
+    public static Pose2d getTargetPose(double robotX, double robotY) {
+    Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+    if (alliance == Alliance.Red) {
+        return robotX > 250
+            ? (robotY > 158.32 ? Constants.FieldConstants.redTargetHighPose : Constants.FieldConstants.redTargetLowPose)
+            : Constants.FieldConstants.redHubPose.toPose2d();
+    } else {
+        return robotX < 250
+            ? (robotY > 158.32 ? Constants.FieldConstants.blueTargetHighPose : Constants.FieldConstants.blueTargetLowPose)
+            : Constants.FieldConstants.blueHubPose.toPose2d();
+    }
+}
+
     /**
      * Calculates the closest point on the predefined circle to the current robot pose.
      *
@@ -400,50 +415,61 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return currentDistance;
     }
 
+
+
+
+
+
+
     Pose2d ShootingLocation;
-    public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate, String tuning) {
+public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate, String tuning) {
     return applyRequest(() -> {
-        
-        // Get current pose and target hub position
+
         Pose2d drivePose = getState().Pose;
-        Pose2d targetPose = getHubPose().toPose2d();
+        Pose2d targetPose = getTargetPose(drivePose.getX(), drivePose.getY());
 
         ShootingLocation = targetPose;
-        
-        // Calculate angle from hub to robot
+
         Translation2d toRobot = drivePose.getTranslation().minus(targetPose.getTranslation());
         Rotation2d angleToRobot = toRobot.getAngle();
         
-        // Calculate desired rotation (face the hub)
-        Rotation2d desiredAngle = angleToRobot.rotateBy(Rotation2d.k180deg); // Face toward hub | Take RotateBy out for back to face Hub
+        Rotation2d desiredAngle = angleToRobot.rotateBy(Rotation2d.k180deg);
         Rotation2d currentAngle = drivePose.getRotation();
 
-        if(Math.abs(desiredAngle.getDegrees() - currentAngle.getDegrees()) <= 1) {desiredAngle = currentAngle;}
+        if (Math.abs(desiredAngle.getDegrees() - currentAngle.getDegrees()) <= 1) {
+            desiredAngle = currentAngle;
+        }
         
-        // Calculate rotational rate to face hub
         double rotationalRate = rotationController.calculate(
             currentAngle.getRadians(), 
             desiredAngle.getRadians()
         );
+
         double veloX = -controller.getLeftY();
-        if (Math.abs(veloX) < 0.1 ){
-            veloX = 0;
-        }
+        if (Math.abs(veloX) < 0.1) veloX = 0;
 
         double veloY = -controller.getLeftX();
-        if (Math.abs(veloY) < 0.1 ){
-            veloY = 0;
-        }
+        if (Math.abs(veloY) < 0.1) veloY = 0;
 
-        if (tuning.equals("PovLeft")) { veloX = 0; veloY = 0.3;}
-        if (tuning.equals("PovRight")) { veloX = 0; veloY = -0.3;} 
-        // Apply the request: radial (distance maintenance) + tangential (circling)
-        return alignRequest 
-            .withVelocityX(veloX * maxSpeed) 
-            .withVelocityY(veloY * maxSpeed) 
-            .withRotationalRate(rotationalRate * maxAngularRate); 
+        if (tuning.equals("PovLeft"))  { veloX = 0; veloY =  0.3; }
+        if (tuning.equals("PovRight")) { veloX = 0; veloY = -0.3; }
+
+        SmartDashboard.putNumber("Target/X", targetPose.getX());
+        SmartDashboard.putNumber("Target/Y", targetPose.getY());
+        SmartDashboard.putNumber("Robot/X", drivePose.getX());
+        SmartDashboard.putNumber("Robot/Y", drivePose.getY());
+
+        return alignRequest
+            .withVelocityX(veloX * maxSpeed)
+            .withVelocityY(veloY * maxSpeed)
+            .withRotationalRate(rotationalRate * maxAngularRate);
     });
 }
+
+
+
+
+
 
     public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
         return applyRequest(() ->{

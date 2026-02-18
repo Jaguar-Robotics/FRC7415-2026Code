@@ -9,7 +9,9 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.RPM;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -85,6 +87,31 @@ public class Constants {
             Units.Inches.of(72.0), 
             new Rotation3d()
         );
+
+        public static final Pose2d blueTargetHighPose = new Pose2d(
+            Units.Inches.of(150),
+            Units.Inches.of(175), 
+            new Rotation2d()
+        );
+
+        public static final Pose2d blueTargetLowPose = new Pose2d(
+            Units.Inches.of(150),
+            Units.Inches.of(100), 
+            new Rotation2d()
+        );
+
+        public static final Pose2d redTargetHighPose = new Pose2d(
+            Units.Inches.of(500), 
+            Units.Inches.of(175), 
+            new Rotation2d()
+        );
+
+        public static final Pose2d redTargetLowPose = new Pose2d(
+            Units.Inches.of(500), 
+            Units.Inches.of(100), 
+            new Rotation2d()
+        );
+
     }
         public static abstract class DriveConstants{
             public static final double xyP = 10;

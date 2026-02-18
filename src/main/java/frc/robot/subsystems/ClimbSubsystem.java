@@ -47,8 +47,6 @@ public class ClimbSubsystem extends SubsystemBase {
   // Position Limits
   private final double softLowerLimitMeters = 0.0;
   private final double softUpperLimitMeters = 2.0; 
-  private final double hardLowerLimitMeters = 0.0;
-  private final double hardUpperLimitMeters = 3.0;
   
   // Control
   private final ElevatorFeedforward feedforward = new ElevatorFeedforward(0, .5, 0, 0); // Tune kG for gravity compensation

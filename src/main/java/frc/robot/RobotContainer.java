@@ -144,7 +144,7 @@ public class RobotContainer {
         joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
         joystick.rightBumper().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
-        //joystick.leftBumper().onTrue(new InstantCommand(() -:drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no"))); //shoot while stationary
+        joystick.leftBumper().onTrue(new InstantCommand(() -> drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no")))); //shoot while stationary
         
         joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
         
@@ -159,7 +159,8 @@ public class RobotContainer {
 
         joystick.rightStick().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
 
-        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.CLIMBPREP)));
+        //joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.CLIMBPREP)));
+
         //FOR HESHEL
         /*
         joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
