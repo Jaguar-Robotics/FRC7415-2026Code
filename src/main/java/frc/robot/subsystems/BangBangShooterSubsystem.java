@@ -4,17 +4,12 @@
 
 package frc.robot.subsystems;
 
-import java.lang.ModuleLayer.Controller;
-
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.swerve.utility.WheelForceCalculator.Feedforwards;
 
 import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -31,7 +26,11 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   private final SimpleMotorFeedforward feedFoward = new SimpleMotorFeedforward(Constants.ShooterConstants.kS, Constants.ShooterConstants.kV);
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
-  private double targetVeloRPS = 0;
+  private double targetVeloRPS1 = 0;
+  private double targetVeloRPS2 = 0;
+  private double targetVeloRPS3 = 0;
+  private double targetVeloRPS4 = 0;
+
   private boolean shooterEnabled = false;
   
   public BangBangShooterSubsystem() {    
@@ -56,18 +55,49 @@ public class BangBangShooterSubsystem extends SubsystemBase {
 
 
   public void setTargetVelocity(double VelocityRPS) {
-    if (VelocityRPS > Constants.ShooterConstants.RPSHardStop) {targetVeloRPS = Constants.ShooterConstants.RPSHardStop;}
-    else {targetVeloRPS = VelocityRPS;}
+    if (VelocityRPS > Constants.ShooterConstants.RPSHardStop) {
+      targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;
+      targetVeloRPS2 = Constants.ShooterConstants.RPSHardStop;
+      targetVeloRPS3 = Constants.ShooterConstants.RPSHardStop;
+      targetVeloRPS4 = Constants.ShooterConstants.RPSHardStop;
+    }
+
+    else {
+      targetVeloRPS1 = VelocityRPS;
+      targetVeloRPS2 = VelocityRPS;
+      targetVeloRPS3 = VelocityRPS;
+      targetVeloRPS4 = VelocityRPS;
+    }
+    shooterEnabled = true;
+  }
+
+  public void setTargetVeloDistance(double  distMeters) {
+    double distInches = distMeters * 39.3701;
+    //https://www.desmos.com/calculator/lvyi23hstj
+    targetVeloRPS1 = 0.00174048 * Math.pow(distInches, 2) + 0.0214371*distInches + 33.4396;
+    targetVeloRPS2 = 0.00340051 * Math.pow(distInches, 2) - 0.363919*distInches + 56.0242;
+    targetVeloRPS3 = 0.00331003 * Math.pow(distInches, 2) - 0.224101*distInches + 43.97662;
+    targetVeloRPS4 = 0.00300391 * Math.pow(distInches, 2) - 0.17135*distInches + 43.03427;
+
+    if (targetVeloRPS1 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;}
+    if (targetVeloRPS2 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS2 = Constants.ShooterConstants.RPSHardStop;}
+    if (targetVeloRPS3 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS3 = Constants.ShooterConstants.RPSHardStop;}
+    if (targetVeloRPS4 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS4 = Constants.ShooterConstants.RPSHardStop;}
+
     shooterEnabled = true;
   }
 
   public void coast(){
     shooterEnabled = false;
-    targetVeloRPS = 0;
+    targetVeloRPS1 = 0;
+    targetVeloRPS2 = 0;
+    targetVeloRPS3 = 0;
+    targetVeloRPS4 = 0;
   }
 
-  public boolean atTargetVelo(){
-    return shooterEnabled && controllerBangBang.atSetpoint();
+ public boolean atTargetVelo() {
+  boolean atTargBelo = Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1;
+  return atTargBelo;
   }
   
   @Override
@@ -86,28 +116,34 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     double currentVelocity3RPS = ShooterMotorRev3.getVelocity().getValueAsDouble();
     double currentVelocity4RPS = ShooterMotorRev4.getVelocity().getValueAsDouble();
 
-    double bangBangVolts1 = controllerBangBang.calculate(currentVelocity1RPS, targetVeloRPS);
-    double bangBangVolts2 = controllerBangBang.calculate(currentVelocity2RPS, targetVeloRPS);
-    double bangBangVolts3 = controllerBangBang.calculate(currentVelocity3RPS, targetVeloRPS);
-    double bangBangVolts4 = controllerBangBang.calculate(currentVelocity4RPS, targetVeloRPS);
+    double bangBangVolts1 = controllerBangBang.calculate(currentVelocity1RPS, targetVeloRPS1);
+    double bangBangVolts2 = controllerBangBang.calculate(currentVelocity2RPS, targetVeloRPS2);
+    double bangBangVolts3 = controllerBangBang.calculate(currentVelocity3RPS, targetVeloRPS3);
+    double bangBangVolts4 = controllerBangBang.calculate(currentVelocity4RPS, targetVeloRPS4);
 
-    double  feedfowardVolts = 0.9 * feedFoward.calculate(targetVeloRPS);
+    double  feedfowardVolts1 = 0.9 * feedFoward.calculate(targetVeloRPS1);
+    double  feedfowardVolts2 = 0.9 * feedFoward.calculate(targetVeloRPS2);
+    double  feedfowardVolts3 = 0.9 * feedFoward.calculate(targetVeloRPS3);
+    double  feedfowardVolts4 = 0.9 * feedFoward.calculate(targetVeloRPS4);
 
-    ShooterMotor.setControl(voltageRequest.withOutput(bangBangVolts1 + feedfowardVolts));
-    ShooterMotor2.setControl(voltageRequest.withOutput(bangBangVolts2 + feedfowardVolts));
-    ShooterMotorRev3.setControl(voltageRequest.withOutput(-(bangBangVolts3 + feedfowardVolts)));
-    ShooterMotorRev4.setControl(voltageRequest.withOutput(-(bangBangVolts4 + feedfowardVolts)));
+    ShooterMotor.setControl(voltageRequest.withOutput(-(bangBangVolts1 + feedfowardVolts1))); //idk bru
+    ShooterMotor2.setControl(voltageRequest.withOutput(-(bangBangVolts2 + feedfowardVolts2))); //backwards in phy tuner
+    ShooterMotorRev3.setControl(voltageRequest.withOutput(-(bangBangVolts3 + feedfowardVolts3))); //-
+    ShooterMotorRev4.setControl(voltageRequest.withOutput(-(bangBangVolts4 + feedfowardVolts4))); //-
 
-    SmartDashboard.putNumber("Shooter1Volts", bangBangVolts1 + feedfowardVolts);
-    SmartDashboard.putNumber("Shooter2Volts", bangBangVolts2 + feedfowardVolts);
-    SmartDashboard.putNumber("Shooter3Volts", -(bangBangVolts3 + feedfowardVolts));
-    SmartDashboard.putNumber("Shooter4Volts", -(bangBangVolts4 + feedfowardVolts));
+    SmartDashboard.putNumber("Shooter1Volts", bangBangVolts1 + feedfowardVolts1);
+    SmartDashboard.putNumber("Shooter2Volts", bangBangVolts2 + feedfowardVolts2);
+    SmartDashboard.putNumber("Shooter3Volts", bangBangVolts3 + feedfowardVolts3);
+    SmartDashboard.putNumber("Shooter4Volts", bangBangVolts4 + feedfowardVolts4);
 
-    SmartDashboard.putNumber("Shooter1RPS", currentVelocity1RPS);
-    SmartDashboard.putNumber("Shooter2RPS", currentVelocity2RPS);
-    SmartDashboard.putNumber("Shooter3RPS", currentVelocity3RPS);
-    SmartDashboard.putNumber("Shooter4RPS", currentVelocity4RPS);
+    SmartDashboard.putNumber("Shooter1RPS", Math.abs(currentVelocity1RPS));
+    SmartDashboard.putNumber("Shooter2RPS", Math.abs(currentVelocity2RPS));
+    SmartDashboard.putNumber("Shooter3RPS", Math.abs(currentVelocity3RPS));
+    SmartDashboard.putNumber("Shooter4RPS", Math.abs(currentVelocity4RPS));
 
-    SmartDashboard.putNumber("TargetRPS", targetVeloRPS);
+    SmartDashboard.putNumber("TargetRPS1", targetVeloRPS1);
+    SmartDashboard.putNumber("TargetRPS2", targetVeloRPS2);
+    SmartDashboard.putNumber("TargetRPS3", targetVeloRPS3);
+    SmartDashboard.putNumber("TargetRPS4", targetVeloRPS4);
   }
 }

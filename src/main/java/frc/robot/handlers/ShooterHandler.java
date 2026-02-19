@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.RobotContainer;
 
 public class ShooterHandler extends SubsystemBase implements StateSubsystem {
@@ -51,7 +50,7 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     this.shooter = shooter;
     }
 
-    double TuneablefastShot = 50;
+    double TuneablefastShot = 40;
     public void adjustFastShot(double valu){
         TuneablefastShot = TuneablefastShot + (valu);
 
@@ -87,22 +86,23 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
         System.out.println("ERROR: ShooterHandler not initialized! Call initialize() first.");
         return;
         }
-    if (currentState != desiredState) {
-        handleStateChange(); // switch states
+        if (currentState != desiredState || currentState == ShooterState.SHOOTING) {
+            handleStateChange();
         }
     }
+
+    double DistMeters = 0;
 
     private void handleStateChange(){ 
         switch (desiredState) {
             case SHOOTING:
-                //double DistMeters = drivetrain.GetFutureDistMeters();
-                //shooter.setVelocityWithCalc(DistMeters).schedule(); 
+                shooter.setTargetVeloDistance(DistMeters); 
                 break;
             case SLOW:
-                shooter.setTargetVelocity(20);
+                shooter.setTargetVelocity(40);
                 break;
             case FAST:
-                shooter.setTargetVelocity(50);
+                shooter.setTargetVelocity(60);
                 break;
             case TUNING:
                 shooter.setTargetVelocity(TuneablefastShot);
@@ -123,6 +123,7 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
 
     @Override
 public void periodic() {
+    DistMeters = drivetrain.getDistance();
     update(); // Handle state transitions
     SmartDashboard.putString("ShooterState", currentState.toString());
 }

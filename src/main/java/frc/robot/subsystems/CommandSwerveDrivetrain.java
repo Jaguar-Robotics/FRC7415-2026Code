@@ -631,6 +631,7 @@ public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwe
     public void periodic() {
         if(ShootingLocation != null){field.getObject("Shooting Target").setPose(ShootingLocation);}
         field.setRobotPose(getPose());
+        SmartDashboard.putNumber("distanceToCenterHubInches", getDistance() * 39.3701);
 
         /*
          * Periodically try to apply the operator perspective.

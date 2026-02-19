@@ -23,7 +23,7 @@ public class Constants {
         public static final int ShooterFollowerReversed2ID = 24; //
         public static final AngularVelocity FastShot = RPM.of(3000); //HESHEL CHANGE ME FAST
         public static final AngularVelocity SlowShot = RPM.of(1500); //HESKEL CHANGE ME SLOW
-        public static final Double RPSHardStop = 53.0;
+        public static final Double RPSHardStop = 100.0; //kracken at 6k RPM
         public static final int RPSTolarance = 1;
         public static final double kS = 0.1; //volt to overcome static friction feedforawd
         public static final double kV = 0.12; //volts per rps

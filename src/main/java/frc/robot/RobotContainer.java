@@ -36,7 +36,6 @@ import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
 import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.Vision;
 
 public class RobotContainer {
@@ -77,7 +76,6 @@ public class RobotContainer {
         DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate);
         ShooterHandler.getInstance().initialize(drivetrain, shooter);
         Superstructure.getInstance().initialize(shooter, drivetrain);
-        ShooterSubsystem.getInstance().initialize(drivetrain);
 
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
@@ -154,6 +152,8 @@ public class RobotContainer {
         
         joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
+
+        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.AIM)));
         
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
@@ -163,7 +163,7 @@ public class RobotContainer {
         joystick.leftStick().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
         
 
-       joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
+       //joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
        //joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
 

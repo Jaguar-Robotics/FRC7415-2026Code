@@ -70,7 +70,8 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
                  intakeSlide.goToSetpoint(() -> Elevator.Setpoint.IN).schedule();
                 break;
             case SLOWIN:
-              intakeSlide.manualDrive(() -> -0.05).until(intakeSlide.isHardStop).schedule();
+                //intakeSlide.manualDrive(() -> -0.125).until(intakeSlide.isHardStop).schedule();
+                intakeSlide.goToSetpoint(() -> Elevator.Setpoint.Middle).schedule();
                 break; 
             case BRAKE:
                 intakeSlide.holdPosition();

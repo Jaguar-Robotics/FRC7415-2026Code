@@ -16,7 +16,6 @@ import frc.robot.handlers.ShooterHandler.ShooterState;
 import frc.robot.handlers.StateSubsystem.State;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HopperSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
 
 public class DriveHandler extends SubsystemBase {
 
