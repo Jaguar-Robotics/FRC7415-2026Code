@@ -139,12 +139,11 @@ public class RobotContainer {
 
         joystick.start().whileTrue(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, MaxSpeed, MaxAngularRate));
 
-        
         //joystick.rightBumper().whileTrue(drivetrain.shootOnTheMoveIterative(joystick, MaxSpeed, MaxAngularRate, "no")); //Shoot while moving
         joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
         joystick.rightBumper().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
-        joystick.leftBumper().onTrue(new InstantCommand(() -> drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no")))); //shoot while stationary
+        joystick.leftBumper().whileTrue(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no"));
         
         joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
         

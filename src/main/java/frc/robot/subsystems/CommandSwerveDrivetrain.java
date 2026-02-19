@@ -357,14 +357,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public static Pose2d getTargetPose(double robotX, double robotY) {
+    SmartDashboard.putNumber("Robot/X", robotX);
+    SmartDashboard.putNumber("Robot/Y", robotY);
+
     Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+    
+       
+    final double thresholdY = Units.Inches.of(158.32).in(Units.Meters); //horizontal middle field line
+
+    SmartDashboard.putNumber("Threshold/Y", thresholdY);
+
     if (alliance == Alliance.Red) {
-        return robotX > 250
-            ? (robotY > 158.32 ? Constants.FieldConstants.redTargetHighPose : Constants.FieldConstants.redTargetLowPose)
-            : Constants.FieldConstants.redHubPose.toPose2d();
+    double thresholdX = Units.Inches.of(469.11).in(Units.Meters); //
+    SmartDashboard.putNumber("Threshold/X", thresholdX);
+        return robotX < thresholdX
+            ? (robotY > thresholdY ? Constants.FieldConstants.redTargetHighPose : Constants.FieldConstants.redTargetLowPose)
+            : Constants.FieldConstants.redHubPose.toPose2d(); 
     } else {
-        return robotX < 250
-            ? (robotY > 158.32 ? Constants.FieldConstants.blueTargetHighPose : Constants.FieldConstants.blueTargetLowPose)
+    double thresholdX = Units.Inches.of(182.11).in(Units.Meters);
+    SmartDashboard.putNumber("Threshold/X", thresholdX);
+        return robotX > thresholdX
+            ? (robotY > thresholdY ? Constants.FieldConstants.blueTargetHighPose : Constants.FieldConstants.blueTargetLowPose)
             : Constants.FieldConstants.blueHubPose.toPose2d();
     }
 }

@@ -89,26 +89,26 @@ public class Constants {
         );
 
         public static final Pose2d blueTargetHighPose = new Pose2d(
-            Units.Inches.of(150),
-            Units.Inches.of(175), 
+            Units.Inches.of(50),
+            Units.Inches.of(265), 
             new Rotation2d()
         );
 
         public static final Pose2d blueTargetLowPose = new Pose2d(
-            Units.Inches.of(150),
-            Units.Inches.of(100), 
+            Units.Inches.of(50),
+            Units.Inches.of(50), 
             new Rotation2d()
         );
 
         public static final Pose2d redTargetHighPose = new Pose2d(
-            Units.Inches.of(500), 
-            Units.Inches.of(175), 
+            Units.Inches.of(600), 
+            Units.Inches.of(265), 
             new Rotation2d()
         );
 
         public static final Pose2d redTargetLowPose = new Pose2d(
-            Units.Inches.of(500), 
-            Units.Inches.of(100), 
+            Units.Inches.of(600), 
+            Units.Inches.of(50), 
             new Rotation2d()
         );
 
