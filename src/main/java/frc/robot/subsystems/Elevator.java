@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -24,6 +25,7 @@ import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -42,9 +44,9 @@ import frc.robot.Constants;
 public class Elevator extends SubsystemBase {
     /** Position setpoints for the elevator. */
     public enum Setpoint {
-        IN(Rotations.of(0)),
+        IN(Rotations.of(0)), 
         Middle(Rotations.of(3.25)),
-        OUT(Rotations.of(5.25));
+        OUT(Rotations.of(8.2));
 
         /** The position target of the setpoint in angular units. */
         public final Angle target;
@@ -79,7 +81,10 @@ public class Elevator extends SubsystemBase {
     /* controls used by the leader motors */
     private final MotionMagicVoltage setpointRequest = new MotionMagicVoltage(0);
     private final DutyCycleOut manualRequest = new DutyCycleOut(0);
-    private final DutyCycleOut calibrationRequest = new DutyCycleOut(-0.1)
+    private final DutyCycleOut calibrationRequestIn = new DutyCycleOut(-0.1)
+        .withIgnoreHardwareLimits(true)
+        .withIgnoreSoftwareLimits(true);
+    private final DutyCycleOut calibrationRequestOut = new DutyCycleOut(0.1)
         .withIgnoreHardwareLimits(true)
         .withIgnoreSoftwareLimits(true);
 
@@ -220,9 +225,9 @@ public class Elevator extends SubsystemBase {
      *
      * @return Command to run
      */
-    public Command calibrateZero() {
+    public Command calibrateZeroIn() {
         return run(() -> {
-            motor_id_35.setControl(calibrationRequest);
+            motor_id_35.setControl(calibrationRequestIn);
         })
         .until(isHardStop)
         .andThen(
@@ -231,6 +236,23 @@ public class Elevator extends SubsystemBase {
                     motor_id_35.setPosition(Rotations.of(0));
                 })
         );
+    }
+
+    public Command calibrateZeroOut() {
+        return run(() -> {
+            motor_id_35.setControl(calibrationRequestOut);
+        })
+        .until(isHardStop)
+        .andThen(
+            manualDrive(() -> 0.0).withTimeout(0.25)
+                .finallyDo(() -> {
+                    motor_id_35.setPosition(Rotations.of(Constants.IntakeConstants.IntakeSlideOutHardStop));
+                })
+        );
+    }
+
+    public boolean isAtSetpoint(Elevator.Setpoint setpoint){
+        return getPosition().isNear(setpoint.target, Rotations.of(0.2));
     }
 
     @Override
@@ -245,6 +267,9 @@ public class Elevator extends SubsystemBase {
         motor_id_35Mech2d.setLength(
             motor_id_35Position.getValueAsDouble() * kDrumRadius.in(Meters) * 2 * Math.PI
         );
+
+        SmartDashboard.putString("LintakePosition", getPosition().toString());
+        SmartDashboard.putBoolean("LintakeAtSetpoint", isAtSetpoint(Elevator.Setpoint.IN));
     }
 
     private void startSimThread() {

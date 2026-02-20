@@ -74,10 +74,10 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   public void setTargetVeloDistance(double  distMeters) {
     double distInches = distMeters * 39.3701;
     //https://www.desmos.com/calculator/lvyi23hstj
-    targetVeloRPS1 = 0.00174048 * Math.pow(distInches, 2) + 0.0214371*distInches + 33.4396;
-    targetVeloRPS2 = 0.00340051 * Math.pow(distInches, 2) - 0.363919*distInches + 56.0242;
-    targetVeloRPS3 = 0.00331003 * Math.pow(distInches, 2) - 0.224101*distInches + 43.97662;
-    targetVeloRPS4 = 0.00300391 * Math.pow(distInches, 2) - 0.17135*distInches + 43.03427;
+    targetVeloRPS1 = 0.00239451 * Math.pow(distInches, 2) - 0.0705712*distInches + 40.63813;
+    targetVeloRPS2 = 0.000748127 * Math.pow(distInches, 2) + 0.142013*distInches + 35.372;
+    targetVeloRPS3 = 0.0065788 * Math.pow(distInches, 2) - 0.705641*distInches + 61.31564;
+    targetVeloRPS4 = 0.000480753 * Math.pow(distInches, 2) + 0.280501*distInches + 27.90482;
 
     if (targetVeloRPS1 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;}
     if (targetVeloRPS2 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS2 = Constants.ShooterConstants.RPSHardStop;}

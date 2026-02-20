@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import org.ejml.sparse.csc.linsol.qr.LinearSolverQrLeftLooking_DSCC;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -26,8 +28,12 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
+import frc.robot.handlers.IntakeHandler;
 import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.Superstructure;
+import frc.robot.handlers.IntakeHandler.IntakeState;
+import frc.robot.handlers.IntakeSlideHandler;
+import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
 import frc.robot.handlers.Superstructure.SuperstructureState;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -199,8 +205,10 @@ public class RobotContainer {
         
 
         
-        joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1))); //in RPM
-        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
+        joystick.povDown().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
+        joystick.povUp().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROOUT))); //in RPM
+        //joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
+        //joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
         
         //joystick.povLeft().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.OUT));
         //joystick.povRight().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.IN));

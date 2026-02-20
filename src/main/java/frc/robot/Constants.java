@@ -23,7 +23,7 @@ public class Constants {
         public static final int ShooterFollowerReversed2ID = 24; //
         public static final AngularVelocity FastShot = RPM.of(3000); //HESHEL CHANGE ME FAST
         public static final AngularVelocity SlowShot = RPM.of(1500); //HESKEL CHANGE ME SLOW
-        public static final Double RPSHardStop = 100.0; //kracken at 6k RPM
+        public static final Double RPSHardStop = 80.0; 
         public static final int RPSTolarance = 1;
         public static final double kS = 0.1; //volt to overcome static friction feedforawd
         public static final double kV = 0.12; //volts per rps
@@ -40,7 +40,10 @@ public class Constants {
         public static final int IntakeSlideMotorID = 35; //
         public static final Distance IntakeSlideOutSetPoint = Inches.of(13.3); //Changememaybe
         public static final Distance IntakeSlideMiddleSetPoint = Inches.of(3);
-        public static Distance IntakeSlideInSetPoint = Inches.of(0); //change?
+        public static Distance IntakeSlideInSetPoint = Inches.of(0); 
+        public static final double IntakeSlideOutHardStop = 8.49; //rotations
+        public static final double PositionTolerance = 0.3;
+       
     }
 
     public static abstract class HopperConstants {
@@ -89,6 +92,6 @@ public class Constants {
             public static final double TranslationDeadband = 0.1;
             public static final double RotationDeadband = 0.1;
 
-            public static final double RotationalToleranceDegrees = 5.0;
+            public static final double RotationalToleranceDegrees = 3.0;
         }
 }

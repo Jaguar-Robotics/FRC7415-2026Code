@@ -120,12 +120,12 @@ public class Superstructure extends SubsystemBase {
         break;
       case STATIONARYSHOT:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
-        intakeHandler.setDesiredState(IntakeHandler.IntakeState.FASTINTAKE);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
-        //intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
         break;
       case TUNING: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.TUNING);
@@ -181,7 +181,7 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
-        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.BRAKE);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.IN);
         break;
       default:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
@@ -196,6 +196,7 @@ public class Superstructure extends SubsystemBase {
     currentState = desiredState;
   }
 
+    boolean DTaimed = false;
   @Override
   public void periodic() {
 
@@ -204,14 +205,16 @@ public class Superstructure extends SubsystemBase {
         return;
         }
         
-        if (currentState == SuperstructureState.SPINUP && (shooter.atTargetVelo() && drivetrain.isAimedAtTarget())){ //checks if its at target velo and angle
+        DTaimed = drivetrain.isAimedAtTarget();
+
+        if (currentState == SuperstructureState.SPINUP && (shooter.atTargetVelo() && DTaimed)){ //checks if its at target velo and angle
           setDesiredState(SuperstructureState.STATIONARYSHOT);
         }
 
         SmartDashboard.putString("SuperState", currentState.toString());
 
         SmartDashboard.putBoolean("shooterAtVelo?", shooter.atTargetVelo());
-        SmartDashboard.putBoolean("Drivetrain aimed?",drivetrain.isAimedAtTarget());
+        SmartDashboard.putBoolean("Drivetrain aimed?",DTaimed);
          
   }
   public SuperstructureState getCurrentState() {

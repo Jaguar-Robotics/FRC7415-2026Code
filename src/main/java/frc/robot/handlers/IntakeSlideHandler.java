@@ -6,17 +6,10 @@ package frc.robot.handlers;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.handlers.DriveHandler.DriveState;
-import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
-import frc.robot.handlers.ShooterHandler.ShooterState;
-import frc.robot.handlers.StateSubsystem.State;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.HopperSubsystem;
-import frc.robot.subsystems.IndexerHighSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
 
 public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem {
 
@@ -25,7 +18,9 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
       MIDDLE,
       IN,
       SLOWIN,
-      BRAKE
+      BRAKE,
+      REZEROIN,
+      REZEROOUT
   }
 
   private static IntakeSlideHandler instance;
@@ -56,6 +51,7 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
     update();
   }
 
+  boolean isAtLowSetpoint = false;
       @Override
     public void update() {
       if((currentState != desiredState)){
@@ -67,14 +63,27 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
                 intakeSlide.goToSetpoint(() -> Elevator.Setpoint.Middle).schedule();
                 break;
             case IN:
-                 intakeSlide.goToSetpoint(() -> Elevator.Setpoint.IN).schedule();
+                new SequentialCommandGroup(
+                    intakeSlide.goToSetpoint(() -> Elevator.Setpoint.IN)
+                        .until(() -> isAtLowSetpoint),
+                    intakeSlide.calibrateZeroIn()
+                ).schedule();
                 break;
             case SLOWIN:
-                //intakeSlide.manualDrive(() -> -0.125).until(intakeSlide.isHardStop).schedule();
-                intakeSlide.goToSetpoint(() -> Elevator.Setpoint.Middle).schedule();
+                new SequentialCommandGroup(
+                  Commands.waitSeconds(3),
+                  intakeSlide.manualDrive(() -> -0.125).until(intakeSlide.isHardStop)
+                  ).schedule();
+                //intakeSlide.goToSetpoint(() -> Elevator.Setpoint.Middle).schedule();
                 break; 
             case BRAKE:
                 intakeSlide.holdPosition();
+                break;
+            case REZEROIN:
+                intakeSlide.calibrateZeroIn().schedule();
+                break;
+            case REZEROOUT:
+                intakeSlide.calibrateZeroOut().schedule();
                 break;
             default:
                 intakeSlide.holdPosition(); 
@@ -91,6 +100,8 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
   @Override
   public void periodic() {
     update();
+    isAtLowSetpoint = intakeSlide.isAtSetpoint(Elevator.Setpoint.IN);
+    SmartDashboard.putBoolean("isAtLowSetpoint", isAtLowSetpoint);
     SmartDashboard.putString("IntakeSlide State", currentState.toString());
     // This method will be called once per scheduler run
   }
