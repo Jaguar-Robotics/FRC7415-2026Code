@@ -40,6 +40,7 @@ import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.ClimbHandler;
 import frc.robot.handlers.Superstructure;
 import frc.robot.handlers.Superstructure.SuperstructureState;
+import frc.robot.handlers.VisionHandler;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HopperSubsystem;
@@ -87,20 +88,19 @@ public class RobotContainer {
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
 
-    public RobotContainer() {
-        DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate);
-        ShooterHandler.getInstance().initialize(drivetrain, shooter);
-        Superstructure.getInstance().initialize(shooter, drivetrain, climb);
-        ShooterSubsystem.getInstance().initialize(drivetrain);
+   public RobotContainer() {
+    DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate, vision);
+    ShooterHandler.getInstance().initialize(drivetrain, shooter);
+    Superstructure.getInstance().initialize(shooter, drivetrain, climb);
+    VisionHandler.getInstance().initialize(vision);    
+    ShooterSubsystem.getInstance().initialize(drivetrain);
 
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
-        SmartDashboard.putData("Auto Mode", autoChooser);
+    autoChooser = AutoBuilder.buildAutoChooser("Tests");
+    SmartDashboard.putData("Auto Mode", autoChooser);
 
-        configureBindings();
-
-        // Warmup PathPlanner to avoid Java pauses
-        FollowPathCommand.warmupCommand().schedule();
-    }
+    configureBindings();
+    FollowPathCommand.warmupCommand().schedule();
+}
      private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
@@ -145,8 +145,22 @@ public class RobotContainer {
 
         joystick.leftBumper().whileTrue(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no"));
         
+
+
+
+
+
         joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
-        
+
+
+
+
+
+
+
+
+        joystick.y().onTrue(new InstantCommand(() -> VisionHandler.getInstance().setDesiredState(VisionHandler.VisionState.CHASING)));
+
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
         joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));

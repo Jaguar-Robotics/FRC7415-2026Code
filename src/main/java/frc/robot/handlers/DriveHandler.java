@@ -12,11 +12,13 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
 import frc.robot.handlers.ShooterHandler.ShooterState;
 import frc.robot.handlers.StateSubsystem.State;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.Vision;
 
 public class DriveHandler extends SubsystemBase {
 
@@ -26,7 +28,8 @@ public class DriveHandler extends SubsystemBase {
         SHOOTONTHEMOVE,
         PASSING,
         SNAKE,
-        XDRIVE
+        XDRIVE,
+        CHASE
   }
 
 
@@ -36,7 +39,7 @@ public class DriveHandler extends SubsystemBase {
   private double maxSpeed;
   private double maxAngularRate;
   private static DriveHandler instance;
-
+  private Vision vision;
 
 
   private DriveState desiredState = DriveState.AUTOALLIGN; 
@@ -53,12 +56,13 @@ public class DriveHandler extends SubsystemBase {
     return instance;
   }
 
-    public void initialize(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, SwerveRequest.FieldCentric drive,  double maxSpeed,  double maxAngularRate) {
+    public void initialize(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, SwerveRequest.FieldCentric drive,  double maxSpeed,  double maxAngularRate, Vision vision) {
     this.drivetrain = drivetrain;
     this.joystick = joystick;
     this.drive = drive;
     this.maxSpeed = maxSpeed;
     this.maxAngularRate = maxAngularRate;
+    this.vision = vision;
 
     update();
     }
@@ -94,26 +98,37 @@ public class DriveHandler extends SubsystemBase {
     }
         switch (desiredState) {
             case TELEOPDRIVE:
+                LimelightHelpers.setPipelineIndex("limelight-front", 0);
                 System.out.print("TELEOP");
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
                 break;
             case AUTOALLIGN:
+                LimelightHelpers.setPipelineIndex("limelight-front", 0);
                 drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, maxSpeed, maxAngularRate, "no"));
                 break;
             case SHOOTONTHEMOVE:
+                LimelightHelpers.setPipelineIndex("limelight-front", 0);
                 drivetrain.setDefaultCommand(drivetrain.shootOnTheMoveIterative(joystick, maxSpeed, maxAngularRate, "no"));
                 break;
             case PASSING:
+                LimelightHelpers.setPipelineIndex("limelight-front", 0);
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain)); //make code for
                 break;
             case SNAKE:
+            LimelightHelpers.setPipelineIndex("limelight-front", 0);
             System.out.print("SNAKE");
                 drivetrain.setDefaultCommand(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate));
                 break;
             case XDRIVE:
+                LimelightHelpers.setPipelineIndex("limelight-front", 0);
                 drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> brake));
                 break;
+            case CHASE:
+                LimelightHelpers.setPipelineIndex("limelight-front", 1);
+                drivetrain.setDefaultCommand(drivetrain.detectChase(vision, maxSpeed, maxAngularRate));
+                break;
             default:
+                LimelightHelpers.setPipelineIndex("limelight-front", 0);
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
                 break;
         }

@@ -39,6 +39,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.units.*;
 import frc.robot.Constants;
+import frc.robot.Constants.DriveConstants;
+import frc.robot.LimelightHelpers.RawDetection;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -435,7 +437,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
 
     Pose2d ShootingLocation;
-public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate, String tuning) {
+    public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate, String tuning) {
     return applyRequest(() -> {
 
         Pose2d drivePose = getState().Pose;
@@ -479,10 +481,41 @@ public Command headingLocktoHub(CommandXboxController controller, double maxSpee
     });
 }
 
+    private final SwerveRequest.RobotCentric chaseRequest = new SwerveRequest.RobotCentric();
 
+public Command detectChase(Vision vision, double maxSpeed, double maxAngularRate) {
+    return applyRequest(() -> {
+        double[] data = vision.getFuelData();
 
+        // data[0] = cluster count, [1] = best angle X, [2] = angle Y, 
+        // [3] = distance inches, [4] = score, [5] = fuel count
+        if (data == null || data.length < 6 || data[0] == 0) {
+            return chaseRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
+        }
 
+        double tx = data[1]; // horizontal angle to best cluster, negative = left
 
+        double targetAngle = getState().Pose.getRotation().getRadians() + Math.toRadians(tx);
+        double rotationalRate = rotationController.calculate(
+            getState().Pose.getRotation().getRadians(),
+            targetAngle
+        );
+
+        // only drive forward once aimed at target
+        double forwardSpeed = Math.abs(tx) < DriveConstants.RotationalToleranceDegrees ? maxSpeed : 0;
+
+        SmartDashboard.putNumber("Chase/TX", tx);
+        SmartDashboard.putNumber("Chase/Distance", data[3]);
+        SmartDashboard.putNumber("Chase/FuelCount", data[5]);
+        SmartDashboard.putNumber("Chase/Score", data[4]);
+        SmartDashboard.putNumber("Chase/RotationalRate", rotationalRate);
+
+        return chaseRequest
+            .withVelocityX(forwardSpeed)
+            .withVelocityY(0)
+            .withRotationalRate(rotationalRate);
+    });
+}
 
     public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
         return applyRequest(() ->{
@@ -679,6 +712,10 @@ public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwe
                 .withRotationalRate(rotationRate);
         });
     }
+/*Open limelight-front.local:5801 in a browser
+Create a neural detector pipeline
+Check if there's a built-in model for your game piece — if yes, use it, if no, you'll need to train one
+Verify you can see detections in the camera stream */
 
 
     @Override

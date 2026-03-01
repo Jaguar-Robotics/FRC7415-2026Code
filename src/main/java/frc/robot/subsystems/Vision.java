@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.RawDetection;
+import frc.robot.LimelightHelpers.RawFiducial;
 
 public class Vision extends SubsystemBase {
   
@@ -95,6 +97,23 @@ public class Vision extends SubsystemBase {
   
   @Override
   public void periodic() {
-    updateVisionMeasurements();
+    updateVisionMeasurements();}
+
+    public boolean hasDetection() {
+    return LimelightHelpers.getRawDetections(PosLimelight).length > 0;
+}
+
+public double getDetectionTX() {
+    LimelightHelpers.RawDetection[] detections = LimelightHelpers.getRawDetections(PosLimelight);
+    if (detections.length == 0) return 0.0;
+    return detections[0].txnc;
+  }
+
+public double[] getFuelData() {
+    return LimelightHelpers.getPythonScriptData(PosLimelight);
+}
+
+public RawDetection[] getAllFuel() {
+    return LimelightHelpers.getRawDetections(PosLimelight);
   }
 }
