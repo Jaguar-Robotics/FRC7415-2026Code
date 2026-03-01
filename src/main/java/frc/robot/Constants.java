@@ -5,7 +5,10 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Units;
@@ -19,8 +22,8 @@ public class Constants {
     public static abstract class ShooterConstants {
         public static final int ShooterLeaderID = 27; 
         public static final int ShooterFollowerID = 28;
-        public static final int ShooterFollowerReversedID = 23; //
-        public static final int ShooterFollowerReversed2ID = 24; //
+        public static final int ShooterFollowerReversedID = 23; 
+        public static final int ShooterFollowerReversed2ID = 24; 
         public static final AngularVelocity FastShot = RPM.of(3000); //HESHEL CHANGE ME FAST
         public static final AngularVelocity SlowShot = RPM.of(1500); //HESKEL CHANGE ME SLOW
         public static final Double RPSHardStop = 80.0; 
@@ -37,10 +40,10 @@ public class Constants {
         public static final double SlowReverse = -0.3;
         public static final double FastReverse = -0.87;
 
-        public static final int IntakeSlideMotorID = 35; //
-        public static final Distance IntakeSlideOutSetPoint = Inches.of(13.3); //Changememaybe
-        public static final Distance IntakeSlideMiddleSetPoint = Inches.of(3);
-        public static Distance IntakeSlideInSetPoint = Inches.of(0); 
+        public static final int IntakeSlideMotorID = 35; 
+        public static final double IntakeSlideOutSetPoint = 8.2; //In Rotations
+        public static final double IntakeSlideMiddleSetPoint = 3.25;
+        public static final double IntakeSlideInSetPoint = 0;
         public static final double IntakeSlideOutHardStop = 8.49; //rotations
         public static final double PositionTolerance = 0.3;
        
@@ -56,8 +59,8 @@ public class Constants {
     }
 
         public static abstract class IndexerConstants {
-        public static final int HighIndexerMotorID = 37; //
-        public static final int LowIndexerMotorID = 36; //
+        public static final int HighIndexerMotorID = 37; 
+        public static final int LowIndexerMotorID = 36; 
         public static final double FastRoll = 0.87;
         public static final double SlowRoll = 0.6;
         public static final double FastOutRoll = -0.5;
@@ -67,18 +70,43 @@ public class Constants {
 
         public static abstract class FieldConstants{
         public static final Pose3d redHubPose = new Pose3d(
-            Units.Inches.of(468.56), 
+            Units.Inches.of(469.11), 
             Units.Inches.of(158.32), 
             Units.Inches.of(72.0), 
             new Rotation3d()
         );
         
         public static final Pose3d blueHubPose = new Pose3d(
-            Units.Inches.of(152.56+28), //152.56
+            Units.Inches.of(182.11), //182.11
             Units.Inches.of(158.32), //158.32
             Units.Inches.of(72.0), 
             new Rotation3d()
         );
+
+        public static final Pose2d blueRightTrenchPose = new Pose2d( //Middle of the Blue Right trench
+            Units.Inches.of(181.56),
+            Units.Inches.of(25.171875),
+            new Rotation2d()
+        );
+
+        public static final Pose2d blueLeftTrenchPose = new Pose2d( 
+            Units.Inches.of(181.56),
+            Units.Inches.of(316.64-25.171875), //total field with - half of one trench
+            new Rotation2d()
+        );
+
+        public static final Pose2d redRightTrenchPose = new Pose2d( //Middle of the Blue Right trench
+            Units.Inches.of(181.56),    
+            Units.Inches.of(25.171875),
+            new Rotation2d()
+        );
+
+        public static final Pose2d redLeftTrenchPose = new Pose2d(
+            Units.Inches.of(181.56),
+            Units.Inches.of(316.64-25.171875), //total field with - half of one trench
+            new Rotation2d()
+        );
+
     }
         public static abstract class DriveConstants{
             public static final double xyP = 1;

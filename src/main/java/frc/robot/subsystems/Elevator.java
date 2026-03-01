@@ -44,9 +44,9 @@ import frc.robot.Constants;
 public class Elevator extends SubsystemBase {
     /** Position setpoints for the elevator. */
     public enum Setpoint {
-        IN(Rotations.of(0)), 
-        Middle(Rotations.of(3.25)),
-        OUT(Rotations.of(8.2));
+        IN(Rotations.of(Constants.IntakeConstants.IntakeSlideInSetPoint)), 
+        Middle(Rotations.of(Constants.IntakeConstants.IntakeSlideMiddleSetPoint)),
+        OUT(Rotations.of(Constants.IntakeConstants.IntakeSlideOutSetPoint));
 
         /** The position target of the setpoint in angular units. */
         public final Angle target;

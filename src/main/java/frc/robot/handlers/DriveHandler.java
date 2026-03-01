@@ -23,9 +23,9 @@ public class DriveHandler extends SubsystemBase {
         TELEOPDRIVE,
         AUTOALLIGN,
         SHOOTONTHEMOVE,
-        PASSING,
         SNAKE,
-        XDRIVE
+        XDRIVE,
+        TRENCH_LOCK
   }
 
 
@@ -97,14 +97,14 @@ public class DriveHandler extends SubsystemBase {
             case SHOOTONTHEMOVE:
                 drivetrain.setDefaultCommand(drivetrain.shootOnTheMoveIterative(joystick, maxSpeed, maxAngularRate, "no"));
                 break;
-            case PASSING:
-                drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain)); //make code for
-                break;
             case SNAKE:
                 drivetrain.setDefaultCommand(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate));
                 break;
             case XDRIVE:
                 drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> brake));
+                break;
+            case TRENCH_LOCK:
+                drivetrain.setDefaultCommand(drivetrain.trenchLockCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate)); 
                 break;
             default:
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));

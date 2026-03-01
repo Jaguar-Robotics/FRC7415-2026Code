@@ -626,6 +626,28 @@ public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwe
         });
     }
 
+    public Command trenchLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate){
+        return applyRequest(() -> {
+            double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
+            distanceController.setSetpoint(Inches.of(10).in(Meters)); //unhardcode me getTrenchY()
+        double yVel = distanceController.calculate(drivetrain.getPose().getY()); 
+        if (distanceController.atSetpoint()) {
+            yVel = 0;
+        }
+        
+        rotationController.setSetpoint(Rotation2d.kCW_90deg.getRadians()); //unhardcode me getTrenchLockAngle()
+        double rotSpeedToStraight =
+                rotationController.calculate(drivetrain.getPose().getRotation().getRadians());
+        if (rotationController.atSetpoint()) {
+            rotSpeedToStraight = 0;
+        }
+
+        return drive
+            .withVelocityX(xSpeed*MaxSpeed) //
+            .withVelocityY(-yVel *MaxSpeed)
+            .withRotationalRate(rotSpeedToStraight*MaxAngularRate);
+        });
+    }
 
     @Override
     public void periodic() {
