@@ -227,7 +227,7 @@ public class Superstructure extends SubsystemBase {
         return;
         }
         
-        if (currentState == SuperstructureState.SPINUP && (shooter.isAtTargetVelo() || drivetrain.isAimedAtTarget())){ //checks if its at target velo and angle
+        if (currentState == SuperstructureState.SPINUP && (shooter.isAtTargetVelo() && drivetrain.isAimedAtTarget())){ //checks if its at target velo and angle
           setDesiredState(SuperstructureState.STATIONARYSHOT);
         }
 

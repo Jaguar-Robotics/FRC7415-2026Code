@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.Optional;
-import lombok.Setter;
 import java.util.function.Supplier;
 import frc.robot.Constants;
 
@@ -44,7 +43,12 @@ private static final double maxTimeOfFlight = 0.0115177 * Constants.ShiftConstan
   private static final boolean[] activeSchedule = {true, true, false, true, false, true};
   private static final boolean[] inactiveSchedule = {true, false, true, false, true, true};
 
-  @Setter private static Supplier<Optional<Boolean>> allianceWinOverride = () -> Optional.empty();
+
+  private static Supplier<Optional<Boolean>> allianceWinOverride = () -> Optional.empty();
+
+  public static void setAllianceWinOverride(Supplier<Optional<Boolean>> override) {
+      allianceWinOverride = override;
+  }
 
   public static Optional<Boolean> getAllianceWinOverride() {
     return allianceWinOverride.get();

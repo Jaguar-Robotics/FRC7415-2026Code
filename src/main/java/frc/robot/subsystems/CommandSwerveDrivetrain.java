@@ -42,6 +42,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.LimelightHelpers.RawDetection;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.utils.HubShiftUtil;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /**
@@ -364,26 +365,32 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
     
-       
     final double thresholdY = Units.Inches.of(158.32).in(Units.Meters); //horizontal middle field line
 
-    SmartDashboard.putNumber("Threshold/Y", thresholdY);
-
     if (alliance == Alliance.Red) {
-    double thresholdX = Units.Inches.of(469.11).in(Units.Meters); //
+    double thresholdX = Units.Inches.of(469.11).in(Units.Meters);
     SmartDashboard.putNumber("Threshold/X", thresholdX);
-        return robotX < thresholdX
-            ? (robotY > thresholdY ? Constants.FieldConstants.redTargetHighPose : Constants.FieldConstants.redTargetLowPose)
-            : Constants.FieldConstants.redHubPose.toPose2d(); 
-    } else {
+
+    if (!HubShiftUtil.getOfficialShiftInfo().active()) {
+        return robotY > thresholdY ? Constants.FieldConstants.redTargetHighPose : Constants.FieldConstants.redTargetLowPose;
+    }
+
+    return robotX < thresholdX
+        ? (robotY > thresholdY ? Constants.FieldConstants.redTargetHighPose : Constants.FieldConstants.redTargetLowPose)
+        : Constants.FieldConstants.redHubPose.toPose2d();
+} else {
     double thresholdX = Units.Inches.of(182.11).in(Units.Meters);
     SmartDashboard.putNumber("Threshold/X", thresholdX);
-        return robotX > thresholdX
-            ? (robotY > thresholdY ? Constants.FieldConstants.blueTargetHighPose : Constants.FieldConstants.blueTargetLowPose)
-            : Constants.FieldConstants.blueHubPose.toPose2d();
+
+    if (!HubShiftUtil.getOfficialShiftInfo().active()) {
+        return robotY > thresholdY ? Constants.FieldConstants.blueTargetHighPose : Constants.FieldConstants.blueTargetLowPose;
+    }
+
+    return robotX > thresholdX
+        ? (robotY > thresholdY ? Constants.FieldConstants.blueTargetHighPose : Constants.FieldConstants.blueTargetLowPose)
+        : Constants.FieldConstants.blueHubPose.toPose2d();
     }
 }
-
     /**
      * Calculates the closest point on the predefined circle to the current robot pose.
      *
