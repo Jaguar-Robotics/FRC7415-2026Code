@@ -113,7 +113,7 @@ public class ShooterSubsystem extends SubsystemBase {
     double distanceInches = DistMeters * 39.3701;
     AngularVelocity velo = RPM.of(-0.0312466 * Math.pow(distanceInches, 2) + 29.07009 * distanceInches + 828.29202);
     
-    if (velo.gte(Constants.ShooterConstants.SetRPMHardStop)) { 
+    if (velo.gte(Constants.ShooterConstants.SetRPMHardStop)) {
         velo = Constants.ShooterConstants.SetRPMHardStop;
     }
     

@@ -2,6 +2,8 @@ package frc.robot.handlers;
 
 import static edu.wpi.first.units.Units.RPM;
 
+import java.time.chrono.IsoChronology;
+
 import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -14,6 +16,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.RobotContainer;
+import frc.robot.utils.HubShiftUtil;
 
 public class ShooterHandler extends SubsystemBase implements StateSubsystem {
 
@@ -30,13 +33,12 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     }
 
     private static ShooterHandler instance;
-    // AFTER:
-    private CommandSwerveDrivetrain drivetrain; // ← ADDED THIS
-    private ShooterSubsystem shooter; // ← REMOVED "= new ShooterSubsystem()"
+    private CommandSwerveDrivetrain drivetrain;
+    private ShooterSubsystem shooter;
 
     private ShooterState desiredState = ShooterState.OFF;
     private ShooterState currentState = ShooterState.OFF;
-    private Command shooterCommand = null; // ← ADD THIS
+    private Command shooterCommand = null;
 
 
     private ShooterHandler() {}
@@ -54,8 +56,8 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     }
 
     AngularVelocity TuneablefastShot = Constants.ShooterConstants.FastShot;
-    public void adjustFastShot(double valu){
-        TuneablefastShot = TuneablefastShot.plus(RPM.of(valu));
+    public void adjustFastShot(double value){
+        TuneablefastShot = TuneablefastShot.plus(RPM.of(value));
 
         if(currentState == ShooterState.TUNING){
             shooter.setVelocity(TuneablefastShot);
@@ -79,7 +81,6 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
 
     @Override
     public void handleStateTransition() {
-        // Optional: delegate to update
         update();
     }
 
@@ -91,7 +92,7 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
         }
     if (currentState != desiredState) {
         System.out.println(" State changing from " + currentState + " to " + desiredState);
-        handleStateChange(); // switch states
+        handleStateChange();
         }
     updateContinuousStates();
     }
@@ -99,8 +100,6 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     private void handleStateChange(){ 
         switch (desiredState) {
             case SHOOTING:
-                //double DistMeters = drivetrain.GetFutureDistMeters();
-                //shooter.setVelocityWithCalc(DistMeters).schedule(); 
                 break;
             case SLOW:
                 CommandScheduler.getInstance().schedule(shooter.setVelocity(Constants.ShooterConstants.SlowShot)); 
@@ -109,10 +108,6 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
                 CommandScheduler.getInstance().schedule(shooter.setVelocity(Constants.ShooterConstants.FastShot)); 
                 break;
             case TUNING:
-                //shooter.setVelocity(TuneablefastShot).schedule();
-                break;
-            case OFF:
-                CommandScheduler.getInstance().schedule(shooter.stop()); 
                 break;
             default:
                 CommandScheduler.getInstance().schedule(shooter.stop()); 
@@ -124,11 +119,15 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     private void updateContinuousStates() {
         switch (currentState) {
             case SHOOTING:
+            if(!HubShiftUtil.getOfficialShiftInfo().active()){
+                CommandScheduler.getInstance().schedule(shooter.stop());
+                break;
+            }
                 double DistMeters = drivetrain.GetFutureDistMeters();
                 AngularVelocity targetSpeed = shooter.getCalcedRPM(DistMeters);
                 CommandScheduler.getInstance().schedule(shooter.setVelocity(targetSpeed));
                 break;
-            
+
             case TUNING:
                 CommandScheduler.getInstance().schedule(shooter.setVelocity(TuneablefastShot));
                 break;
@@ -137,12 +136,13 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
                 break;
         }
     }
+
     public ShooterState getCurrentState() {
         return currentState;
     }
 
     @Override
-public void periodic() {
-    update(); // Handle state transitions
-}
+    public void periodic() {
+        update();
+    }
 }

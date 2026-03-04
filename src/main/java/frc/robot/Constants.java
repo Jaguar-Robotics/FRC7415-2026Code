@@ -20,6 +20,11 @@ import edu.wpi.first.units.measure.Distance;
 /** Add your docs here. */
 public class Constants {
 
+    public static abstract class ShiftConstants {
+    public static final double MinShootingDistanceInches = 40.0;
+    public static final double MaxShootingDistanceInches = 200.0; //random number not too pivotal rn
+}
+
     public static abstract class ShooterConstants {
         public static final int ShooterLeaderID = 20; //all IDs should be changed  (I think theyre 40-43 and 0?)
         public static final int ShooterFollowerID = 21;

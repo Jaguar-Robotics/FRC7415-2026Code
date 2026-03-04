@@ -111,24 +111,19 @@ public class DriveHandler extends SubsystemBase {
                 drivetrain.setDefaultCommand(drivetrain.shootOnTheMoveIterative(joystick, maxSpeed, maxAngularRate, "no"));
                 break;
             case PASSING:
-                LimelightHelpers.setPipelineIndex("limelight-front", 0);
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain)); //make code for
                 break;
             case SNAKE:
-            LimelightHelpers.setPipelineIndex("limelight-front", 0);
             System.out.print("SNAKE");
                 drivetrain.setDefaultCommand(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate));
                 break;
             case XDRIVE:
-                LimelightHelpers.setPipelineIndex("limelight-front", 0);
                 drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> brake));
                 break;
             case CHASE:
-                LimelightHelpers.setPipelineIndex("limelight-front", 1);
                 drivetrain.setDefaultCommand(drivetrain.detectChase(vision, maxSpeed, maxAngularRate));
                 break;
             default:
-                LimelightHelpers.setPipelineIndex("limelight-front", 0);
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
                 break;
         }
