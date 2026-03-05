@@ -195,16 +195,7 @@ public class Elevator extends SubsystemBase {
             setpointRequest.withPosition(setpoint.get().target);
             motor_id_35.setControl(setpointRequest);
         });
-    }
-
-    public Command goToSetpointSlow(Supplier<Setpoint> setpoint) {
-        return run(() -> {
-            setpointRequest.withPosition(setpoint.get().target);
-            motor_id_35.setControl(setpointRequest);
-        });
-    }
-
-    
+    }    
 
     /**
      * Manually drives the elevator with the provided duty cycle output.

@@ -22,8 +22,7 @@ public class Vision extends SubsystemBase {
     // All Pose estimating limelights names
   private final String[] PosLimelights = {
     "limelight-fl",
-    "limelight-fr",
-    "limelight-back"
+    "limelight-fr"
     // add more as needed
   };
 

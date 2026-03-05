@@ -76,12 +76,12 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
                   ).schedule();
                 //intakeSlide.goToSetpoint(() -> Elevator.Setpoint.Middle).schedule();
                 break; 
-            case OSCILLATE: //TODO****************
+            case OSCILLATE: 
                 new SequentialCommandGroup(
                   intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT),
                   Commands.waitSeconds(0.5),
                   intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT)
-                ).schedule();
+                ).repeatedly().schedule();
                 break;
             case BRAKE:
                 intakeSlide.holdPosition();
