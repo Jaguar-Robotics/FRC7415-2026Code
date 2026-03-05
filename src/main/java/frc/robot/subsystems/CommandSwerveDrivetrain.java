@@ -350,6 +350,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
+    public static boolean isInAllianceZone(double robotX){
+        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+    if (alliance == Alliance.Red) {
+        return robotX > Units.Inches.of(469.11).in(Units.Meters);
+    } else {
+        return robotX < Units.Inches.of(182.11).in(Units.Meters);
+        }
+}
+
     // Hub poses for each alliance
     
     // Get hub pose based on alliance
@@ -371,9 +380,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     double thresholdX = Units.Inches.of(469.11).in(Units.Meters);
     SmartDashboard.putNumber("Threshold/X", thresholdX);
 
-    if (!HubShiftUtil.getOfficialShiftInfo().active()) {
+    /*if (!HubShiftUtil.getOfficialShiftInfo().active() && isInAllianceZone(robotX)) {
         return robotY > thresholdY ? Constants.FieldConstants.redTargetHighPose : Constants.FieldConstants.redTargetLowPose;
     }
+        commented out bcz not usable atm, basically returns passing position 
+        regardless of pose when not your shift*/
 
     return robotX < thresholdX
         ? (robotY > thresholdY ? Constants.FieldConstants.redTargetHighPose : Constants.FieldConstants.redTargetLowPose)
@@ -436,9 +447,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         double currentDistance = drivePose.getTranslation().getDistance(hubPose.getTranslation());
         return currentDistance;
     }
-
-
-
 
 
 
