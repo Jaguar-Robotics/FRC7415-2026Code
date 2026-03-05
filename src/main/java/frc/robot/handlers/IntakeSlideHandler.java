@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.Elevator;
 
 public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem {
@@ -20,7 +19,8 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
       SLOWIN,
       BRAKE,
       REZEROIN,
-      REZEROOUT
+      REZEROOUT,
+      OSCILLATE
   }
 
   private static IntakeSlideHandler instance;
@@ -62,20 +62,27 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
             case MIDDLE:
                 intakeSlide.goToSetpoint(() -> Elevator.Setpoint.Middle).schedule();
                 break;
-            case IN:
+            case IN: //In also re-zeros it once it reaches "in"
                 new SequentialCommandGroup(
                     intakeSlide.goToSetpoint(() -> Elevator.Setpoint.IN)
                         .until(() -> isAtLowSetpoint),
                     intakeSlide.calibrateZeroIn()
                 ).schedule();
                 break;
-            case SLOWIN:
+            case SLOWIN: 
                 new SequentialCommandGroup(
-                  Commands.waitSeconds(3),
-                  intakeSlide.manualDrive(() -> -0.125).until(intakeSlide.isHardStop)
+                  Commands.waitSeconds(2),
+                  intakeSlide.manualDrive(() -> -0.125).until(intakeSlide.isHardStop).withTimeout( 5)
                   ).schedule();
                 //intakeSlide.goToSetpoint(() -> Elevator.Setpoint.Middle).schedule();
                 break; 
+            case OSCILLATE: //TODO****************
+                new SequentialCommandGroup(
+                  intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT),
+                  Commands.waitSeconds(0.5),
+                  intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT)
+                ).schedule();
+                break;
             case BRAKE:
                 intakeSlide.holdPosition();
                 break;

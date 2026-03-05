@@ -17,10 +17,10 @@ public class Constants {
 
     
     public static abstract class ShooterConstants {
-        public static final int ShooterLeaderID = 27; 
-        public static final int ShooterFollowerID = 28;
-        public static final int ShooterFollowerReversedID = 23; //
-        public static final int ShooterFollowerReversed2ID = 24; //
+        public static final int ShooterLeaderID = 20; 
+        public static final int ShooterFollowerID = 21;
+        public static final int ShooterFollowerReversedID = 22; //
+        public static final int ShooterFollowerReversed2ID = 23; //
         public static final AngularVelocity FastShot = RPM.of(3000); //HESHEL CHANGE ME FAST
         public static final AngularVelocity SlowShot = RPM.of(1500); //HESKEL CHANGE ME SLOW
         public static final Double RPSHardStop = 80.0; 
@@ -30,38 +30,38 @@ public class Constants {
     }
 
     public static abstract class IntakeConstants {
-        public static final int IntakeMotorID = 25; 
-        public static final int IntakeFollowerReversedMotorID = 30; 
+        public static final int IntakeMotorID = 30; 
+        public static final int IntakeFollowerReversedMotorID = 31; 
         public static final double FastIntake = 0.87; //used to be 1 but 0.87 is more effechient or sum
         public static final double SlowIntake = 0.5;
         public static final double SlowReverse = -0.3;
         public static final double FastReverse = -0.87;
 
-        public static final int IntakeSlideMotorID = 35; //
-        public static final Distance IntakeSlideOutSetPoint = Inches.of(13.3); //Changememaybe
-        public static final Distance IntakeSlideMiddleSetPoint = Inches.of(3);
-        public static Distance IntakeSlideInSetPoint = Inches.of(0); 
-        public static final double IntakeSlideOutHardStop = 8.49; //rotations
-        public static final double PositionTolerance = 0.3;
+        public static final int IntakeSlideMotorID = 35; 
+        public static final double IntakeSlideOutSetPoint = 25.5; //In ROTATIONS
+        public static final double IntakeSlideMiddleSetPoint = 9.75;
+        public static final double IntakeSlideInSetPoint = 0; 
+        public static final double IntakeSlideOutHardStop = 25.5; //rotations
+        public static final double PositionTolerance = 0.3; //in degreee
        
     }
 
     public static abstract class HopperConstants {
-        public static final int HopperMotorID = 26; //
+        public static final int HopperMotorID = 32; //
         public static final double FastRoll = 0.4; 
-        public static final double SlowRoll = 0.2;
+        public static final double SlowRoll = 0.3; //0.2
         public static final double FastOutRoll = -0.4;
         public static final double SlowOutRoll = -0.2;
 
     }
 
         public static abstract class IndexerConstants {
-        public static final int HighIndexerMotorID = 37; //
-        public static final int LowIndexerMotorID = 36; //
-        public static final double FastRoll = 0.87;
-        public static final double SlowRoll = 0.6;
-        public static final double FastOutRoll = -0.5;
-        public static final double SlowOutRoll = -0.3;
+        public static final int HighIndexerMotorID = 34; //
+        public static final int LowIndexerMotorID = 33; //
+        public static final double FastRoll = -0.87;
+        public static final double SlowRoll = -0.6;
+        public static final double FastOutRoll = 0.87;
+        public static final double SlowOutRoll = 0.3;
 
     }
 

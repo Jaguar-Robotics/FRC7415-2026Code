@@ -44,9 +44,9 @@ import frc.robot.Constants;
 public class Elevator extends SubsystemBase {
     /** Position setpoints for the elevator. */
     public enum Setpoint {
-        IN(Rotations.of(0)), 
-        Middle(Rotations.of(3.25)),
-        OUT(Rotations.of(8.2));
+        IN(Rotations.of(0*3)), 
+        Middle(Rotations.of(3.25*3)),
+        OUT(Rotations.of(8.5*3));
 
         /** The position target of the setpoint in angular units. */
         public final Angle target;
@@ -65,7 +65,7 @@ public class Elevator extends SubsystemBase {
 
     private static final int kNumConfigAttempts = 2;
 
-    private static final double kGearRatio = 2;
+    private static final double kGearRatio = 6;
     private static final Distance kDrumRadius = Meters.of(0.0254);
     private static final Distance kMaxHeight = Inches.of(13.3);
 
@@ -125,8 +125,9 @@ public class Elevator extends SubsystemBase {
     leaderInitialConfigs.Slot0.kI = 0.0;
     leaderInitialConfigs.Slot0.kD = 0.1;
     
-    leaderInitialConfigs.MotionMagic.MotionMagicCruiseVelocity = 50; // rps
-    leaderInitialConfigs.MotionMagic.MotionMagicAcceleration = 160; // rps/s
+    
+    leaderInitialConfigs.MotionMagic.MotionMagicCruiseVelocity = 50*4; // rps
+    leaderInitialConfigs.MotionMagic.MotionMagicAcceleration = 160*4; // rps/s
     leaderInitialConfigs.MotionMagic.MotionMagicJerk = 1600; // rps/s/s
     }
 

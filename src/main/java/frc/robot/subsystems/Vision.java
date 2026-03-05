@@ -18,14 +18,21 @@ public class Vision extends SubsystemBase {
    * Updates pose estimator with Limelight vision measurements
    * Called automatically in periodic().
    */
-  
-  private final String PosLimelight = "limelight-fl";
-  public void updateVisionMeasurements() {
+
+    // All Pose estimating limelights names
+  private final String[] PosLimelights = {
+    "limelight-fl",
+    "limelight-fr",
+    "limelight-back"
+    // add more as needed
+  };
+
+  public void updateVisionMeasurements(String LLName) {
     boolean doRejectUpdate = false;
     
     if (!useMegaTag2) {
       // MegaTag1 mode
-      LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(PosLimelight);
+      LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(LLName);
 
       if (mt1 == null){
         return;
@@ -58,12 +65,12 @@ public class Vision extends SubsystemBase {
       // MegaTag2 mode
       // Set robot orientation for MegaTag2
       LimelightHelpers.SetRobotOrientation(
-        PosLimelight,
+        LLName,
         drivetrain.getState().Pose.getRotation().getDegrees(),
         0, 0, 0, 0, 0
       );
       
-      LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(PosLimelight);
+      LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LLName);
       
       if (mt2 == null){
         return;
@@ -80,9 +87,6 @@ public class Vision extends SubsystemBase {
       }
       
       if (!doRejectUpdate) {
-        /* 
-        drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 0.9));//9999999 to 0.9
-        drivetrain.addVisionMeasurement(mt2.pose, mt2.timestampSeconds); */
         // Add vision measurement to drivetrain
         drivetrain.addVisionMeasurement(
           mt2.pose,
@@ -93,8 +97,11 @@ public class Vision extends SubsystemBase {
     }
   } 
   
+
   @Override
   public void periodic() {
-    updateVisionMeasurements();
+    for (String limeLight : PosLimelights) {
+      updateVisionMeasurements(limeLight); 
+    }
   }
 }
