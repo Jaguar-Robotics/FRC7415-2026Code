@@ -350,7 +350,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
-    public static boolean isInAllianceZone(double robotX){
+    public static boolean isInAllianceZone(Pose2d robotPose){
+    double robotX = robotPose.getX();
         Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
     if (alliance == Alliance.Red) {
         return robotX > Units.Inches.of(469.11).in(Units.Meters);
@@ -358,8 +359,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return robotX < Units.Inches.of(182.11).in(Units.Meters);
         }
 }
-
-    // Hub poses for each alliance
     
     // Get hub pose based on alliance
     public static Pose3d getHubPose() {
@@ -380,13 +379,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     double thresholdX = Units.Inches.of(469.11).in(Units.Meters);
     SmartDashboard.putNumber("Threshold/X", thresholdX);
 
+
+
     /*if (!HubShiftUtil.getOfficialShiftInfo().active() && isInAllianceZone(robotX)) {
         return robotY > thresholdY ? Constants.FieldConstants.redTargetHighPose : Constants.FieldConstants.redTargetLowPose;
     }
         commented out bcz not usable atm, basically returns passing position 
         regardless of pose when not your shift*/
 
-    return robotX < thresholdX
+    return !isInAllianceZone(new Pose2d(robotX, robotY, new Rotation2d()))
         ? (robotY > thresholdY ? Constants.FieldConstants.redTargetHighPose : Constants.FieldConstants.redTargetLowPose)
         : Constants.FieldConstants.redHubPose.toPose2d();
 } else {
@@ -397,7 +398,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return robotY > thresholdY ? Constants.FieldConstants.blueTargetHighPose : Constants.FieldConstants.blueTargetLowPose;
     }
 
-    return robotX > thresholdX
+    return isInAllianceZone(new Pose2d(robotX, robotY, new Rotation2d()))
         ? (robotY > thresholdY ? Constants.FieldConstants.blueTargetHighPose : Constants.FieldConstants.blueTargetLowPose)
         : Constants.FieldConstants.blueHubPose.toPose2d();
     }
