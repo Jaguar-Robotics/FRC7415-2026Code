@@ -10,9 +10,11 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+
 
 public class BangBangShooterSubsystem extends SubsystemBase {
   /** Creates a new BangBangShooterSubsystem. */
@@ -20,9 +22,26 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   private final TalonFX ShooterMotor2 = new TalonFX(Constants.ShooterConstants.ShooterFollowerID, "Upper");
   private final TalonFX ShooterMotorRev3 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversed2ID, "Upper");
   private final TalonFX ShooterMotorRev4 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversedID, "Upper");
-    
+
   private final BangBangController controllerBangBang = new BangBangController();
 
+  private static final InterpolatingDoubleTreeMap Shooter1Map = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap Shooter2Map = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap Shooter3Map = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap Shooter4Map = new InterpolatingDoubleTreeMap();
+  
+  //inches to center hub from Robot orign , RPS
+  static {
+    Shooter1Map.put(0.0 ,0.0);
+  
+    Shooter2Map.put(0.0,0.0);
+
+    Shooter3Map.put(0.0,0.0);
+
+    Shooter4Map.put(0.0,0.0);
+  }
+
+ 
   private final SimpleMotorFeedforward feedFoward = new SimpleMotorFeedforward(Constants.ShooterConstants.kS, Constants.ShooterConstants.kV);
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
@@ -52,8 +71,6 @@ public class BangBangShooterSubsystem extends SubsystemBase {
       return instance;
   }
 
-
-
   public void setTargetVelocity(double VelocityRPS) {
     if (VelocityRPS > Constants.ShooterConstants.RPSHardStop) {
       targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;
@@ -71,13 +88,11 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     shooterEnabled = true;
   }
 
-  public void setTargetVeloDistance(double  distMeters) {
-    double distInches = distMeters * 39.3701;
-    //https://www.desmos.com/calculator/lvyi23hstj
-    targetVeloRPS1 = 0.00239451 * Math.pow(distInches, 2) - 0.0705712*distInches + 40.63813;
-    targetVeloRPS2 = 0.000748127 * Math.pow(distInches, 2) + 0.142013*distInches + 35.372;
-    targetVeloRPS3 = 0.0065788 * Math.pow(distInches, 2) - 0.705641*distInches + 61.31564;
-    targetVeloRPS4 = 0.000480753 * Math.pow(distInches, 2) + 0.280501*distInches + 27.90482;
+  public void setTargetVeloDistance(double  inches) {
+    targetVeloRPS1 = Shooter1Map.get(inches);
+    targetVeloRPS2 = Shooter2Map.get(inches);
+    targetVeloRPS3 = Shooter3Map.get(inches);
+    targetVeloRPS4 = Shooter4Map.get(inches);
 
     if (targetVeloRPS1 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;}
     if (targetVeloRPS2 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS2 = Constants.ShooterConstants.RPSHardStop;}
@@ -111,20 +126,20 @@ public class BangBangShooterSubsystem extends SubsystemBase {
       return;
     }
 
-    double currentVelocity1RPS = ShooterMotor.getVelocity().getValueAsDouble();
-    double currentVelocity2RPS = ShooterMotor2.getVelocity().getValueAsDouble();
-    double currentVelocity3RPS = ShooterMotorRev3.getVelocity().getValueAsDouble();
-    double currentVelocity4RPS = ShooterMotorRev4.getVelocity().getValueAsDouble();
+    double currentVelocity1RPS = Math.abs(ShooterMotor.getVelocity().getValueAsDouble());
+    double currentVelocity2RPS = Math.abs(ShooterMotor2.getVelocity().getValueAsDouble());
+    double currentVelocity3RPS = Math.abs(ShooterMotorRev3.getVelocity().getValueAsDouble());
+    double currentVelocity4RPS = Math.abs(ShooterMotorRev4.getVelocity().getValueAsDouble());
 
-    double bangBangVolts1 = controllerBangBang.calculate(currentVelocity1RPS, targetVeloRPS1);
-    double bangBangVolts2 = controllerBangBang.calculate(currentVelocity2RPS, targetVeloRPS2);
-    double bangBangVolts3 = controllerBangBang.calculate(currentVelocity3RPS, targetVeloRPS3);
-    double bangBangVolts4 = controllerBangBang.calculate(currentVelocity4RPS, targetVeloRPS4);
+    double bangBangVolts1 = controllerBangBang.calculate(currentVelocity1RPS, targetVeloRPS1)*12;
+    double bangBangVolts2 = controllerBangBang.calculate(currentVelocity2RPS, targetVeloRPS2)*12;
+    double bangBangVolts3 = controllerBangBang.calculate(currentVelocity3RPS, targetVeloRPS3)*12;
+    double bangBangVolts4 = controllerBangBang.calculate(currentVelocity4RPS, targetVeloRPS4)*12;
 
-    double  feedfowardVolts1 = 0.9 * feedFoward.calculate(targetVeloRPS1);
-    double  feedfowardVolts2 = 0.9 * feedFoward.calculate(targetVeloRPS2);
-    double  feedfowardVolts3 = 0.9 * feedFoward.calculate(targetVeloRPS3);
-    double  feedfowardVolts4 = 0.9 * feedFoward.calculate(targetVeloRPS4);
+    double feedfowardVolts1 = feedFoward.calculate(targetVeloRPS1);
+    double feedfowardVolts2 = feedFoward.calculate(targetVeloRPS2);
+    double feedfowardVolts3 = feedFoward.calculate(targetVeloRPS3);
+    double feedfowardVolts4 = feedFoward.calculate(targetVeloRPS4);
 
     ShooterMotor.setControl(voltageRequest.withOutput(-(bangBangVolts1 + feedfowardVolts1))); //idk bru
     ShooterMotor2.setControl(voltageRequest.withOutput(-(bangBangVolts2 + feedfowardVolts2))); //backwards in phy tuner
@@ -136,10 +151,10 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Shooter3Volts", bangBangVolts3 + feedfowardVolts3);
     SmartDashboard.putNumber("Shooter4Volts", bangBangVolts4 + feedfowardVolts4);
 
-    SmartDashboard.putNumber("Shooter1RPS", Math.abs(currentVelocity1RPS));
-    SmartDashboard.putNumber("Shooter2RPS", Math.abs(currentVelocity2RPS));
-    SmartDashboard.putNumber("Shooter3RPS", Math.abs(currentVelocity3RPS));
-    SmartDashboard.putNumber("Shooter4RPS", Math.abs(currentVelocity4RPS));
+    SmartDashboard.putNumber("Shooter1RPS", currentVelocity1RPS);
+    SmartDashboard.putNumber("Shooter2RPS", currentVelocity2RPS);
+    SmartDashboard.putNumber("Shooter3RPS", currentVelocity3RPS);
+    SmartDashboard.putNumber("Shooter4RPS", currentVelocity4RPS);
 
     SmartDashboard.putNumber("TargetRPS1", targetVeloRPS1);
     SmartDashboard.putNumber("TargetRPS2", targetVeloRPS2);

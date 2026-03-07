@@ -44,9 +44,9 @@ import frc.robot.Constants;
 public class Elevator extends SubsystemBase {
     /** Position setpoints for the elevator. */
     public enum Setpoint {
-        IN(Rotations.of(0*3)), 
-        Middle(Rotations.of(3.25*3)),
-        OUT(Rotations.of(8.5*3));
+        IN(Rotations.of(Constants.IntakeConstants.IntakeSlideInSetPoint)), //0
+        Middle(Rotations.of(Constants.IntakeConstants.IntakeSlideMiddleSetPoint)),
+        OUT(Rotations.of(Constants.IntakeConstants.IntakeSlideOutSetPoint));
 
         /** The position target of the setpoint in angular units. */
         public final Angle target;
@@ -213,7 +213,7 @@ public class Elevator extends SubsystemBase {
     /**
      * Recalibrates the elevator zero point. This slowly drives the elevator
      * down until we see a drop in velocity and a spike in stator current,
-     * indicating that we've hit a hard stop.
+     * indicating that we've hit a hard stop.da
      *
      * @return Command to run
      */

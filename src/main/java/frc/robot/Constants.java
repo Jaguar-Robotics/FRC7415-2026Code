@@ -25,7 +25,7 @@ public class Constants {
         public static final AngularVelocity SlowShot = RPM.of(1500); //HESKEL CHANGE ME SLOW
         public static final Double RPSHardStop = 80.0; 
         public static final int RPSTolarance = 1;
-        public static final double kS = 0.1; //volt to overcome static friction feedforawd
+        public static final double kS = 0.3; //volt to overcome static friction feedforawd TUNED ALR
         public static final double kV = 0.12; //volts per rps
     }
 
@@ -41,7 +41,10 @@ public class Constants {
         public static final double IntakeSlideOutSetPoint = 25.5; //In ROTATIONS
         public static final double IntakeSlideMiddleSetPoint = 9.75;
         public static final double IntakeSlideInSetPoint = 0; 
-        public static final double IntakeSlideOutHardStop = 25.5; //rotations
+        public static final double SafeOutPosition = 13; //in rotations
+
+        public static final double IntakeSlideOutHardStop = 25.5; //rotations; Used for re-zero out
+
         public static final double PositionTolerance = 0.3; //in degreee
        
     }

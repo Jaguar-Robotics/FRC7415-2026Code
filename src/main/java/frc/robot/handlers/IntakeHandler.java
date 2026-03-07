@@ -9,6 +9,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.handlers.ShooterHandler.ShooterState;
 import frc.robot.handlers.StateSubsystem.State;
+import frc.robot.subsystems.BangBangShooterSubsystem;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.IntakeSubsystem;
 
 public class IntakeHandler extends SubsystemBase implements StateSubsystem {
@@ -23,9 +26,14 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
   }
 
   private static IntakeHandler instance;
-  private  IntakeSubsystem intake = new IntakeSubsystem();
+  private Elevator lintake;
+  private IntakeSubsystem intake = new IntakeSubsystem();
   private IntakeState desiredState = IntakeState.OFF;
   private IntakeState currentState = IntakeState.OFF;
+
+    public void initialize(Elevator lintake) {
+    this.lintake = lintake;
+    }
 
 
   private IntakeHandler() {}
@@ -50,7 +58,7 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
     update();
   }
 
-      @Override
+    @Override
     public void update() {
         switch (desiredState) {
             case FASTINTAKE:

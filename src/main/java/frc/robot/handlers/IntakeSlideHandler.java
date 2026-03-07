@@ -4,10 +4,13 @@
 
 package frc.robot.handlers;
 
+import static edu.wpi.first.units.Units.Rotations;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Elevator;
 
 public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem {
@@ -25,6 +28,9 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
 
   private static IntakeSlideHandler instance;
   private final Elevator intakeSlide = new Elevator(); //name it correct 
+
+  
+  Trigger intakeAboveFive = new Trigger(() -> intakeSlide.getPosition().in(Rotations) > 5.0);
 
 
   private IntakeSlideState desiredState = IntakeSlideState.IN;
@@ -80,7 +86,7 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
                 new SequentialCommandGroup(
                   intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT),
                   Commands.waitSeconds(0.5),
-                  intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT)
+                  intakeSlide.goToSetpoint(() -> Elevator.Setpoint.IN)
                 ).repeatedly().schedule();
                 break;
             case BRAKE:
