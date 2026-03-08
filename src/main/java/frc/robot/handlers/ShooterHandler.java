@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -17,6 +18,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.RobotContainer;
 import frc.robot.utils.HubShiftUtil;
+import frc.robot.utils.HubShiftUtil.ShiftInfo;
 
 public class ShooterHandler extends SubsystemBase implements StateSubsystem {
 
@@ -97,10 +99,26 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     updateContinuousStates();
     }
 
+    Double DistMeters = 0.0;
     private void handleStateChange(){ 
         switch (desiredState) {
             case SHOOTING:
-                break;
+
+
+        ShiftInfo shiftInfo = HubShiftUtil.getOfficialShiftInfo();
+        boolean earlyShoot = !shiftInfo.active() && shiftInfo.remainingTime() <= 1.0 && HubShiftUtil.isNextShiftActive();
+        System.out.println("active: " + shiftInfo.active() + " | remainingTime: " + shiftInfo.remainingTime() + " | earlyShoot: " + earlyShoot);
+
+        if (!shiftInfo.active() && !earlyShoot) {
+        CommandScheduler.getInstance().schedule(shooter.stop());
+            break;
+        }
+            break;
+
+
+
+
+                
             case SLOW:
                 CommandScheduler.getInstance().schedule(shooter.setVelocity(Constants.ShooterConstants.SlowShot)); 
                 break;
@@ -119,10 +137,7 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     private void updateContinuousStates() {
         switch (currentState) {
             case SHOOTING:
-            if(!HubShiftUtil.getOfficialShiftInfo().active()){
-                CommandScheduler.getInstance().schedule(shooter.stop());
-                break;
-            }
+            
                 double DistMeters = drivetrain.GetFutureDistMeters();
                 AngularVelocity targetSpeed = shooter.getCalcedRPM(DistMeters);
                 CommandScheduler.getInstance().schedule(shooter.setVelocity(targetSpeed));
@@ -142,7 +157,9 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     }
 
     @Override
-    public void periodic() {
-        update();
-    }
+public void periodic() {
+    DistMeters = drivetrain.getDistance();
+    update(); // Handle state transitions
+    SmartDashboard.putString("ShooterState", currentState.toString());
+}
 }

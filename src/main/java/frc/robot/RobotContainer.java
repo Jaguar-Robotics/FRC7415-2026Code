@@ -49,6 +49,7 @@ import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.Vision;
+import frc.robot.utils.HubShiftUtil;
 import pabeles.concurrency.IntOperatorTask.Max;
 
 public class RobotContainer {
@@ -92,7 +93,7 @@ public class RobotContainer {
     DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate, vision);
     ShooterHandler.getInstance().initialize(drivetrain, shooter);
     Superstructure.getInstance().initialize(shooter, drivetrain, climb);
-    VisionHandler.getInstance().initialize(vision);    
+    VisionHandler.getInstance().initialize(vision);
     ShooterSubsystem.getInstance().initialize(drivetrain);
 
     autoChooser = AutoBuilder.buildAutoChooser("Tests");
@@ -155,10 +156,6 @@ public class RobotContainer {
 
 
 
-
-
-
-
         joystick.y().onTrue(new InstantCommand(() -> VisionHandler.getInstance().setDesiredState(VisionHandler.VisionState.CHASING)));
 
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
@@ -203,19 +200,42 @@ public class RobotContainer {
         
         
         
-
-        
         joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-250))); //in RPM
-        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(250)));
-        
-        joystick.povLeft().whileTrue(drivetrain.shootOnTheMoveIterative(joystick, MaxSpeed, MaxAngularRate, "PovLeft")); //Shoot while moving
-        
-        joystick.povRight().whileTrue(drivetrain.shootOnTheMoveIterative(joystick, MaxSpeed, MaxAngularRate, "PovRight")); //Shoot while moving
-    
-    }        
+                joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(250)));
+                
+                joystick.povLeft().whileTrue(drivetrain.shootOnTheMoveIterative(joystick, MaxSpeed, MaxAngularRate, "PovLeft")); //Shoot while moving
+                
+                joystick.povRight().whileTrue(drivetrain.shootOnTheMoveIterative(joystick, MaxSpeed, MaxAngularRate, "PovRight")); //Shoot while moving
+            
+                new edu.wpi.first.wpilibj2.command.button.Trigger(() -> {
+            double remaining = HubShiftUtil.getOfficialShiftInfo().remainingTime();
+            return remaining <= 5.0 && remaining > 4.75;
+        }).onTrue(Commands.runOnce(() -> joystick.getHID().setRumble(edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble, 1.0))
+            .andThen(new WaitCommand(0.25))
+            .andThen(Commands.runOnce(() -> joystick.getHID().setRumble(edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble, 0.0))));
 
-    public Command getAutonomousCommand() {
-        /* Run the path selected from the auto chooser */
-        return autoChooser.getSelected();
-    }
-}
+        new edu.wpi.first.wpilibj2.command.button.Trigger(() -> {
+            double remaining = HubShiftUtil.getOfficialShiftInfo().remainingTime();
+            return remaining <= 3.0 && remaining > 2.75;
+        }).onTrue(Commands.runOnce(() -> joystick.getHID().setRumble(edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble, 1.0))
+            .andThen(new WaitCommand(0.25))
+            .andThen(Commands.runOnce(() -> joystick.getHID().setRumble(edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble, 0.0))));
+
+        new edu.wpi.first.wpilibj2.command.button.Trigger(() -> {
+            double remaining = HubShiftUtil.getOfficialShiftInfo().remainingTime();
+            return remaining <= 1.0 && remaining > 0.0;
+        }).whileTrue(Commands.run(() -> joystick.getHID().setRumble(edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble, 1.0)))
+        .onFalse(Commands.runOnce(() -> joystick.getHID().setRumble(edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble, 0.0)));
+
+        new edu.wpi.first.wpilibj2.command.button.Trigger(() -> {
+            double remaining = HubShiftUtil.getOfficialShiftInfo().remainingTime();
+            return remaining <= 1.0 && HubShiftUtil.isNextShiftActive();
+        }).onTrue(Commands.runOnce(() -> {
+            System.out.println("Early shoot window opened, remaining: " + HubShiftUtil.getOfficialShiftInfo().remainingTime());
+        }));
+            }        
+
+            public Command getAutonomousCommand() {
+                return autoChooser.getSelected();
+            }
+        }

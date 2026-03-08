@@ -1,8 +1,11 @@
 package frc.robot.utils;
 
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import java.util.Optional;
 import java.util.function.Supplier;
 import frc.robot.Constants;
@@ -104,7 +107,7 @@ private static final double maxTimeOfFlight = 0.0115177 * Constants.ShiftConstan
       stateTimeRemaining = autoEndTime - currentTime;
       active = true;
       currentShift = ShiftEnum.AUTO;
-    } else if (DriverStation.isEnabled()) {
+    } else if (DriverStation.isEnabled() || RobotBase.isSimulation()) {
       int currentShiftIndex = -1;
       for (int i = 0; i < shiftStartTimes.length; i++) {
         if (currentTime >= shiftStartTimes[i] && currentTime < shiftEndTimes[i]) {
@@ -134,6 +137,7 @@ private static final double maxTimeOfFlight = 0.0115177 * Constants.ShiftConstan
       active = currentSchedule[currentShiftIndex];
       currentShift = shiftsEnums[currentShiftIndex];
     }
+    SmartDashboard.putBoolean("Shift Active", active);
     ShiftInfo shiftInfo = new ShiftInfo(currentShift, stateTimeElapsed, stateTimeRemaining, active);
     return shiftInfo;
   }
@@ -181,4 +185,17 @@ private static final double maxTimeOfFlight = 0.0115177 * Constants.ShiftConstan
     };
     return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
   }
+
+  public static boolean isNextShiftActive() {
+    boolean[] schedule = getSchedule();
+    double currentTime = shiftTimer.get();
+    
+    for (int i = 0; i < shiftStartTimes.length - 1; i++) {
+        if (currentTime >= shiftStartTimes[i] && currentTime < shiftEndTimes[i]) {
+            return schedule[i + 1]; 
+        }
+    }
+    return false;
+  }
+
 }
