@@ -121,14 +121,14 @@ public class Elevator extends SubsystemBase {
 
     static {
     // Configure MotionMagic for the leader motors
-    leaderInitialConfigs.Slot0.kP = 8.0;  // Tune these values!
+    leaderInitialConfigs.Slot0.kP = 12.0;  // Tune these values! 8
     leaderInitialConfigs.Slot0.kI = 0.0;
     leaderInitialConfigs.Slot0.kD = 0.1;
     
     
-    leaderInitialConfigs.MotionMagic.MotionMagicCruiseVelocity = 50*4; // rps
-    leaderInitialConfigs.MotionMagic.MotionMagicAcceleration = 160*4; // rps/s
-    leaderInitialConfigs.MotionMagic.MotionMagicJerk = 1600; // rps/s/s
+    leaderInitialConfigs.MotionMagic.MotionMagicCruiseVelocity = 50*6; // rps
+    leaderInitialConfigs.MotionMagic.MotionMagicAcceleration = 160*6; // rps/s
+    leaderInitialConfigs.MotionMagic.MotionMagicJerk = 1600*2; // rps/s/s
     }
 
     public Elevator() {

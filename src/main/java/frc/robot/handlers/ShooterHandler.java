@@ -99,10 +99,10 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
                 shooter.setTargetVeloDistance(DistMeters); 
                 break;
             case SLOW:
-                shooter.setTargetVelocity(40);
+                shooter.setTargetVelocity(Constants.ShooterConstants.SlowShot);
                 break;
             case FAST:
-                shooter.setTargetVelocity(60);
+                shooter.setTargetVelocity(Constants.ShooterConstants.FastShot);
                 break;
             case TUNING:
                 shooter.setTargetVelocity(TuneablefastShot);

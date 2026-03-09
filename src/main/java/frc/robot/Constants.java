@@ -7,8 +7,10 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 
@@ -21,12 +23,12 @@ public class Constants {
         public static final int ShooterFollowerID = 21;
         public static final int ShooterFollowerReversedID = 22; //
         public static final int ShooterFollowerReversed2ID = 23; //
-        public static final AngularVelocity FastShot = RPM.of(3000); //HESHEL CHANGE ME FAST
-        public static final AngularVelocity SlowShot = RPM.of(1500); //HESKEL CHANGE ME SLOW
-        public static final Double RPSHardStop = 80.0; 
-        public static final int RPSTolarance = 1;
+        public static final double FastShot = 25; // IN RPS
+        public static final double SlowShot = 20; //HESKEL CHANGE ME SLOW
+        public static final double RPSHardStop = 80.0; 
+        public static final double RPSTolarance = 1;
         public static final double kS = 0.3; //volt to overcome static friction feedforawd TUNED ALR
-        public static final double kV = 0.12; //volts per rps
+        public static final double kV = 0.13; //volts per rps 0.125
     }
 
     public static abstract class IntakeConstants {
@@ -38,10 +40,10 @@ public class Constants {
         public static final double FastReverse = -0.87;
 
         public static final int IntakeSlideMotorID = 35; 
-        public static final double IntakeSlideOutSetPoint = 25.5; //In ROTATIONS
-        public static final double IntakeSlideMiddleSetPoint = 9.75;
+        public static final double IntakeSlideOutSetPoint = 25; //In ROTATIONS
+        public static final double IntakeSlideMiddleSetPoint = 10;
         public static final double IntakeSlideInSetPoint = 0; 
-        public static final double SafeOutPosition = 13; //in rotations
+        public static final Angle SafeOutPosition = Degree.of(9.3*360); //in rotations
 
         public static final double IntakeSlideOutHardStop = 25.5; //rotations; Used for re-zero out
 
@@ -51,7 +53,7 @@ public class Constants {
 
     public static abstract class HopperConstants {
         public static final int HopperMotorID = 32; //
-        public static final double FastRoll = 0.4; 
+        public static final double FastRoll = 0.8; 
         public static final double SlowRoll = 0.3; //0.2
         public static final double FastOutRoll = -0.4;
         public static final double SlowOutRoll = -0.2;

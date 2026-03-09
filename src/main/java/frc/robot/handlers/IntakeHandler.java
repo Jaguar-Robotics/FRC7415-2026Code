@@ -5,12 +5,12 @@
 package frc.robot.handlers;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.handlers.ShooterHandler.ShooterState;
-import frc.robot.handlers.StateSubsystem.State;
-import frc.robot.subsystems.BangBangShooterSubsystem;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.IntakeSubsystem;
 
@@ -62,7 +62,7 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
     public void update() {
         switch (desiredState) {
             case FASTINTAKE:
-                intake.set(Constants.IntakeConstants.FastIntake); 
+                intake.set(Constants.IntakeConstants.FastIntake);
                 break;
             case SLOWINTAKE:
                 intake.set(Constants.IntakeConstants.SlowIntake);

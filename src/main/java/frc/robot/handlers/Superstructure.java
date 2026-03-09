@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.handlers.IndexerHighHandler.IndexerHighState;
 import frc.robot.handlers.IndexerLowHandler.IndexerLowState;
+import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HopperSubsystem;
@@ -117,6 +118,7 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        ShooterAtVelo = false;
         break;
       case STATIONARYSHOT:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
@@ -133,7 +135,7 @@ public class Superstructure extends SubsystemBase {
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
-        driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
+        driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
       case SLOWSHOT: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SLOW);
@@ -144,14 +146,14 @@ public class Superstructure extends SubsystemBase {
         //driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
       case SPINUPFAST: //dont use
-        shooterHandler.setDesiredState(ShooterHandler.ShooterState.TUNING); //SWITCHEWD TO TUNING SWITCH BACK TO FAST SHOT
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.FAST); //SWITCHEWD TO TUNING SWITCH BACK TO FAST SHOT
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerHighHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
          break;
       case FASTSHOT: //dont use
-        shooterHandler.setDesiredState(ShooterHandler.ShooterState.TUNING); //SWITCHED TO TUNABLE FAST SHOT SWITCH BACK TO FAST
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.FAST); //SWITCHED TO TUNABLE FAST SHOT SWITCH BACK TO FAST
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.SLOWINTAKE);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
@@ -197,6 +199,7 @@ public class Superstructure extends SubsystemBase {
   }
 
     boolean DTaimed = false;
+    boolean ShooterAtVelo = false;
   @Override
   public void periodic() {
 
@@ -206,14 +209,15 @@ public class Superstructure extends SubsystemBase {
         }
         
         DTaimed = drivetrain.isAimedAtTarget();
+        ShooterAtVelo = shooter.atTargetVelo();
 
-        if (currentState == SuperstructureState.SPINUP && (shooter.atTargetVelo() && DTaimed)){ //checks if its at target velo and angle
+        if (currentState == SuperstructureState.SPINUP && (ShooterAtVelo && DTaimed)){ //checks if its at target velo and angle
           setDesiredState(SuperstructureState.STATIONARYSHOT);
         }
 
         SmartDashboard.putString("SuperState", currentState.toString());
 
-        SmartDashboard.putBoolean("shooterAtVelo?", shooter.atTargetVelo());
+        SmartDashboard.putBoolean("shooterAtVelo?", ShooterAtVelo);
         SmartDashboard.putBoolean("Drivetrain aimed?",DTaimed);
          
   }
