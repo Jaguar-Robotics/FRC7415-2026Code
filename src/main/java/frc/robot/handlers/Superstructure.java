@@ -15,6 +15,8 @@ import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import static edu.wpi.first.units.Units.Degrees;
 
@@ -62,6 +64,10 @@ public class Superstructure extends SubsystemBase {
   private SuperstructureState desiredState = SuperstructureState.IDLE;
   private SuperstructureState currentState = SuperstructureState.IDLE;
   private Angle targetAngle = Degrees.of(0);
+
+  boolean DTaimed = false;
+  boolean ShooterAtVelo = false;
+  boolean WaitTimed = false;
   
 
   public static Superstructure getInstance(){
@@ -119,6 +125,7 @@ public class Superstructure extends SubsystemBase {
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         ShooterAtVelo = false;
+        new SequentialCommandGroup(Commands.waitSeconds(0.25),new InstantCommand(() -> WaitTimed = true));
         break;
       case STATIONARYSHOT:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
@@ -198,8 +205,6 @@ public class Superstructure extends SubsystemBase {
     currentState = desiredState;
   }
 
-    boolean DTaimed = false;
-    boolean ShooterAtVelo = false;
   @Override
   public void periodic() {
 
@@ -211,10 +216,12 @@ public class Superstructure extends SubsystemBase {
         DTaimed = drivetrain.isAimedAtTarget();
         ShooterAtVelo = shooter.atTargetVelo();
 
-        if (currentState == SuperstructureState.SPINUP && (ShooterAtVelo && DTaimed)){ //checks if its at target velo and angle
+        /*
+        if (currentState == SuperstructureState.SPINUP && ShooterAtVelo && DTaimed && WaitTimed){ //checks if its at target velo and angle
           setDesiredState(SuperstructureState.STATIONARYSHOT);
         }
-
+          */
+          
         SmartDashboard.putString("SuperState", currentState.toString());
 
         SmartDashboard.putBoolean("shooterAtVelo?", ShooterAtVelo);

@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -151,7 +152,13 @@ public class RobotContainer {
 
         
        
-        joystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
+        joystick.rightTrigger().onTrue( new SequentialCommandGroup(
+            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)),
+            Commands.waitSeconds(2),
+            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)))
+        );
+            
+        
         joystick.rightTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
         //joystick.leftBumper().onTrue(new InstantCommand(() -:drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no"))); //shoot while stationary
