@@ -11,6 +11,7 @@ import org.ejml.sparse.csc.linsol.qr.LinearSolverQrLeftLooking_DSCC;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.events.OneShotTriggerEvent;
 import com.pathplanner.lib.path.PathConstraints;
@@ -84,6 +85,8 @@ public class RobotContainer {
         ShooterHandler.getInstance().initialize(drivetrain, shooter);
         Superstructure.getInstance().initialize(shooter, drivetrain);
 
+        configurePathPlanner();
+
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -92,6 +95,25 @@ public class RobotContainer {
         // Warmup PathPlanner to avoid Java pauses
         FollowPathCommand.warmupCommand().schedule();
     }
+
+    private void configurePathPlanner() {
+        NamedCommands.registerCommand("Intake",
+         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
+        
+        NamedCommands.registerCommand("IntakeOff",
+         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+
+        NamedCommands.registerCommand("Shoot", 
+        new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
+        
+        NamedCommands.registerCommand("ShootSafe", 
+        new SequentialCommandGroup(
+            new InstantCommand( () -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)),
+            Commands.waitSeconds(2),
+            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT))
+        ));
+    }
+
      private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
@@ -152,12 +174,7 @@ public class RobotContainer {
 
         
        
-        joystick.rightTrigger().onTrue( new SequentialCommandGroup(
-            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)),
-            Commands.waitSeconds(2),
-            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)))
-        );
-            
+        joystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));           
         
         joystick.rightTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 

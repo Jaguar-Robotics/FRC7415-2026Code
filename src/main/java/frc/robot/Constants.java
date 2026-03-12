@@ -25,7 +25,7 @@ public class Constants {
         public static final int ShooterFollowerReversed2ID = 23; //
         public static final double FastShot = 25; // IN RPS
         public static final double SlowShot = 20; //HESKEL CHANGE ME SLOW
-        public static final double RPSHardStop = 80.0; 
+        public static final double RPSHardStop = 100.0; 
         public static final double RPSTolarance = 1;
         public static final double kS = 0.3; //volt to overcome static friction feedforawd TUNED ALR
         public static final double kV = 0.13; //volts per rps 0.125

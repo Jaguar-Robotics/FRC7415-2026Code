@@ -32,21 +32,26 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   
   //inches to center hub from Robot orign , RPS
   static {
-    Shooter1Map.put(39.3 ,48.0);
-    Shooter1Map.put(73.4 ,53.0);
-    Shooter1Map.put(106.8 ,64.0);
+    Shooter1Map.put(138.4 ,100.0);
+    Shooter1Map.put(121.4 ,77.0);
+    Shooter1Map.put(104.6 ,70.0);
+    Shooter1Map.put(85.8, 64.0);
+    Shooter1Map.put(69.0, 60.0);
 
-    Shooter2Map.put(39.3, 42.0);
-    Shooter2Map.put(73.6, 50.0);
-    Shooter2Map.put(105.6 ,59.0);
+    Shooter2Map.put(138.4 ,100.0);
+    Shooter2Map.put(121.4 ,77.0);
+    Shooter2Map.put(104.6 ,70.0);
 
-    Shooter3Map.put(39.3, 42.0);
-    Shooter3Map.put(73.6, 50.0);
-    Shooter3Map.put(105.6 ,59.0);
+    Shooter3Map.put(138.4 ,100.0);
+    Shooter3Map.put(121.4 ,77.0);
+    Shooter3Map.put(104.6 ,70.0);
 
-    Shooter4Map.put(39.3, 42.0);
-    Shooter4Map.put(73.6, 50.0);
-    Shooter4Map.put(105.6 ,59.0);
+    Shooter4Map.put(138.4 ,100.0);
+    Shooter4Map.put(121.4 ,77.0);
+    Shooter4Map.put(104.6 ,70.0);
+
+
+
   }
 
  

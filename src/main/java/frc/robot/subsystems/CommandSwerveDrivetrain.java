@@ -396,6 +396,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // Calculate angle from hub to robot
         Translation2d toRobot = drivePose.getTranslation().minus(targetPose.getTranslation());
         
+        /*
         if (toRobot.getNorm() < 0.1) {  // Within 10cm of hub
             double veloX = -controller.getLeftY();
             if (Math.abs(veloX) < 0.1) veloX = 0;
@@ -407,7 +408,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 .withVelocityX(veloX * maxSpeed) 
                 .withVelocityY(veloY * maxSpeed) 
                 .withRotationalRate(0); 
-        } 
+        } */
 
         Rotation2d angleToRobot = toRobot.getAngle();
         
@@ -429,11 +430,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Math.abs(veloY) < 0.1 ){
             veloY = 0;
         }
-        // Apply the request: radial (distance maintenance) + tangential (circling)
+        // Apply the request: radial (distance maintenance) + tangential (circling) 
         return alignRequest 
             .withVelocityX(veloX * maxSpeed) 
             .withVelocityY(veloY * maxSpeed) 
-            .withRotationalRate(rotationalRate * maxAngularRate); 
+            .withRotationalRate(rotationalRate * maxAngularRate*1.5); 
     });
 }
 

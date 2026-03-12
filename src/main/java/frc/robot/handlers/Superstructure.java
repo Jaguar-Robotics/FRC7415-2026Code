@@ -216,16 +216,18 @@ public class Superstructure extends SubsystemBase {
         DTaimed = drivetrain.isAimedAtTarget();
         ShooterAtVelo = shooter.atTargetVelo();
 
-        /*
-        if (currentState == SuperstructureState.SPINUP && ShooterAtVelo && DTaimed && WaitTimed){ //checks if its at target velo and angle
+        
+        if (currentState == SuperstructureState.SPINUP && ShooterAtVelo && DTaimed){ //checks if its at target velo and angle
           setDesiredState(SuperstructureState.STATIONARYSHOT);
+          WaitTimed = false;
         }
-          */
+        
           
         SmartDashboard.putString("SuperState", currentState.toString());
 
         SmartDashboard.putBoolean("shooterAtVelo?", ShooterAtVelo);
         SmartDashboard.putBoolean("Drivetrain aimed?",DTaimed);
+        SmartDashboard.putBoolean("Timer", WaitTimed);
          
   }
   public SuperstructureState getCurrentState() {
