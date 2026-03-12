@@ -125,7 +125,6 @@ public class Superstructure extends SubsystemBase {
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         ShooterAtVelo = false;
-        new SequentialCommandGroup(Commands.waitSeconds(0.25),new InstantCommand(() -> WaitTimed = true));
         break;
       case STATIONARYSHOT:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
@@ -142,7 +141,7 @@ public class Superstructure extends SubsystemBase {
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
-        driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        driveHandler.setDesiredState(DriveHandler.DriveState.BUMP_LOCK);
         break;
       case SLOWSHOT: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SLOW);

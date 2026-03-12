@@ -1,47 +1,48 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.units.*;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
@@ -355,6 +356,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .orElse(Constants.FieldConstants.blueHubPose); // Default to blue if alliance unknown
     }
 
+    
+    public static Distance getCloseBumpY(Pose2d currentPose){
+        if (currentPose.getMeasureY().gt(Inches.of(158.845))){ //if closer to blue left
+            return Inches.of(218.84);
+        }
+        else{
+            return Inches.of(98.84); //closer to blue right Bump
+        }
+    }
+
+    public static boolean isInAllianceZone(Pose2d robotPose){
+        double robotX = robotPose.getX();
+        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        if (alliance == Alliance.Red) {
+            return robotX > Inches.of(469.11).in(Meters);
+        } else {
+            return robotX < Inches.of(182.11).in(Meters);
+            }
+    }
+
+
     /**
      * Calculates the closest point on the predefined circle to the current robot pose.
      *
@@ -383,13 +405,41 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return currentDistance;
     }
 
+    public Pose2d getTargetPose(Pose2d currentPose2d){
+        final double thresholdY = Inches.of(158.32).in(Meters); //horizontal middle field line
+        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        if (alliance == Alliance.Red){
+            if(isInAllianceZone(currentPose2d)){
+                return getHubPose().toPose2d();
+            }
+            else if (currentPose2d.getY() >= thresholdY){
+                return Constants.FieldConstants.redTargetHighPose;
+            }
+            else {
+                return Constants.FieldConstants.redTargetLowPose;
+            }
+        }
+        if (alliance == Alliance.Blue){
+            if(isInAllianceZone(currentPose2d)){
+                return getHubPose().toPose2d();
+            }
+            else if (currentPose2d.getY() >= thresholdY){
+                return Constants.FieldConstants.blueTargetHighPose;
+            }
+            else {
+                return Constants.FieldConstants.blueTargetLowPose;
+            }
+        }
+        return null;
+    }
+
     Pose2d ShootingLocation;
     public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate) {
     return applyRequest(() -> {
         
         // Get current pose and target hub position
         Pose2d drivePose = getState().Pose;
-        Pose2d targetPose = getHubPose().toPose2d();
+        Pose2d targetPose = getTargetPose(drivePose);
 
         ShootingLocation = targetPose;
         
@@ -451,32 +501,6 @@ public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, doub
             .withRotationalRate(rotSpeed * MaxAngularRate);
     });
 }
-
-    double futureDistance = 0.0;
-    public double GetFutureDistMeters(){
-        Pose2d robotPose = getPose();
-        double distance = getDistance();
-        ChassisSpeeds fieldSpeeds = getState().Speeds;
-        Pose2d actualHub = getHubPose().toPose2d();
-
-           // Convert field speeds to robot-relative
-        ChassisSpeeds robotSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-        fieldSpeeds.vxMetersPerSecond,
-        fieldSpeeds.vyMetersPerSecond,
-        fieldSpeeds.omegaRadiansPerSecond,
-        robotPose.getRotation().unaryMinus() // Inverse rotation
-            );
-        
-        // Step 2: Predict where ROBOT will be
-        double futureRobotX = robotPose.getX() + (robotSpeeds.vxMetersPerSecond);
-        double futureRobotY = robotPose.getY() + (robotSpeeds.vyMetersPerSecond);
-        Translation2d futureRobotPos = new Translation2d(futureRobotX, futureRobotY);
-        
-        // Step 3: Calculate angle from future robot position to hub
-        Translation2d futureToHub = actualHub.getTranslation().minus(futureRobotPos);
-        futureDistance = futureToHub.getNorm();
-        return futureDistance;
-    }
 
     //BASED ON MECH A PRAISE THE FRC GODS FOR OPEN ALLIANCE
     public Command shootOnTheMoveIterative(CommandXboxController controller, double maxSpeed, double maxAngularRate, String tuning) {
@@ -585,6 +609,37 @@ public boolean isAimedAtTarget() {
     
     return errorDegrees <= Constants.DriveConstants.RotationalToleranceDegrees;
 }
+
+ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate){
+        return applyRequest(() -> {
+            double closeTrench = (double)getCloseBumpY(drivetrain.getPose()).in(Meters);
+            double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
+            distanceController.setSetpoint(closeTrench); 
+        double yVel = distanceController.calculate(drivetrain.getPose().getY()); 
+        if (distanceController.atSetpoint()) {
+            yVel = 0;
+        }
+        
+        Rotation2d currentRot = drivetrain.getState().Pose.getRotation();
+
+        // Returns whichever of 0 or 180 the robot is facing closest to
+        Rotation2d rotSetpoint = Math.abs(currentRot.getDegrees()) < 90 
+            ? Rotation2d.kZero        // closer to 0
+            : Rotation2d.fromDegrees(180); // closer to 180
+        rotationController.setSetpoint(rotSetpoint.getRadians());
+
+        double rotSpeedToStraight =
+                rotationController.calculate(drivetrain.getPose().getRotation().getRadians());
+        if (rotationController.atSetpoint()) {
+            rotSpeedToStraight = 0;
+        }
+
+        return drive
+            .withVelocityX(xSpeed*MaxSpeed) //
+            .withVelocityY(-yVel *MaxSpeed)
+            .withRotationalRate(rotSpeedToStraight*MaxAngularRate);
+        });
+    }
 
 public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate) {
         return applyRequest(() -> {
