@@ -4,19 +4,17 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-
-import org.ejml.sparse.csc.linsol.qr.LinearSolverQrLeftLooking_DSCC;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.events.OneShotTriggerEvent;
 import com.pathplanner.lib.path.PathConstraints;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -30,13 +28,8 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
-import frc.robot.handlers.IntakeHandler;
 import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.Superstructure;
-import frc.robot.handlers.IntakeHandler.IntakeState;
-import frc.robot.handlers.IntakeSlideHandler;
-import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
-import frc.robot.handlers.Superstructure.SuperstructureState;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
@@ -63,6 +56,7 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController opJoystick = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     
@@ -105,6 +99,9 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Shoot", 
         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
+
+        NamedCommands.registerCommand("ShooterOff", 
+        new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         
         NamedCommands.registerCommand("ShootSafe", 
         new SequentialCommandGroup(
@@ -183,8 +180,9 @@ public class RobotContainer {
         joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
 
-        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
-        
+        //joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
+        //joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. IDLE)));
+
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
         joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
@@ -201,18 +199,6 @@ public class RobotContainer {
 
         joystick.rightStick().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
 
-        
-
-        
-        //FOR HESHEL
-        /*
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
-        joystick.leftTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
-        
-        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
-        joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
-        joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));  
-        */
 
 
         /*BINDS: 
@@ -223,22 +209,22 @@ public class RobotContainer {
         Left stick in = reverse (unstuck shi)
         A = Tuning mode (Dpad up or down to change speed by 250 RPM)
         */
-
-        
-        
-        
-
         
         //joystick.povDown().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
         //joystick.povUp().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROOUT))); //in RPM
-        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
-        joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
         
-        //joystick.povLeft().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.OUT));
-        //joystick.povRight().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.IN));
 
         joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.67)); //  out
         joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.67)); //in
+
+
+        //CONTROLLER 2 / debug controller 
+
+        opJoystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
+        opJoystick.b().onTrue(new InstantCommand(() -> IntakeSlide.calibrateZeroIn()));
+        opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
+        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
+        joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
     
     }        
 

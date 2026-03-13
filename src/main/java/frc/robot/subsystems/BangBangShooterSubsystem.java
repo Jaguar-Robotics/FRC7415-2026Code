@@ -37,18 +37,31 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     Shooter1Map.put(104.6 ,70.0);
     Shooter1Map.put(85.8, 64.0);
     Shooter1Map.put(69.0, 60.0);
+    Shooter1Map.put(56.7,52.0);
 
     Shooter2Map.put(138.4 ,100.0);
     Shooter2Map.put(121.4 ,77.0);
     Shooter2Map.put(104.6 ,70.0);
+    Shooter2Map.put(85.8, 64.0);
+    Shooter2Map.put(69.0, 60.0);
+    Shooter2Map.put(56.7,52.0);
+
 
     Shooter3Map.put(138.4 ,100.0);
     Shooter3Map.put(121.4 ,77.0);
     Shooter3Map.put(104.6 ,70.0);
+    Shooter3Map.put(85.8, 64.0);
+    Shooter3Map.put(69.0, 60.0);
+    Shooter3Map.put(56.7,52.0);
+
 
     Shooter4Map.put(138.4 ,100.0);
     Shooter4Map.put(121.4 ,77.0);
     Shooter4Map.put(104.6 ,70.0);
+    Shooter4Map.put(85.8, 64.0);
+    Shooter4Map.put(69.0, 60.0);
+    Shooter4Map.put(56.7,52.0);
+
 
 
 

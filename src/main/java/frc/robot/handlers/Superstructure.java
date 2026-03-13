@@ -1,26 +1,12 @@
 package frc.robot.handlers;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.ShooterConstants;
-import frc.robot.handlers.IndexerHighHandler.IndexerHighState;
-import frc.robot.handlers.IndexerLowHandler.IndexerLowState;
-import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.HopperSubsystem;
-import frc.robot.subsystems.IndexerHighSubsystem;
-import frc.robot.subsystems.IndexerLowSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-
-import static edu.wpi.first.units.Units.Degrees;
-
-import edu.wpi.first.math.geometry.Pose2d;
 
 public class Superstructure extends SubsystemBase {
 
@@ -37,7 +23,8 @@ public class Superstructure extends SubsystemBase {
     SPINUPSLOW,
     SPINUPFAST,
     FASTSHOT,
-    AIM
+    AIM,
+    BUMP
   }
 
   private static Superstructure instance;
@@ -141,7 +128,7 @@ public class Superstructure extends SubsystemBase {
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
-        driveHandler.setDesiredState(DriveHandler.DriveState.BUMP_LOCK);
+        driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
       case SLOWSHOT: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SLOW);
@@ -170,9 +157,10 @@ public class Superstructure extends SubsystemBase {
       case REVERSE:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.FASTREVERSE);
-        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
-        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.FASTOUT);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWREVERSE);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FASTREVERSE);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.OUT);
         break;
       case AIM:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
@@ -181,6 +169,14 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        break;
+      case BUMP:
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
+        driveHandler.setDesiredState(DriveHandler.DriveState.BUMP_LOCK);
         break;
       case OFF:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
