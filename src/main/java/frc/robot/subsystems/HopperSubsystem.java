@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands; 
 public class HopperSubsystem extends SubsystemBase {
 
-  private final TalonFX hopperMotor = new TalonFX(Constants.HopperConstants.HopperMotorID);
+  private final TalonFX hopperMotor = new TalonFX(Constants.HopperConstants.HopperMotorID, "Upper");
   /** Creates a new Intake. */
   public HopperSubsystem() {}
 

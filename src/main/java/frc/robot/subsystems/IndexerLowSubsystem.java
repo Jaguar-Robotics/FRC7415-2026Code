@@ -15,12 +15,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands; 
 public class IndexerLowSubsystem extends SubsystemBase {
 
-  private final TalonFX indexerLowMotor = new TalonFX(Constants.IndexerConstants.IndexerLowMotorID);
+  private final TalonFX indexerLowMotor = new TalonFX(Constants.IndexerConstants.LowIndexerMotorID, "Upper");
   /** Creates a new Intake. */
   public IndexerLowSubsystem() {}
 
   public void set(double speed){
-    //System.out.print(speed);
     indexerLowMotor.set(speed);
   }
 

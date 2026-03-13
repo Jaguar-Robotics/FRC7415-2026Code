@@ -36,7 +36,7 @@ public class HubShiftUtil {
   private static final double maxFuelCountDelay = 2.0;
   private static final double shiftEndFuelCountExtension = 3.0;
   private static final double minTimeOfFlight = 0.0115177 * Constants.ShiftConstants.MinShootingDistanceInches + 0.330879;
-private static final double maxTimeOfFlight = 0.0115177 * Constants.ShiftConstants.MaxShootingDistanceInches + 0.330879;
+  private static final double maxTimeOfFlight = 0.0115177 * Constants.ShiftConstants.MaxShootingDistanceInches + 0.330879;
   private static final double approachingActiveFudge = -1 * (minTimeOfFlight + minFuelCountDelay);
   private static final double endingActiveFudge =
       shiftEndFuelCountExtension + -1 * (maxTimeOfFlight + maxFuelCountDelay);

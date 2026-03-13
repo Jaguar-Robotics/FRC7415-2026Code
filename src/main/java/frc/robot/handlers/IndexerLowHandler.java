@@ -11,7 +11,10 @@ import frc.robot.handlers.ShooterHandler.ShooterState;
 import frc.robot.handlers.StateSubsystem.State;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
+import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.utils.HubShiftUtil;
+import frc.robot.utils.HubShiftUtil.ShiftInfo;
 
 public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
 
@@ -24,7 +27,7 @@ public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
   }
 
   private static IndexerLowHandler instance;
-  private final IndexerHighSubsystem index = new IndexerHighSubsystem();
+  private final IndexerLowSubsystem index = new IndexerLowSubsystem();
 
   private IndexerLowState desiredState = IndexerLowState.OFF;
   private IndexerLowState currentState = IndexerLowState.OFF;
@@ -55,10 +58,23 @@ public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
       if((currentState != desiredState)){
         switch (desiredState) {
             case FAST:
-                index.set(Constants.IndexerConstants.FastRoll); 
+        ShiftInfo shiftInfo = HubShiftUtil.getOfficialShiftInfo();
+        boolean earlyShoot = !shiftInfo.active() && shiftInfo.remainingTime() <= 1.0 && HubShiftUtil.isNextShiftActive();
+        System.out.println("active: " + shiftInfo.active() + " | remainingTime: " + shiftInfo.remainingTime() + " | earlyShoot: " + earlyShoot);
+
+                if (!shiftInfo.active() && !earlyShoot) {
+                index.set(Constants.IndexerConstants.FastRoll);
+                }
+
                 break;
             case SLOWINTAKE:
+        ShiftInfo shiftInfo2 = HubShiftUtil.getOfficialShiftInfo();
+        boolean earlyShoot2 = !shiftInfo2.active() && shiftInfo2.remainingTime() <= 1.0 && HubShiftUtil.isNextShiftActive();
+        System.out.println("active: " + shiftInfo2.active() + " | remainingTime: " + shiftInfo2.remainingTime() + " | earlyShoot: " + earlyShoot2);
+
+                if (!shiftInfo2.active() && !earlyShoot2) {
                 index.set(Constants.IndexerConstants.SlowRoll);
+                }
                 break;
             case FASTREVERSE:
                 index.set(Constants.IndexerConstants.FastOutRoll);

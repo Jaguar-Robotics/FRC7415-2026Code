@@ -20,14 +20,20 @@ public class Vision extends SubsystemBase {
    * Updates pose estimator with Limelight vision measurements
    * Called automatically in periodic().
    */
-  
-  private final String PosLimelight = "limelight-front";
-  public void updateVisionMeasurements() {
+
+    // All Pose estimating limelights names
+  private final String[] LLNames = {
+    "limelight-fl",
+    "limelight-fr"
+    // add more as needed
+  };
+
+  public void updateVisionMeasurements(String LLName) {
     boolean doRejectUpdate = false;
     
     if (!useMegaTag2) {
       // MegaTag1 mode
-      LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(PosLimelight);
+      LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(LLName);
 
       if (mt1 == null){
         return;
@@ -60,12 +66,12 @@ public class Vision extends SubsystemBase {
       // MegaTag2 mode
       // Set robot orientation for MegaTag2
       LimelightHelpers.SetRobotOrientation(
-        PosLimelight,
+        LLName,
         drivetrain.getState().Pose.getRotation().getDegrees(),
         0, 0, 0, 0, 0
       );
       
-      LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(PosLimelight);
+      LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LLName);
       
       if (mt2 == null){
         return;
@@ -82,9 +88,6 @@ public class Vision extends SubsystemBase {
       }
       
       if (!doRejectUpdate) {
-        /* 
-        drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 0.9));//9999999 to 0.9
-        drivetrain.addVisionMeasurement(mt2.pose, mt2.timestampSeconds); */
         // Add vision measurement to drivetrain
         drivetrain.addVisionMeasurement(
           mt2.pose,
@@ -95,25 +98,49 @@ public class Vision extends SubsystemBase {
     }
   } 
   
+
   @Override
   public void periodic() {
-    updateVisionMeasurements();}
-
-    public boolean hasDetection() {
-    return LimelightHelpers.getRawDetections(PosLimelight).length > 0;
-}
-
-public double getDetectionTX() {
-    LimelightHelpers.RawDetection[] detections = LimelightHelpers.getRawDetections(PosLimelight);
-    if (detections.length == 0) return 0.0;
-    return detections[0].txnc;
+    for (String limeLight : LLNames) {
+      updateVisionMeasurements(limeLight); 
+    }
   }
 
-public double[] getFuelData() {
-    return LimelightHelpers.getPythonScriptData(PosLimelight);
-}
-
-public RawDetection[] getAllFuel() {
-    return LimelightHelpers.getRawDetections(PosLimelight);
+  public boolean hasDetection() {
+    for (String ll : LLNames) {
+      if (LimelightHelpers.getRawDetections(ll).length > 0) return true;
+    }
+    return false;
   }
+
+  public double getDetectionTX() {
+    RawDetection best = null;
+    for (String ll : LLNames) {
+      for (RawDetection d : LimelightHelpers.getRawDetections(ll)) {
+        if (best == null || Math.abs(d.txnc) < Math.abs(best.txnc)) {
+          best = d;
+        }
+      }
+    }
+    return best != null ? best.txnc : 0.0;
+  }
+
+  public double[] getFuelData() {
+    for (String ll : LLNames) {
+      double[] data = LimelightHelpers.getPythonScriptData(ll);
+      if (data != null && data.length > 0) return data;
+    }
+    return new double[0];
+  }
+
+  public RawDetection[] getAllFuel() {
+    java.util.List<RawDetection> all = new java.util.ArrayList<>();
+    for (String ll : LLNames) {
+      for (RawDetection d : LimelightHelpers.getRawDetections(ll)) {
+        all.add(d);
+      }
+    }
+    return all.toArray(new RawDetection[0]);
+  }
+
 }

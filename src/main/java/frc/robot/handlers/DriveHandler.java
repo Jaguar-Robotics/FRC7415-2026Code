@@ -6,19 +6,21 @@ package frc.robot.handlers;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rectangle2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.LimelightHelpers;
 import frc.robot.handlers.ShooterHandler.ShooterState;
 import frc.robot.handlers.StateSubsystem.State;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HopperSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.Vision;
 
 public class DriveHandler extends SubsystemBase {
 
@@ -26,10 +28,9 @@ public class DriveHandler extends SubsystemBase {
         TELEOPDRIVE,
         AUTOALLIGN,
         SHOOTONTHEMOVE,
-        PASSING,
         SNAKE,
         XDRIVE,
-        CHASE
+        BUMP_LOCK
   }
 
 
@@ -39,10 +40,10 @@ public class DriveHandler extends SubsystemBase {
   private double maxSpeed;
   private double maxAngularRate;
   private static DriveHandler instance;
-  private Vision vision;
 
 
-  private DriveState desiredState = DriveState.AUTOALLIGN; 
+
+  private DriveState desiredState = DriveState.TELEOPDRIVE; 
   private DriveState currentState = DriveState.TELEOPDRIVE;
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
 
@@ -56,16 +57,29 @@ public class DriveHandler extends SubsystemBase {
     return instance;
   }
 
-    public void initialize(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, SwerveRequest.FieldCentric drive,  double maxSpeed,  double maxAngularRate, Vision vision) {
+  Rectangle2d zone1 = new Rectangle2d(new Pose2d(1.0, 1.0, new Rotation2d()), 2.0, 2.0);
+  Rectangle2d zone2 = new Rectangle2d(new Pose2d(5.0, 3.0, new Rotation2d()), 1.5, 2.0);
+  Rectangle2d zone3 = new Rectangle2d(new Pose2d(10.0, 2.0, new Rotation2d()), 3.0, 1.0);
+  Rectangle2d zone4 = new Rectangle2d(new Pose2d(14.0, 5.0, new Rotation2d()), 2.0, 2.0);
+
+  Trigger inAnyZone = new Trigger(() -> {
+      Translation2d robotPos = drivetrain.getState().Pose.getTranslation();
+      return zone1.contains(robotPos) ||
+            zone2.contains(robotPos) ||
+            zone3.contains(robotPos) ||
+            zone4.contains(robotPos);
+  });
+
+
+  public void initialize(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, SwerveRequest.FieldCentric drive,  double maxSpeed,  double maxAngularRate) {
     this.drivetrain = drivetrain;
     this.joystick = joystick;
     this.drive = drive;
     this.maxSpeed = maxSpeed;
     this.maxAngularRate = maxAngularRate;
-    this.vision = vision;
 
     update();
-    }
+  }
 
   
   public void setDesiredState(DriveState state){
@@ -82,10 +96,6 @@ public class DriveHandler extends SubsystemBase {
     }
   }
 
-
-  
-
-
   public void handleStateTransition() {
     update();
   }
@@ -98,30 +108,22 @@ public class DriveHandler extends SubsystemBase {
     }
         switch (desiredState) {
             case TELEOPDRIVE:
-                LimelightHelpers.setPipelineIndex("limelight-front", 0);
-                System.out.print("TELEOP");
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
                 break;
             case AUTOALLIGN:
-                LimelightHelpers.setPipelineIndex("limelight-front", 0);
-                drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, maxSpeed, maxAngularRate, "no"));
+                drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, maxSpeed, maxAngularRate));
                 break;
             case SHOOTONTHEMOVE:
-                LimelightHelpers.setPipelineIndex("limelight-front", 0);
                 drivetrain.setDefaultCommand(drivetrain.shootOnTheMoveIterative(joystick, maxSpeed, maxAngularRate, "no"));
                 break;
-            case PASSING:
-                drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain)); //make code for
-                break;
             case SNAKE:
-            System.out.print("SNAKE");
                 drivetrain.setDefaultCommand(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate));
                 break;
             case XDRIVE:
                 drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> brake));
                 break;
-            case CHASE:
-                drivetrain.setDefaultCommand(drivetrain.detectChase(vision, maxSpeed, maxAngularRate));
+            case BUMP_LOCK:
+                drivetrain.setDefaultCommand(drivetrain.bumpLockCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate)); 
                 break;
             default:
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));

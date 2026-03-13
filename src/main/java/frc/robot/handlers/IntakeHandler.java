@@ -4,14 +4,19 @@
 
 package frc.robot.handlers;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.handlers.ShooterHandler.ShooterState;
-import frc.robot.handlers.StateSubsystem.State;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.IntakeSubsystem;
 
 public class IntakeHandler extends SubsystemBase implements StateSubsystem {
 
+    
     public enum IntakeState implements State {
       FASTINTAKE,
       SLOWINTAKE,
@@ -21,11 +26,16 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
   }
 
   private static IntakeHandler instance;
-  private  IntakeSubsystem intake = new IntakeSubsystem();
+  private Elevator lintake;
+  private IntakeSubsystem intake = new IntakeSubsystem();
   private IntakeState desiredState = IntakeState.OFF;
   private IntakeState currentState = IntakeState.OFF;
 
-  /** Creates a new IntakeHandler. */
+    public void initialize(Elevator lintake) {
+    this.lintake = lintake;
+    }
+
+
   private IntakeHandler() {}
 
   public static IntakeHandler getInstance(){
@@ -48,11 +58,11 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
     update();
   }
 
-      @Override
+    @Override
     public void update() {
         switch (desiredState) {
             case FASTINTAKE:
-                intake.set(Constants.IntakeConstants.FastIntake); 
+                intake.set(Constants.IntakeConstants.FastIntake);
                 break;
             case SLOWINTAKE:
                 intake.set(Constants.IntakeConstants.SlowIntake);
@@ -79,7 +89,8 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
 
   @Override
   public void periodic() {
+    SmartDashboard.putString("IntakeHandlerState", currentState.toString());
     update();
     // This method will be called once per scheduler run
   }
-}
+} 
