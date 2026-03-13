@@ -185,17 +185,4 @@ public class HubShiftUtil {
     };
     return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
   }
-
-  public static boolean isNextShiftActive() {
-    boolean[] schedule = getSchedule();
-    double currentTime = shiftTimer.get();
-    
-    for (int i = 0; i < shiftStartTimes.length - 1; i++) {
-        if (currentTime >= shiftStartTimes[i] && currentTime < shiftEndTimes[i]) {
-            return schedule[i + 1]; 
-        }
-    }
-    return false;
-  }
-
 }

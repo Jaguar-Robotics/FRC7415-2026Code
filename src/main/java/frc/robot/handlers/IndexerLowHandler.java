@@ -57,24 +57,11 @@ public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
     public void update() {
       if((currentState != desiredState)){
         switch (desiredState) {
-            case FAST:
-        ShiftInfo shiftInfo = HubShiftUtil.getOfficialShiftInfo();
-        boolean earlyShoot = !shiftInfo.active() && shiftInfo.remainingTime() <= 1.0 && HubShiftUtil.isNextShiftActive();
-        System.out.println("active: " + shiftInfo.active() + " | remainingTime: " + shiftInfo.remainingTime() + " | earlyShoot: " + earlyShoot);
-
-                if (!shiftInfo.active() && !earlyShoot) {
+            case FAST:        
                 index.set(Constants.IndexerConstants.FastRoll);
-                }
-
                 break;
             case SLOWINTAKE:
-        ShiftInfo shiftInfo2 = HubShiftUtil.getOfficialShiftInfo();
-        boolean earlyShoot2 = !shiftInfo2.active() && shiftInfo2.remainingTime() <= 1.0 && HubShiftUtil.isNextShiftActive();
-        System.out.println("active: " + shiftInfo2.active() + " | remainingTime: " + shiftInfo2.remainingTime() + " | earlyShoot: " + earlyShoot2);
-
-                if (!shiftInfo2.active() && !earlyShoot2) {
                 index.set(Constants.IndexerConstants.SlowRoll);
-                }
                 break;
             case FASTREVERSE:
                 index.set(Constants.IndexerConstants.FastOutRoll);

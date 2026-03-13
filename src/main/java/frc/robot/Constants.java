@@ -25,6 +25,18 @@ public class Constants {
     public static final double MaxShootingDistanceInches = 200.0; //random number not too pivotal rn
 }
 
+public static abstract class ClimberConstants {
+        public static final int ClimberMotorID = 32; //change me ts NOT a real motor
+        public static final double ClimbSpeed = 0.7;
+        public static final double DescendSpeed = -0.5;
+
+        public static final Distance HighSetPoint = Inches.of(63.0);
+        public static final Distance MiddleSetPoint = Inches.of(45.0);
+        public static final Distance LowSetPoint = Inches.of(27.0);
+
+        public static final Distance LowSetPointDown = Inches.of(23.0);
+    }
+
     public static abstract class ShooterConstants {
         public static final int ShooterLeaderID = 20; 
         public static final int ShooterFollowerID = 21;

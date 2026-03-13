@@ -267,13 +267,6 @@ public class RobotContainer {
             double r = info.remainingTime();
             return r <= 1.0 && r > 0.0;
         }).whileTrue(Commands.run(rumbleOn)).onFalse(Commands.runOnce(rumbleOff));
-
-        new Trigger(() -> {
-            double remaining = HubShiftUtil.getOfficialShiftInfo().remainingTime();
-            return remaining <= 1.0 && HubShiftUtil.isNextShiftActive();
-        }).onTrue(Commands.runOnce(() -> {
-            System.out.println("Early shoot window opened, remaining: " + HubShiftUtil.getOfficialShiftInfo().remainingTime());
-        }));
     }
 
     public Command getAutonomousCommand() {

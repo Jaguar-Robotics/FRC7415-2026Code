@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.handlers;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -12,6 +8,8 @@ import frc.robot.handlers.StateSubsystem.State;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.utils.HubShiftUtil;
+import frc.robot.utils.HubShiftUtil.ShiftInfo;
 
 public class IndexerHighHandler extends SubsystemBase implements StateSubsystem {
 
@@ -28,7 +26,6 @@ public class IndexerHighHandler extends SubsystemBase implements StateSubsystem 
 
   private IndexerHighState desiredState = IndexerHighState.OFF;
   private IndexerHighState currentState = IndexerHighState.OFF;
-  /** Creates a new IntakeHandler. */
   private IndexerHighHandler() {}
 
   public static IndexerHighHandler getInstance(){
@@ -50,33 +47,40 @@ public class IndexerHighHandler extends SubsystemBase implements StateSubsystem 
     update();
   }
 
-      @Override
-    public void update() {
-      if((currentState != desiredState)){
-        switch (desiredState) {
-            case FAST:
-                index.set(Constants.IndexerConstants.FastRoll); 
-                break;
-            case SLOWINTAKE:
-                index.set(Constants.IndexerConstants.SlowRoll);
-                break;
-            case FASTREVERSE:
-                index.set(Constants.IndexerConstants.FastOutRoll);
-                break;
-            case SLOWREVERSE:
-                index.set(Constants.IndexerConstants.SlowOutRoll);
-                break;
-            case OFF:
-                index.stop(); 
-                break;
-            default:
-                index.stop();
-                break;
-        }
+    @Override
+  public void update() {
+      if (currentState != desiredState) {
+          currentState = desiredState;
+      }
+
+      switch (currentState) {
+          case FAST:
+              if (HubShiftUtil.getShiftedShiftInfo().active()) {
+                  index.set(Constants.IndexerConstants.FastRoll);
+              } else {
+                  index.stop();
+              }
+              break;
+          case SLOWINTAKE:
+              if (HubShiftUtil.getShiftedShiftInfo().active()) {
+                  index.set(Constants.IndexerConstants.SlowRoll);
+              } else {
+                  index.stop();
+              }
+              break;
+          case FASTREVERSE:
+              index.set(Constants.IndexerConstants.FastOutRoll);
+              break;
+          case SLOWREVERSE:
+              index.set(Constants.IndexerConstants.SlowOutRoll);
+              break;
+          case OFF:
+          default:
+              index.stop();
+              break;
+      }
         currentState = desiredState;
     }
-  }
-
       public IndexerHighState getCurrentState() {
       return currentState;
   }
