@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
@@ -38,6 +39,8 @@ import frc.robot.subsystems.IndexerHighSubsystem;
 import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.Vision;
+import frc.robot.utils.HubShiftUtil;
+import frc.robot.utils.RumbleUtils;
 
 public class RobotContainer {
 
@@ -70,6 +73,23 @@ public class RobotContainer {
     public final Elevator IntakeSlide = new Elevator();
 
     public final Superstructure superstructure = Superstructure.getInstance(); 
+
+    Trigger fiveSecWarning = new Trigger(() -> {
+    var info = HubShiftUtil.getOfficialShiftInfo();
+    return info.remainingTime() <= 5.0;});
+
+    Trigger threeSecWarning = new Trigger(() -> {
+        var info = HubShiftUtil.getOfficialShiftInfo();
+        return info.remainingTime() <= 3.0;});
+
+    Trigger twoSecWarning = new Trigger(() -> {
+        var info = HubShiftUtil.getOfficialShiftInfo();
+        return info.remainingTime() <= 2.0;});
+
+    Trigger oneSecWarning = new Trigger(() -> {
+        var info = HubShiftUtil.getOfficialShiftInfo();
+        return info.remainingTime() <= 1.0;});
+
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
@@ -225,7 +245,17 @@ public class RobotContainer {
         opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
         joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
         joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
-    
+
+
+        RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));
+        RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
+
+        fiveSecWarning.onTrue(RumbleUtils.rumble(joystick, 1.0, 0.5));
+        threeSecWarning.onTrue(RumbleUtils.rumble(joystick, 1.0, 0.25));
+        twoSecWarning.onTrue(RumbleUtils.rumble(joystick, 1.0, 0.25));
+        oneSecWarning.onTrue(RumbleUtils.rumble(joystick, 1.0, 1));
+
+        fiveSecWarning.onTrue(new InstantCommand(() -> SmartDashboard.putBoolean("isTsWorking", true)));
     }        
 
     public Command getAutonomousCommand() {
