@@ -76,6 +76,10 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   private double targetVeloRPS3 = 0;
   private double targetVeloRPS4 = 0;
 
+  private double ShooterMult = 1.0;
+
+
+
   private boolean shooterEnabled = false;
   
   public BangBangShooterSubsystem() {    
@@ -97,6 +101,14 @@ public class BangBangShooterSubsystem extends SubsystemBase {
       return instance;
   }
 
+  public void changeShooterMult(double multAdd){
+    ShooterMult += multAdd;
+  }
+
+  public void resetShooterMult(){
+    ShooterMult = 1.0;
+  }
+
   public void setTargetVelocity(double VelocityRPS) {
     if (VelocityRPS > Constants.ShooterConstants.RPSHardStop) {
       targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;
@@ -116,10 +128,10 @@ public class BangBangShooterSubsystem extends SubsystemBase {
 
   public void setTargetVeloDistance(double  distance) {
     double inches = distance * 39.3701;
-    targetVeloRPS1 = Shooter1Map.get(inches);
-    targetVeloRPS2 = Shooter2Map.get(inches);
-    targetVeloRPS3 = Shooter3Map.get(inches);
-    targetVeloRPS4 = Shooter4Map.get(inches);
+    targetVeloRPS1 = Shooter1Map.get(inches) * ShooterMult;
+    targetVeloRPS2 = Shooter2Map.get(inches)* ShooterMult;
+    targetVeloRPS3 = Shooter3Map.get(inches)* ShooterMult;
+    targetVeloRPS4 = Shooter4Map.get(inches)* ShooterMult;
 
     if (targetVeloRPS1 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;}
     if (targetVeloRPS2 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS2 = Constants.ShooterConstants.RPSHardStop;}
@@ -193,5 +205,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("TargetRPS2", targetVeloRPS2);
     SmartDashboard.putNumber("TargetRPS3", targetVeloRPS3);
     SmartDashboard.putNumber("TargetRPS4", targetVeloRPS4);
+
+    SmartDashboard.putNumber("ShooterMult", ShooterMult);
   }
 }

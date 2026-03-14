@@ -33,6 +33,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
 import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.Superstructure;
+import frc.robot.handlers.Superstructure.SuperstructureState;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
@@ -91,6 +92,17 @@ public class RobotContainer {
     Trigger oneSecWarning = new Trigger(() -> {
         var info = HubShiftUtil.getOfficialShiftInfo();
         return info.remainingTime() <= 1.0;});
+
+    Trigger noButtonsHeld = new Trigger(() ->
+    !joystick.a().getAsBoolean() &&
+    !joystick.b().getAsBoolean() &&
+    !joystick.y().getAsBoolean() &&
+    !joystick.x().getAsBoolean() &&
+    !joystick.rightTrigger().getAsBoolean() &&
+    !joystick.leftTrigger().getAsBoolean() &&
+    !joystick.rightBumper().getAsBoolean() &&
+    !joystick.leftTrigger().getAsBoolean() 
+    );
 
 
     /* Path follower */
@@ -202,8 +214,6 @@ public class RobotContainer {
          * Left Stick in - Reverse shi
          */
         joystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));           
-        
-        joystick.rightTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
         joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
 
@@ -213,14 +223,14 @@ public class RobotContainer {
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
 
         joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
-        joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. IDLE)));
 
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
         joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
-        joystick.leftTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
         joystick.leftStick().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
+
+        noButtonsHeld.onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         
 
        //joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
@@ -259,10 +269,11 @@ public class RobotContainer {
         }));
 
         opJoystick.a().onTrue(Commands.runOnce(() -> drivetrain.resetHubOffset()));
+        opJoystick.a().onTrue(Commands.runOnce(() -> shooter.resetShooterMult()));
 
-        // Adjust X offset
-        opJoystick.povUp().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.1, 0.0)));
-        opJoystick.povDown().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(-0.1, 0.0)));
+        // Change Shooter Power
+        opJoystick.povUp().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(0.05)));
+        opJoystick.povDown().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(-0.05)));
 
         // Adjust Y offset
         opJoystick.povRight().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, 0.1)));

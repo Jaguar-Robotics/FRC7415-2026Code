@@ -652,8 +652,8 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
             yVel = -yVel;
         }
         return drive
-            .withVelocityX(xSpeed*MaxSpeed * 0.5) //
-            .withVelocityY(yVel *MaxSpeed * 0.5)
+            .withVelocityX(xSpeed*MaxSpeed) // 
+            .withVelocityY(yVel *MaxSpeed)
             .withRotationalRate(rotSpeedToStraight*MaxAngularRate);
         });
     }
