@@ -209,7 +209,13 @@ public class Superstructure extends SubsystemBase {
         }
         
         DTaimed = drivetrain.isAimedAtTarget();
-        ShooterAtVelo = shooter.atTargetVelo();
+        if (CommandSwerveDrivetrain.isInAllianceZone(drivetrain.getPose())){
+            ShooterAtVelo = shooter.atTargetVelo();
+        }
+        else {
+            ShooterAtVelo = shooter.atTargetVeloPassing(); 
+        }
+        
 
         
         if (currentState == SuperstructureState.SPINUP && ShooterAtVelo && DTaimed){ //checks if its at target velo and angle

@@ -141,6 +141,11 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   boolean atTargBelo = Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1-2.0;
   return atTargBelo;
   }
+
+  public boolean atTargetVeloPassing() {
+  boolean atTargBelo = (Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1-2.0) || ShooterMotor.getVelocity().getValueAsDouble() >= 98.0;
+  return atTargBelo;
+  }
   
   @Override
   public void periodic() {

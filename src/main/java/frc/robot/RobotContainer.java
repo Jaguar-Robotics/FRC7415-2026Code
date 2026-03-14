@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -195,13 +197,15 @@ public class RobotContainer {
         
         joystick.rightTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
+        joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
+
         //joystick.leftBumper().onTrue(new InstantCommand(() -:drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no"))); //shoot while stationary
         
         joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
 
-        //joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
-        //joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. IDLE)));
+        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
+        joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. IDLE)));
 
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
@@ -220,15 +224,6 @@ public class RobotContainer {
         joystick.rightStick().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
 
 
-
-        /*BINDS: 
-        Right bumper = auto angle
-        B = spinup
-        Y = Shoot with auto shooter speed 
-        Left Trigger = hold for intake/ release for idle
-        Left stick in = reverse (unstuck shi)
-        A = Tuning mode (Dpad up or down to change speed by 250 RPM)
-        */
         
         //joystick.povDown().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
         //joystick.povUp().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROOUT))); //in RPM
@@ -242,18 +237,36 @@ public class RobotContainer {
 
         opJoystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
         opJoystick.b().onTrue(new InstantCommand(() -> IntakeSlide.calibrateZeroIn()));
+        //AUTO WINNER OVERIDES
+        opJoystick.y().onTrue(Commands.runOnce(() -> {
+            var current = HubShiftUtil.getAllianceWinOverride();
+            HubShiftUtil.setAllianceWinOverride(() -> Optional.of(current.orElse(true) == false));
+        }));
+
+        opJoystick.a().onTrue(Commands.runOnce(() -> drivetrain.resetHubOffset()));
+
+        // Adjust X offset
+        opJoystick.povUp().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.1, 0.0)));
+        opJoystick.povDown().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(-0.1, 0.0)));
+
+        // Adjust Y offset
+        opJoystick.povRight().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, 0.1)));
+        opJoystick.povLeft().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, -0.1)));
+
+        /* 
         opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
         joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
         joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
+        */
 
 
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
 
-        fiveSecWarning.onTrue(RumbleUtils.rumble(joystick, 1.0, 0.5));
-        threeSecWarning.onTrue(RumbleUtils.rumble(joystick, 1.0, 0.25));
-        twoSecWarning.onTrue(RumbleUtils.rumble(joystick, 1.0, 0.25));
-        oneSecWarning.onTrue(RumbleUtils.rumble(joystick, 1.0, 1));
+        fiveSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.5));
+        threeSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.25));
+        twoSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.25));
+        oneSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 1));
 
         fiveSecWarning.onTrue(new InstantCommand(() -> SmartDashboard.putBoolean("isTsWorking", true)));
     }        

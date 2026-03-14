@@ -348,13 +348,35 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     // --------------------- END GENERATED CODE -------------------
     
+    private double hubOffsetX = 0.0;
+    private double hubOffsetY = 0.0;
+
+    public void setHubOffset(double offsetX, double offsetY) {
+    hubOffsetX += offsetX;
+    hubOffsetY += offsetY;
+    }
+
+    public void resetHubOffset() {
+    hubOffsetX = 0.0;
+    hubOffsetY = 0.0;
+    }
     
     // Get hub pose based on alliance
-    public static Pose3d getHubPose() {
-        return DriverStation.getAlliance()
-            .map(alliance -> alliance == Alliance.Red ? Constants.FieldConstants.redHubPose : Constants.FieldConstants.blueHubPose)
-            .orElse(Constants.FieldConstants.blueHubPose); // Default to blue if alliance unknown
-    }
+// Replace the existing static getHubPose() with this instance version
+public Pose3d getHubPose() {
+    Pose3d base = DriverStation.getAlliance()
+        .map(alliance -> alliance == Alliance.Red ? Constants.FieldConstants.redHubPose : Constants.FieldConstants.blueHubPose).orElse(Constants.FieldConstants.blueHubPose);
+
+    // Apply offsets relative to alliance
+    // For Red alliance, flip X offset direction since field is mirrored
+    double adjustedX = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+        ? base.getX() - hubOffsetX
+        : base.getX() + hubOffsetX;
+
+    double adjustedY = base.getY() + hubOffsetY;
+
+    return new Pose3d(adjustedX, adjustedY, base.getZ(), base.getRotation());
+}
 
     
     public static Distance getCloseBumpY(Pose2d currentPose){
@@ -684,6 +706,8 @@ public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwe
         field.setRobotPose(getPose());
         SmartDashboard.putNumber("distanceToCenterHubInches", getDistance() * 39.3701);
         SmartDashboard.putString("close trench X val", getCloseBumpY(getPose()).toShortString());
+        SmartDashboard.putNumber("Hub/OffsetX", hubOffsetX);
+        SmartDashboard.putNumber("Hub/OffsetY", hubOffsetY);
 
         /*
          * Periodically try to apply the operator perspective.

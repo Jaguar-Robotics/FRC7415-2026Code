@@ -40,8 +40,9 @@ public class Robot extends TimedRobot {
 
         // Official shift info 
         SmartDashboard.putString("Shift/Official/CurrentShift",   official.currentShift().toString());
-        SmartDashboard.putString("Shift/Official/RemainingTime", String.format("%.1f", official.remainingTime()));
-        SmartDashboard.putString("Shift/Official/ElapsedTime",   String.format("%.1f", official.elapsedTime()));
+        SmartDashboard.putNumber("Shift/Official/RemainingTime", Math.round(official.remainingTime()*10)/10.0);
+        SmartDashboard.putNumber("Shift/Official/ElapsedTime",   Math.round(official.elapsedTime()*10)/10.0);
+        SmartDashboard.putNumber("Shift/Official/MatchTime",        HubShiftUtil.getMatchTime());
         SmartDashboard.putBoolean("Shift/Official/Active",        official.active());
 
         // Shifted shift info

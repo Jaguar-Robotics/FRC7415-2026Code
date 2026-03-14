@@ -183,4 +183,8 @@ public class HubShiftUtil {
     };
     return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
   }
+
+  public static double getMatchTime(){
+    return 140.0-shiftTimer.get();
+  }
 }
