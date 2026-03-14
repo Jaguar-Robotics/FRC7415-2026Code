@@ -191,8 +191,16 @@ public class RobotContainer {
             }).withTimeout(2.0).schedule();
         }));
 
-        
-       
+        /* Main driver Controller:
+         * RT - Hold to spin up (and shoot hopefully) - relase to idle
+         * RB - Shoot (dont use unless robot broken)
+         * LT - Hold to Intake - release to idle
+         * B - Spin up Fast (use if broken)
+         * Y - FAST SHOT (use if broken)
+         * A - Hold to bump assist - release to idle
+         * X - Robot off
+         * Left Stick in - Reverse shi
+         */
         joystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));           
         
         joystick.rightTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
@@ -234,6 +242,13 @@ public class RobotContainer {
 
 
         //CONTROLLER 2 / debug controller 
+        /*
+         *  RT - Shoot
+         *  B - re-zero intake IN
+         *  Y - overide alliance winner (on a switch)
+         *  DPAD - shift hub by 0.1 M in direction (up is away, down is closer)
+         *  A - Reset Shifted Hub to where it should be
+         */
 
         opJoystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
         opJoystick.b().onTrue(new InstantCommand(() -> IntakeSlide.calibrateZeroIn()));
