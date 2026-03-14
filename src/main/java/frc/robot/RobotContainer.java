@@ -187,6 +187,7 @@ public class RobotContainer {
                 Units.degreesToRadians(540), Units.degreesToRadians(720));
 
         //ROTATE 90 degreese
+        /*
         joystick.leftBumper().onTrue(Commands.runOnce(() -> {
             Rotation2d targetRotation = drivetrain.getPose().getRotation().plus(Rotation2d.fromDegrees(90));
             
@@ -202,6 +203,7 @@ public class RobotContainer {
                     .withRotationalRate(rotationalRate * 6); // Max angular rate
             }).withTimeout(2.0).schedule();
         }));
+        */
 
         /* Main driver Controller:
          * RT - Hold to spin up (and shoot hopefully) - relase to idle
