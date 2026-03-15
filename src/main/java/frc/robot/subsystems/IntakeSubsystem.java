@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 public class IntakeSubsystem extends SubsystemBase {
 
-  private final TalonFX intakeMotor = new TalonFX(Constants.IntakeConstants.IntakeMotorID, "Upper");
+  private final TalonFX  intakeMotor = new TalonFX(Constants.IntakeConstants.IntakeMotorID, "Upper");
   private final TalonFX intakeFollowerMotor = new TalonFX(Constants.IntakeConstants.IntakeFollowerReversedMotorID, "Upper");
 
   public IntakeSubsystem() {

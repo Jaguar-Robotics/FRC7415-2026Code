@@ -32,14 +32,14 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   
   //inches to center hub from Robot orign , RPS
   static {
-    Shooter1Map.put(138.4 ,100.0);
+    Shooter1Map.put(138.4 ,105.0);
     Shooter1Map.put(121.4 ,77.0);
     Shooter1Map.put(104.6 ,70.0);
     Shooter1Map.put(85.8, 64.0);
     Shooter1Map.put(69.0, 60.0);
     Shooter1Map.put(56.7,52.0);
 
-    Shooter2Map.put(138.4 ,100.0);
+    Shooter2Map.put(138.4 ,105.0);
     Shooter2Map.put(121.4 ,77.0);
     Shooter2Map.put(104.6 ,70.0);
     Shooter2Map.put(85.8, 64.0);
@@ -47,7 +47,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     Shooter2Map.put(56.7,52.0);
 
 
-    Shooter3Map.put(138.4 ,100.0);
+    Shooter3Map.put(138.4 ,105.0);
     Shooter3Map.put(121.4 ,77.0);
     Shooter3Map.put(104.6 ,70.0);
     Shooter3Map.put(85.8, 64.0);
@@ -55,7 +55,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     Shooter3Map.put(56.7,52.0);
 
 
-    Shooter4Map.put(138.4 ,100.0);
+    Shooter4Map.put(138.4 ,105.0);
     Shooter4Map.put(121.4 ,77.0);
     Shooter4Map.put(104.6 ,70.0);
     Shooter4Map.put(85.8, 64.0);
@@ -76,11 +76,13 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   private double targetVeloRPS3 = 0;
   private double targetVeloRPS4 = 0;
 
-  private double ShooterMult = 1.0;
+  private double ShooterMult = 0.95;
 
 
 
   private boolean shooterEnabled = false;
+
+  private boolean MaxRPM = false;
   
   public BangBangShooterSubsystem() {    
     
@@ -137,6 +139,13 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     if (targetVeloRPS2 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS2 = Constants.ShooterConstants.RPSHardStop;}
     if (targetVeloRPS3 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS3 = Constants.ShooterConstants.RPSHardStop;}
     if (targetVeloRPS4 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS4 = Constants.ShooterConstants.RPSHardStop;}
+
+    if (targetVeloRPS1 >= 104.0){
+      MaxRPM = true;
+    }
+    else{
+      MaxRPM = false;
+    }
 
     shooterEnabled = true;
   }
@@ -207,5 +216,6 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("TargetRPS4", targetVeloRPS4);
 
     SmartDashboard.putNumber("ShooterMult", ShooterMult);
+    SmartDashboard.putBoolean("MaxRPM?", MaxRPM);
   }
 }

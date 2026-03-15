@@ -3,50 +3,34 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.109041703637978,
-        "y": 4.4080403225806455
+        "x": 7.96983630952381,
+        "y": 1.3792038690476192
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.373451612903226,
-        "y": 4.1812903225806455
+        "x": 6.188430059523809,
+        "y": 2.6646874999999994
       },
       "isLocked": false,
-      "linkedName": "F2"
+      "linkedName": "LowFuel"
     },
     {
       "anchor": {
-        "x": 5.699032738100059,
-        "y": 5.705476190473729
+        "x": 2.7300223214285713,
+        "y": 2.782142857142858
       },
       "prevControl": {
-        "x": 6.762475509200177,
-        "y": 5.501199048002521
-      },
-      "nextControl": {
-        "x": 4.54405505952863,
-        "y": 5.927336309521348
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 2.397232142857143,
-        "y": 5.02031994047619
-      },
-      "prevControl": {
-        "x": 3.74796875,
-        "y": 5.9012351190476195
+        "x": 4.615833333333331,
+        "y": 2.2274925595238106
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "ScoringDepot"
+      "linkedName": "HubThing"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1,
+      "waypointRelativePos": 0.2810902896081766,
       "rotationDegrees": 0.0
     }
   ],
@@ -54,8 +38,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "okkkkk",
-      "waypointRelativePos": 0.5059055118110236,
+      "name": "IntakeOff",
+      "waypointRelativePos": 0.2864173228346455,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -81,7 +65,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 59.99999999999999
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

@@ -13,7 +13,10 @@ public class Superstructure extends SubsystemBase {
   // Define your states
   public enum SuperstructureState {
     STATIONARYSHOT,
+    SHOOTONTHEMOVE,
+    SHOOTONTHEMOVESPINUP,
     INTAKE,
+    INTAKESLOW,
     SLOWSHOT,
     REVERSE,
     SPINUP,
@@ -104,6 +107,15 @@ public class Superstructure extends SubsystemBase {
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
         intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.OUT);
         break;
+      case INTAKESLOW:
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.FASTINTAKE);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
+        driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVESLOW);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.OUT);
+        break;
       case SPINUP:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING); //change to shooting
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
@@ -121,6 +133,23 @@ public class Superstructure extends SubsystemBase {
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
+        break;
+      case SHOOTONTHEMOVE:
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
+        driveHandler.setDesiredState(DriveHandler.DriveState.SHOOTONTHEMOVE);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
+        break;
+      case SHOOTONTHEMOVESPINUP:
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
+        driveHandler.setDesiredState(DriveHandler.DriveState.SHOOTONTHEMOVE);
         break;
       case TUNING: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.TUNING);

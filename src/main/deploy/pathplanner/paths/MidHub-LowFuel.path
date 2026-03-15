@@ -3,37 +3,42 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7659077380952382,
-        "y": 5.0920982142857145
+        "x": 5.849114583333333,
+        "y": 3.9762723214285716
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.613956789173673,
-        "y": 5.05990655501331
+        "x": 6.553846726190476,
+        "y": 5.0529464285714285
       },
       "isLocked": false,
-      "linkedName": "D2"
+      "linkedName": "MidHub"
     },
     {
       "anchor": {
-        "x": 0.4071872227151724,
-        "y": 0.6267080745341604
+        "x": 7.96983630952381,
+        "y": 1.3792038690476192
       },
       "prevControl": {
-        "x": 3.367907081247016,
-        "y": 0.9808163265306109
+        "x": 9.203117559523811,
+        "y": 3.5912797619047625
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "O"
+      "linkedName": "LowFuel"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.549403747870527,
+      "rotationDegrees": 90.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 1.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -42,13 +47,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 90.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 45.0
+    "rotation": 150.0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

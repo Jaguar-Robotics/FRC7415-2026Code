@@ -516,6 +516,20 @@ public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, doub
     });
 }
 
+public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
+    return applyRequest(() -> {
+        // Apply 10% deadband to joystick inputs
+        double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
+        double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
+        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
+        
+        return alignRequest
+            .withVelocityX(xSpeed * MaxSpeed*0.5)
+            .withVelocityY(ySpeed * MaxSpeed*0.5)
+            .withRotationalRate(rotSpeed * MaxAngularRate);
+    });
+}
+
     //BASED ON MECH A PRAISE THE FRC GODS FOR OPEN ALLIANCE
     public Command shootOnTheMoveIterative(CommandXboxController controller, double maxSpeed, double maxAngularRate, String tuning) {
     return applyRequest(() -> {

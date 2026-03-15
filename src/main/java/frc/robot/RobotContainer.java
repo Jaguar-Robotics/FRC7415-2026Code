@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -140,8 +141,15 @@ public class RobotContainer {
         NamedCommands.registerCommand("ShootSafe", 
         new SequentialCommandGroup(
             new InstantCommand( () -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)),
-            Commands.waitSeconds(2),
+            new WaitCommand(2.0),
             new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT))
+        ));
+
+        NamedCommands.registerCommand("ShootTest", 
+        new SequentialCommandGroup(
+            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)).withTimeout(0.1),
+            new WaitCommand(3.0),
+            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE))
         ));
     }
 
@@ -217,7 +225,11 @@ public class RobotContainer {
          */
         joystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));           
 
-        joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
+        //joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
+        joystick.rightBumper().onTrue(new SequentialCommandGroup(
+            Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVESPINUP)),
+            Commands.waitSeconds(0.5),
+            Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVE))));
 
         //joystick.leftBumper().onTrue(new InstantCommand(() -:drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no"))); //shoot while stationary
         
@@ -228,7 +240,8 @@ public class RobotContainer {
 
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
+        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESLOW)));
+        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
 
         joystick.leftStick().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
 
