@@ -62,9 +62,6 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     Shooter4Map.put(69.0, 60.0);
     Shooter4Map.put(56.7,52.0);
 
-
-
-
   }
 
  
@@ -83,6 +80,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   private boolean shooterEnabled = false;
 
   private boolean MaxRPM = false;
+  private boolean MultiplierOn = true;
   
   public BangBangShooterSubsystem() {    
     
@@ -107,10 +105,16 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     ShooterMult += multAdd;
   }
 
-  public void resetShooterMult(){
-    ShooterMult = 1.0;
+  public void toggleShooterMult(){
+    if (MultiplierOn) {MultiplierOn = false;}
+    if (!MultiplierOn) {MultiplierOn = true;}
   }
 
+  public void resetShooterMult(){
+    ShooterMult = 1.0; //change to 0.95
+  }
+
+  // without mult
   public void setTargetVelocity(double VelocityRPS) {
     if (VelocityRPS > Constants.ShooterConstants.RPSHardStop) {
       targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;
@@ -127,7 +131,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     }
     shooterEnabled = true;
   }
-
+  // with mult
   public void setTargetVeloDistance(double  distance) {
     double inches = distance * 39.3701;
     targetVeloRPS1 = Shooter1Map.get(inches) * ShooterMult;
@@ -217,5 +221,6 @@ public class BangBangShooterSubsystem extends SubsystemBase {
 
     SmartDashboard.putNumber("ShooterMult", ShooterMult);
     SmartDashboard.putBoolean("MaxRPM?", MaxRPM);
+    SmartDashboard.putBoolean("MultpilerOn?", MultiplierOn);
   }
 }

@@ -26,7 +26,7 @@ public class Constants {
         public static final int ShooterFollowerID = 21;
         public static final int ShooterFollowerReversedID = 22; //
         public static final int ShooterFollowerReversed2ID = 23; //
-        public static final double FastShot = 25; // IN RPS
+        public static final double FastShot = 100; // IN RPS
         public static final double SlowShot = 20; //HESKEL CHANGE ME SLOW
         public static final double RPSHardStop = 100.0; 
         public static final double RPSTolarance = 1;
@@ -37,8 +37,8 @@ public class Constants {
     public static abstract class IntakeConstants {
         public static final int IntakeMotorID = 30; 
         public static final int IntakeFollowerReversedMotorID = 31; 
-        public static final double FastIntake = 0.67; 
-        public static final double SlowIntake = 0.5;
+        public static final double FastIntake = 0.87;
+        public static final double SlowIntake = 0.67;
         public static final double SlowReverse = -0.3;
         public static final double FastReverse = -0.87;
 
@@ -88,25 +88,25 @@ public class Constants {
             new Rotation3d()
         );
         public static final Pose2d blueTargetHighPose = new Pose2d(
-            Units.Inches.of(50),
+            Units.Inches.of(20),
             Units.Inches.of(265), 
             new Rotation2d()
         );
 
         public static final Pose2d blueTargetLowPose = new Pose2d(
-            Units.Inches.of(50),
+            Units.Inches.of(20),
             Units.Inches.of(50), 
             new Rotation2d()
         );
 
         public static final Pose2d redTargetHighPose = new Pose2d(
-            Units.Inches.of(600), 
+            Units.Inches.of(630), 
             Units.Inches.of(265), 
             new Rotation2d()
         );
 
         public static final Pose2d redTargetLowPose = new Pose2d(
-            Units.Inches.of(600), 
+            Units.Inches.of(630), 
             Units.Inches.of(50), 
             new Rotation2d()
         ); 

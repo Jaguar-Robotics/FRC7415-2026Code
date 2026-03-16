@@ -17,6 +17,7 @@ public class Superstructure extends SubsystemBase {
     SHOOTONTHEMOVESPINUP,
     INTAKE,
     INTAKESLOW,
+    INTAKESLOWSLOW,
     SLOWSHOT,
     REVERSE,
     SPINUP,
@@ -116,6 +117,15 @@ public class Superstructure extends SubsystemBase {
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVESLOW);
         intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.OUT);
         break;
+      case INTAKESLOWSLOW:
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.SLOWINTAKE);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
+        driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVESLOW);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.OUT);
+        break;
       case SPINUP:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING); //change to shooting
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
@@ -168,20 +178,22 @@ public class Superstructure extends SubsystemBase {
         //driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
       case SPINUPFAST: //dont use
-        shooterHandler.setDesiredState(ShooterHandler.ShooterState.FAST); //SWITCHEWD TO TUNING SWITCH BACK TO FAST SHOT
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.FAST); //change to shooting
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
-        indexerHighHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
+        driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        ShooterAtVelo = false;
          break;
       case FASTSHOT: //dont use
-        shooterHandler.setDesiredState(ShooterHandler.ShooterState.FAST); //SWITCHED TO TUNABLE FAST SHOT SWITCH BACK TO FAST
-        intakeHandler.setDesiredState(IntakeHandler.IntakeState.SLOWINTAKE);
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.FAST);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
-        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
-        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
-        //driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
-        //intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
+        driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
         break;
       case REVERSE:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
