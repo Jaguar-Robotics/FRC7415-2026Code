@@ -133,6 +133,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("IntakeOff",
          new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
+        NamedCommands.registerCommand("ShootAuto", 
+        new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPAUTO)));
+
         NamedCommands.registerCommand("Shoot", 
         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
 
