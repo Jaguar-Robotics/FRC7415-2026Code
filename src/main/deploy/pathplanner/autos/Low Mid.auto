@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "S1-D1"
+            "pathName": "S4-F3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "D1-D2"
+            "pathName": "F3-ok"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "D2-Hub"
+            "pathName": "ok-Hub"
           }
         },
         {
@@ -35,9 +35,9 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Move"
+            "name": "ShooterOff"
           }
         }
       ]

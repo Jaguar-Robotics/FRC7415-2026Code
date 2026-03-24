@@ -3,49 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7659077380952382,
-        "y": 5.0920982142857145
+        "x": 7.992048387096775,
+        "y": 0.904387096774194
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4410197882863613,
-        "y": 5.309391914374445
+        "x": 7.992048387096775,
+        "y": 2.65640839631369
       },
       "isLocked": false,
-      "linkedName": "D2"
+      "linkedName": "F3"
     },
     {
       "anchor": {
-        "x": 2.628411712511091,
-        "y": 4.819671694764862
+        "x": 8.021306451612903,
+        "y": 3.6985322580645166
       },
       "prevControl": {
-        "x": 1.8880035492457847,
-        "y": 5.342786157941436
+        "x": 8.021306451612903,
+        "y": 2.754988028682996
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "hubok"
+      "linkedName": "okyay"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "IntakeOff",
-      "waypointRelativePos": 0.21226415094339626,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "IntakeOff"
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 1.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -54,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -29.999999999999996
+    "rotation": -59.99999999999999
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 45.0
+    "rotation": -59.99999999999999
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

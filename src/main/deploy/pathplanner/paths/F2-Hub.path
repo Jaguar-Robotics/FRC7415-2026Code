@@ -3,38 +3,59 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7659077380952382,
-        "y": 5.0920982142857145
+        "x": 8.109041703637978,
+        "y": 4.4080403225806455
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4410197882863613,
-        "y": 5.309391914374445
+        "x": 5.373451612903226,
+        "y": 4.1812903225806455
       },
       "isLocked": false,
-      "linkedName": "D2"
+      "linkedName": "F2"
     },
     {
       "anchor": {
-        "x": 2.628411712511091,
-        "y": 4.819671694764862
+        "x": 5.699032738100059,
+        "y": 5.705476190473729
       },
       "prevControl": {
-        "x": 1.8880035492457847,
-        "y": 5.342786157941436
+        "x": 6.762475509200177,
+        "y": 5.501199048002521
+      },
+      "nextControl": {
+        "x": 4.54405505952863,
+        "y": 5.927336309521348
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.397232142857143,
+        "y": 5.02031994047619
+      },
+      "prevControl": {
+        "x": 3.74796875,
+        "y": 5.9012351190476195
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "hubok"
+      "linkedName": "ScoringDepot"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": 0.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "IntakeOff",
-      "waypointRelativePos": 0.21226415094339626,
+      "name": "okkkkk",
+      "waypointRelativePos": 0.5059055118110236,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -54,13 +75,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -29.999999999999996
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 45.0
+    "rotation": 59.99999999999999
   },
   "useDefaultConstraints": true
 }

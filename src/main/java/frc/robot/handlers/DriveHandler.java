@@ -26,6 +26,7 @@ public class DriveHandler extends SubsystemBase {
 
     public enum DriveState implements State {
         TELEOPDRIVE,
+        TELEOPDRIVESLOW,
         AUTOALLIGN,
         SHOOTONTHEMOVE,
         SNAKE,
@@ -109,6 +110,9 @@ public class DriveHandler extends SubsystemBase {
         switch (desiredState) {
             case TELEOPDRIVE:
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
+                break;
+            case TELEOPDRIVESLOW:
+                drivetrain.setDefaultCommand(drivetrain.TeleopDriveSLOW(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
                 break;
             case AUTOALLIGN:
                 drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, maxSpeed, maxAngularRate));

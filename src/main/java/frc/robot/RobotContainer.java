@@ -4,40 +4,36 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import org.ejml.sparse.csc.linsol.qr.LinearSolverQrLeftLooking_DSCC;
+import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.events.OneShotTriggerEvent;
 import com.pathplanner.lib.path.PathConstraints;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
-import frc.robot.handlers.IntakeHandler;
 import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.Superstructure;
-import frc.robot.handlers.IntakeHandler.IntakeState;
-import frc.robot.handlers.IntakeSlideHandler;
-import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
 import frc.robot.handlers.Superstructure.SuperstructureState;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -48,6 +44,7 @@ import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.Vision;
 import frc.robot.utils.HubShiftUtil;
+import frc.robot.utils.RumbleUtils;
 
 public class RobotContainer {
 
@@ -66,6 +63,7 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController opJoystick = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     
@@ -79,6 +77,35 @@ public class RobotContainer {
     public final Elevator IntakeSlide = new Elevator();
 
     public final Superstructure superstructure = Superstructure.getInstance(); 
+
+    Trigger fiveSecWarning = new Trigger(() -> {
+    var info = HubShiftUtil.getOfficialShiftInfo();
+    return info.remainingTime() <= 5.0;});
+
+    Trigger threeSecWarning = new Trigger(() -> {
+        var info = HubShiftUtil.getOfficialShiftInfo();
+        return info.remainingTime() <= 3.0;});
+
+    Trigger twoSecWarning = new Trigger(() -> {
+        var info = HubShiftUtil.getOfficialShiftInfo();
+        return info.remainingTime() <= 2.0;});
+
+    Trigger oneSecWarning = new Trigger(() -> {
+        var info = HubShiftUtil.getOfficialShiftInfo();
+        return info.remainingTime() <= 1.0;});
+
+    Trigger noButtonsHeld = new Trigger(() ->
+    !joystick.a().getAsBoolean() &&
+    !joystick.b().getAsBoolean() &&
+    !joystick.y().getAsBoolean() &&
+    !joystick.x().getAsBoolean() &&
+    !joystick.rightTrigger().getAsBoolean() &&
+    !joystick.leftTrigger().getAsBoolean() &&
+    !joystick.rightBumper().getAsBoolean() &&
+    !joystick.leftTrigger().getAsBoolean() &&
+    !joystick.rightBumper().getAsBoolean()
+    );
+
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
@@ -97,7 +124,6 @@ public class RobotContainer {
 
         // Warmup PathPlanner to avoid Java pauses
         FollowPathCommand.warmupCommand().schedule();
-        
     }
 
     private void configurePathPlanner() {
@@ -109,12 +135,22 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Shoot", 
         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
+
+        NamedCommands.registerCommand("ShooterOff", 
+        new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         
         NamedCommands.registerCommand("ShootSafe", 
         new SequentialCommandGroup(
             new InstantCommand( () -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)),
-            Commands.waitSeconds(2),
+            new WaitCommand(2.0),
             new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT))
+        ));
+
+        NamedCommands.registerCommand("ShootTest", 
+        new SequentialCommandGroup(
+            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)).withTimeout(0.1),
+            new WaitCommand(3.0),
+            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE))
         ));
     }
 
@@ -160,6 +196,7 @@ public class RobotContainer {
                 Units.degreesToRadians(540), Units.degreesToRadians(720));
 
         //ROTATE 90 degreese
+        /*
         joystick.leftBumper().onTrue(Commands.runOnce(() -> {
             Rotation2d targetRotation = drivetrain.getPose().getRotation().plus(Rotation2d.fromDegrees(90));
             
@@ -175,26 +212,41 @@ public class RobotContainer {
                     .withRotationalRate(rotationalRate * 6); // Max angular rate
             }).withTimeout(2.0).schedule();
         }));
+        */
 
-        
-       
+        /* Main driver Controller:
+         * RT - Hold to spin up (and shoot hopefully) - relase to idle
+         * RB - Shoot (dont use unless robot broken)
+         * LT - Hold to Intake - release to idle
+         * B - Spin up Fast (use if broken)
+         * Y - FAST SHOT (use if broken)
+         * A - Hold to bump assist - release to idle
+         * X - Robot off
+         * Left Stick in - Reverse shi 
+         */
         joystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));           
-        
-        joystick.rightTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+
+        //joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
+        joystick.rightBumper().onTrue(new SequentialCommandGroup(
+            Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)),
+            Commands.waitSeconds(0.5),
+            Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT))));
 
         //joystick.leftBumper().onTrue(new InstantCommand(() -:drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no"))); //shoot while stationary
         
         joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
 
-        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
-        
+        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
+
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
-        joystick.leftTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESLOW)));
+        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESLOWSLOW)));
 
         joystick.leftStick().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
+
+        noButtonsHeld.onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         
 
        //joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
@@ -205,69 +257,63 @@ public class RobotContainer {
 
         joystick.rightStick().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
 
-        
-
-        
-        //FOR HESHEL
-        /*
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
-        joystick.leftTrigger().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
-        
-        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
-        joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
-        joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));  
-        */
-
-
-        /*BINDS: 
-        Right bumper = auto angle
-        B = spinup
-        Y = Shoot with auto shooter speed 
-        Left Trigger = hold for intake/ release for idle
-        Left stick in = reverse (unstuck shi)
-        A = Tuning mode (Dpad up or down to change speed by 250 RPM)
-        */
-
-        
-        
-        
 
         
         //joystick.povDown().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
         //joystick.povUp().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROOUT))); //in RPM
-        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
-        joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
         
-        //joystick.povLeft().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.OUT));
-        //joystick.povRight().onTrue(IntakeSlide.goToSetpoint(()-> Elevator.Setpoint.IN));
 
         joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.67)); //  out
         joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.67)); //in
 
-        Runnable rumbleOn  = () -> joystick.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 1.0);
-        Runnable rumbleOff = () -> joystick.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0);
 
-        new Trigger(() -> {
-            var info = HubShiftUtil.getOfficialShiftInfo();
-            if (info == null) return false;
-            double r = info.remainingTime();
-            return r <= 5.0 && r > 4.5;
-        }).whileTrue(Commands.run(rumbleOn)).onFalse(Commands.runOnce(rumbleOff));
+        //CONTROLLER 2 / debug controller 
+        /*
+         *  RT - Shoot
+         *  B - re-zero intake IN
+         *  Y - overide alliance winner (on a switch)
+         *  DPAD - shift hub by 0.1 M in direction (up is away, down is closer)
+         *  A - Reset Shifted Hub to where it should be
+         */
 
-        new Trigger(() -> {
-            var info = HubShiftUtil.getOfficialShiftInfo();
-            if (info == null) return false;
-            double r = info.remainingTime();
-            return r <= 3.0 && r > 2.5;
-        }).whileTrue(Commands.run(rumbleOn)).onFalse(Commands.runOnce(rumbleOff));
+        opJoystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
+        opJoystick.b().onTrue(new InstantCommand(() -> IntakeSlide.calibrateZeroIn()));
+        //AUTO WINNER OVERIDES
+        opJoystick.y().onTrue(Commands.runOnce(() -> {
+            var current = HubShiftUtil.getAllianceWinOverride();
+            HubShiftUtil.setAllianceWinOverride(() -> Optional.of(current.orElse(true) == false));
+        }));
 
-        new Trigger(() -> {
-            var info = HubShiftUtil.getOfficialShiftInfo();
-            if (info == null) return false;
-            double r = info.remainingTime();
-            return r <= 1.0 && r > 0.0;
-        }).whileTrue(Commands.run(rumbleOn)).onFalse(Commands.runOnce(rumbleOff));
-    }
+        opJoystick.a().onTrue(Commands.runOnce(() -> drivetrain.resetHubOffset()));
+        opJoystick.a().onTrue(Commands.runOnce(() -> shooter.resetShooterMult()));
+
+        // Change Shooter Power
+        opJoystick.povUp().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(0.05)));
+        opJoystick.povDown().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(-0.05)));
+
+        // Adjust Y offset
+        opJoystick.povRight().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, 0.1)));
+        opJoystick.povLeft().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, -0.1)));
+
+        opJoystick.x().onTrue(Commands.runOnce(() -> shooter.toggleShooterMult()));
+
+        /* 
+        opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
+        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
+        joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
+        */
+
+
+        RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));
+        RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
+
+        fiveSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.5));
+        threeSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.25));
+        twoSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.25));
+        oneSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 1));
+
+        fiveSecWarning.onTrue(new InstantCommand(() -> SmartDashboard.putBoolean("isTsWorking", true)));
+    }        
 
     public Command getAutonomousCommand() {
         /* Run the path selected from the auto chooser */

@@ -42,7 +42,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -349,21 +348,42 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     // --------------------- END GENERATED CODE -------------------
     
+    private double hubOffsetX = 0.0;
+    private double hubOffsetY = 0.0;
+
+    public void setHubOffset(double offsetX, double offsetY) {
+    hubOffsetX += offsetX;
+    hubOffsetY += offsetY;
+    }
+
+    public void resetHubOffset() {
+    hubOffsetX = 0.0;
+    hubOffsetY = 0.0;
+    }
     
     // Get hub pose based on alliance
-    public static Pose3d getHubPose() {
-        return DriverStation.getAlliance()
-            .map(alliance -> alliance == Alliance.Red ? Constants.FieldConstants.redHubPose : Constants.FieldConstants.blueHubPose)
-            .orElse(Constants.FieldConstants.blueHubPose); // Default to blue if alliance unknown
-    }
+// Replace the existing static getHubPose() with this instance version
+public Pose3d getHubPose() {
+    Pose3d base = DriverStation.getAlliance()
+        .map(alliance -> alliance == Alliance.Red ? Constants.FieldConstants.redHubPose : Constants.FieldConstants.blueHubPose).orElse(Constants.FieldConstants.blueHubPose);
+
+    // Apply offsets relative to alliance
+    // For Red alliance, flip X offset direction since field is mirrored
+    double adjustedX = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+        ? base.getX() - hubOffsetX
+        : base.getX() + hubOffsetX;
+
+    double adjustedY = base.getY() + hubOffsetY;
+
+    return new Pose3d(adjustedX, adjustedY, base.getZ(), base.getRotation());
+}
 
     
     public static Distance getCloseBumpY(Pose2d currentPose){
-        if (currentPose.getMeasureY().gt(Inches.of(158.845))){ //if closer to blue left
+        if (currentPose.getMeasureY().gt(Inches.of(158.845))){
             return Inches.of(218.84);
-        }
-        else{
-            return Inches.of(98.84); //closer to blue right Bump
+        } else {
+            return Inches.of(98.84);
         }
     }
 
@@ -472,59 +492,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             currentAngle.getRadians(), 
             desiredAngle.getRadians()
         );
-        double veloX = -controller.getLeftY();
-        if (Math.abs(veloX) < 0.1 ){
-            veloX = 0;
-        }
+        double xSpeed = MathUtil.applyDeadband(-controller.getLeftY(), 0.1);
+        double ySpeed = MathUtil.applyDeadband(-controller.getLeftX(), 0.1);
 
-        double veloY = -controller.getLeftX();
-        if (Math.abs(veloY) < 0.1 ){
-            veloY = 0;
-        }
-        // Apply the request: radial (distance maintenance) + tangential (circling) 
         return alignRequest 
-            .withVelocityX(veloX * maxSpeed) 
-            .withVelocityY(veloY * maxSpeed) 
+            .withVelocityX(xSpeed * maxSpeed)
+            .withVelocityY(ySpeed * maxSpeed)
             .withRotationalRate(rotationalRate * maxAngularRate*1.5); 
     });
 }
-
-private final SwerveRequest.RobotCentric chaseRequest = new SwerveRequest.RobotCentric();
-
-public Command detectChase(Vision vision, double maxSpeed, double maxAngularRate) {
-    return applyRequest(() -> {
-        double[] data = vision.getFuelData();
-
-        // data[0] = cluster count, [1] = best angle X, [2] = angle Y, 
-        // [3] = distance inches, [4] = score, [5] = fuel count
-        if (data == null || data.length < 6 || data[0] == 0) {
-            return chaseRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
-        }
-
-        double tx = data[1]; // horizontal angle to best cluster, negative = left
-
-        double targetAngle = getState().Pose.getRotation().getRadians() + Math.toRadians(tx);
-        double rotationalRate = rotationController.calculate(
-            getState().Pose.getRotation().getRadians(),
-            targetAngle
-        );
-
-        // only drive forward once aimed at target
-        double forwardSpeed = Math.abs(tx) < DriveConstants.RotationalToleranceDegrees ? maxSpeed : 0;
-
-        SmartDashboard.putNumber("Chase/TX", tx);
-        SmartDashboard.putNumber("Chase/Distance", data[3]);
-        SmartDashboard.putNumber("Chase/FuelCount", data[5]);
-        SmartDashboard.putNumber("Chase/Score", data[4]);
-        SmartDashboard.putNumber("Chase/RotationalRate", rotationalRate);
-
-        return chaseRequest
-            .withVelocityX(forwardSpeed)
-            .withVelocityY(0)
-            .withRotationalRate(rotationalRate);
-    });
-}
-
 
 public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
     return applyRequest(() -> {
@@ -536,6 +512,20 @@ public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, doub
         return alignRequest
             .withVelocityX(xSpeed * MaxSpeed)
             .withVelocityY(ySpeed * MaxSpeed)
+            .withRotationalRate(rotSpeed * MaxAngularRate);
+    });
+}
+
+public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
+    return applyRequest(() -> {
+        // Apply 10% deadband to joystick inputs
+        double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
+        double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
+        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
+        
+        return alignRequest
+            .withVelocityX(xSpeed * MaxSpeed*0.5)
+            .withVelocityY(ySpeed * MaxSpeed*0.5)
             .withRotationalRate(rotSpeed * MaxAngularRate);
     });
 }
@@ -637,7 +627,7 @@ public boolean isAimedAtTarget() {
     Rotation2d currentAngle = currentPose.getRotation();
     
     // Calculate required aim angle (same as headingLocktoHub)
-    Translation2d target = getHubPose().toPose2d().getTranslation();
+    Translation2d target = getTargetPose(currentPose).getTranslation();
     Translation2d toTarget = target.minus(currentPose.getTranslation());
     Rotation2d targetAngle = toTarget.getAngle(); // Face towards from hub .plus(Krot180) or sum idk
     
@@ -648,7 +638,7 @@ public boolean isAimedAtTarget() {
     return errorDegrees <= Constants.DriveConstants.RotationalToleranceDegrees;
 }
 
- public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate){
+public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate){
         return applyRequest(() -> {
             double closeTrench = (double)getCloseBumpY(drivetrain.getPose()).in(Meters);
             double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
@@ -672,9 +662,12 @@ public boolean isAimedAtTarget() {
             rotSpeedToStraight = 0;
         }
 
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red){
+            yVel = -yVel;
+        }
         return drive
-            .withVelocityX(xSpeed*MaxSpeed) //
-            .withVelocityY(-yVel *MaxSpeed)
+            .withVelocityX(xSpeed*MaxSpeed) // 
+            .withVelocityY(yVel *MaxSpeed)
             .withRotationalRate(rotSpeedToStraight*MaxAngularRate);
         });
     }
@@ -726,6 +719,9 @@ public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwe
         if(ShootingLocation != null){field.getObject("Shooting Target").setPose(ShootingLocation);}
         field.setRobotPose(getPose());
         SmartDashboard.putNumber("distanceToCenterHubInches", getDistance() * 39.3701);
+        SmartDashboard.putString("close trench X val", getCloseBumpY(getPose()).toShortString());
+        SmartDashboard.putNumber("Hub/OffsetX", hubOffsetX);
+        SmartDashboard.putNumber("Hub/OffsetY", hubOffsetY);
 
         /*
          * Periodically try to apply the operator perspective.

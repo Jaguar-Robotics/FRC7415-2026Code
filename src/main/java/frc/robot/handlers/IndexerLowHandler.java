@@ -13,8 +13,6 @@ import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
 import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.utils.HubShiftUtil;
-import frc.robot.utils.HubShiftUtil.ShiftInfo;
 
 public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
 
@@ -57,8 +55,8 @@ public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
     public void update() {
       if((currentState != desiredState)){
         switch (desiredState) {
-            case FAST:        
-                index.set(Constants.IndexerConstants.FastRoll);
+            case FAST:
+                index.set(Constants.IndexerConstants.FastRoll); 
                 break;
             case SLOWINTAKE:
                 index.set(Constants.IndexerConstants.SlowRoll);

@@ -7,19 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "S1-D1"
+            "pathName": "S4-Wait"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "D1-D2"
+            "pathName": "Wait-Hub"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "D2-Hub"
+            "pathName": "MidHub-LowFuel"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LowFuel-Hub"
           }
         },
         {
@@ -31,13 +37,19 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 3.0
+            "waitTime": 4.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShooterOff"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Move"
+            "pathName": "Hub-Wall"
           }
         }
       ]

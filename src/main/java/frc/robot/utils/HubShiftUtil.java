@@ -34,12 +34,11 @@ public class HubShiftUtil {
 
   private static final double minFuelCountDelay = 1.0;
   private static final double maxFuelCountDelay = 2.0;
+  private static final double minTimeOfFlight = 1.0; //made ts up
+  private static final double maxTimeOfFlight = 3.0; //made ts up
   private static final double shiftEndFuelCountExtension = 3.0;
-  private static final double minTimeOfFlight = 0.0115177 * Constants.ShiftConstants.MinShootingDistanceInches + 0.330879;
-  private static final double maxTimeOfFlight = 0.0115177 * Constants.ShiftConstants.MaxShootingDistanceInches + 0.330879;
   private static final double approachingActiveFudge = -1 * (minTimeOfFlight + minFuelCountDelay);
-  private static final double endingActiveFudge =
-      shiftEndFuelCountExtension + -1 * (maxTimeOfFlight + maxFuelCountDelay);
+  private static final double endingActiveFudge = shiftEndFuelCountExtension + -1 * (maxTimeOfFlight + maxFuelCountDelay);
 
   public static final double autoEndTime = 20.0;
   public static final double teleopDuration = 140.0;
@@ -137,7 +136,6 @@ public class HubShiftUtil {
       active = currentSchedule[currentShiftIndex];
       currentShift = shiftsEnums[currentShiftIndex];
     }
-    SmartDashboard.putBoolean("Shift Active", active);
     ShiftInfo shiftInfo = new ShiftInfo(currentShift, stateTimeElapsed, stateTimeRemaining, active);
     return shiftInfo;
   }
@@ -184,5 +182,9 @@ public class HubShiftUtil {
       140.0
     };
     return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
+  }
+
+  public static double getMatchTime(){
+    return 140.0-shiftTimer.get();
   }
 }

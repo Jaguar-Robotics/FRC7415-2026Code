@@ -3,8 +3,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
-import frc.robot.LimelightHelpers.RawDetection;
-import frc.robot.LimelightHelpers.RawFiducial;
 
 public class Vision extends SubsystemBase {
   
@@ -22,7 +20,7 @@ public class Vision extends SubsystemBase {
    */
 
     // All Pose estimating limelights names
-  private final String[] LLNames = {
+  private final String[] PosLimelights = {
     "limelight-fl",
     "limelight-fr"
     // add more as needed
@@ -101,46 +99,8 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
-    for (String limeLight : LLNames) {
+    for (String limeLight : PosLimelights) {
       updateVisionMeasurements(limeLight); 
     }
   }
-
-  public boolean hasDetection() {
-    for (String ll : LLNames) {
-      if (LimelightHelpers.getRawDetections(ll).length > 0) return true;
-    }
-    return false;
-  }
-
-  public double getDetectionTX() {
-    RawDetection best = null;
-    for (String ll : LLNames) {
-      for (RawDetection d : LimelightHelpers.getRawDetections(ll)) {
-        if (best == null || Math.abs(d.txnc) < Math.abs(best.txnc)) {
-          best = d;
-        }
-      }
-    }
-    return best != null ? best.txnc : 0.0;
-  }
-
-  public double[] getFuelData() {
-    for (String ll : LLNames) {
-      double[] data = LimelightHelpers.getPythonScriptData(ll);
-      if (data != null && data.length > 0) return data;
-    }
-    return new double[0];
-  }
-
-  public RawDetection[] getAllFuel() {
-    java.util.List<RawDetection> all = new java.util.ArrayList<>();
-    for (String ll : LLNames) {
-      for (RawDetection d : LimelightHelpers.getRawDetections(ll)) {
-        all.add(d);
-      }
-    }
-    return all.toArray(new RawDetection[0]);
-  }
-
 }

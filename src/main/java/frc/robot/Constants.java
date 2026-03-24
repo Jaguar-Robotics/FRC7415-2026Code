@@ -19,30 +19,14 @@ import edu.wpi.first.units.measure.Distance;
 
 /** Add your docs here. */
 public class Constants {
-//TODO change
-        public static abstract class ShiftConstants {
-    public static final double MinShootingDistanceInches = 40.0;
-    public static final double MaxShootingDistanceInches = 200.0; //random number not too pivotal rn
-}
 
-public static abstract class ClimberConstants {
-        public static final int ClimberMotorID = 32; //change me ts NOT a real motor
-        public static final double ClimbSpeed = 0.7;
-        public static final double DescendSpeed = -0.5;
-
-        public static final Distance HighSetPoint = Inches.of(63.0);
-        public static final Distance MiddleSetPoint = Inches.of(45.0);
-        public static final Distance LowSetPoint = Inches.of(27.0);
-
-        public static final Distance LowSetPointDown = Inches.of(23.0);
-    }
-
+    
     public static abstract class ShooterConstants {
         public static final int ShooterLeaderID = 20; 
         public static final int ShooterFollowerID = 21;
         public static final int ShooterFollowerReversedID = 22; //
         public static final int ShooterFollowerReversed2ID = 23; //
-        public static final double FastShot = 25; // IN RPS
+        public static final double FastShot = 100; // IN RPS
         public static final double SlowShot = 20; //HESKEL CHANGE ME SLOW
         public static final double RPSHardStop = 100.0; 
         public static final double RPSTolarance = 1;
@@ -53,8 +37,8 @@ public static abstract class ClimberConstants {
     public static abstract class IntakeConstants {
         public static final int IntakeMotorID = 30; 
         public static final int IntakeFollowerReversedMotorID = 31; 
-        public static final double FastIntake = 0.87; //used to be 1 but 0.87 is more effechient or sum
-        public static final double SlowIntake = 0.5;
+        public static final double FastIntake = 0.87;
+        public static final double SlowIntake = 0.67;
         public static final double SlowReverse = -0.3;
         public static final double FastReverse = -0.87;
 
@@ -104,25 +88,25 @@ public static abstract class ClimberConstants {
             new Rotation3d()
         );
         public static final Pose2d blueTargetHighPose = new Pose2d(
-            Units.Inches.of(50),
+            Units.Inches.of(20),
             Units.Inches.of(265), 
             new Rotation2d()
         );
 
         public static final Pose2d blueTargetLowPose = new Pose2d(
-            Units.Inches.of(50),
+            Units.Inches.of(20),
             Units.Inches.of(50), 
             new Rotation2d()
         );
 
         public static final Pose2d redTargetHighPose = new Pose2d(
-            Units.Inches.of(600), 
+            Units.Inches.of(630), 
             Units.Inches.of(265), 
             new Rotation2d()
         );
 
         public static final Pose2d redTargetLowPose = new Pose2d(
-            Units.Inches.of(600), 
+            Units.Inches.of(630), 
             Units.Inches.of(50), 
             new Rotation2d()
         ); 

@@ -32,25 +32,35 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   
   //inches to center hub from Robot orign , RPS
   static {
-    Shooter1Map.put(138.4 ,100.0);
+    Shooter1Map.put(138.4 ,105.0);
     Shooter1Map.put(121.4 ,77.0);
     Shooter1Map.put(104.6 ,70.0);
     Shooter1Map.put(85.8, 64.0);
     Shooter1Map.put(69.0, 60.0);
+    Shooter1Map.put(56.7,52.0);
 
-    Shooter2Map.put(138.4 ,100.0);
+    Shooter2Map.put(138.4 ,105.0);
     Shooter2Map.put(121.4 ,77.0);
     Shooter2Map.put(104.6 ,70.0);
+    Shooter2Map.put(85.8, 64.0);
+    Shooter2Map.put(69.0, 60.0);
+    Shooter2Map.put(56.7,52.0);
 
-    Shooter3Map.put(138.4 ,100.0);
+
+    Shooter3Map.put(138.4 ,105.0);
     Shooter3Map.put(121.4 ,77.0);
     Shooter3Map.put(104.6 ,70.0);
+    Shooter3Map.put(85.8, 64.0);
+    Shooter3Map.put(69.0, 60.0);
+    Shooter3Map.put(56.7,52.0);
 
-    Shooter4Map.put(138.4 ,100.0);
+
+    Shooter4Map.put(138.4 ,105.0);
     Shooter4Map.put(121.4 ,77.0);
     Shooter4Map.put(104.6 ,70.0);
-
-
+    Shooter4Map.put(85.8, 64.0);
+    Shooter4Map.put(69.0, 60.0);
+    Shooter4Map.put(56.7,52.0);
 
   }
 
@@ -63,7 +73,14 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   private double targetVeloRPS3 = 0;
   private double targetVeloRPS4 = 0;
 
+  private double ShooterMult = 0.95;
+
+
+
   private boolean shooterEnabled = false;
+
+  private boolean MaxRPM = false;
+  private boolean MultiplierOn = true;
   
   public BangBangShooterSubsystem() {    
     
@@ -84,6 +101,20 @@ public class BangBangShooterSubsystem extends SubsystemBase {
       return instance;
   }
 
+  public void changeShooterMult(double multAdd){
+    ShooterMult += multAdd;
+  }
+
+  public void toggleShooterMult(){
+    if (MultiplierOn) {MultiplierOn = false;}
+    if (!MultiplierOn) {MultiplierOn = true;}
+  }
+
+  public void resetShooterMult(){
+    ShooterMult = 1.0; //change to 0.95
+  }
+
+  // without mult
   public void setTargetVelocity(double VelocityRPS) {
     if (VelocityRPS > Constants.ShooterConstants.RPSHardStop) {
       targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;
@@ -100,18 +131,25 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     }
     shooterEnabled = true;
   }
-
+  // with mult
   public void setTargetVeloDistance(double  distance) {
     double inches = distance * 39.3701;
-    targetVeloRPS1 = Shooter1Map.get(inches);
-    targetVeloRPS2 = Shooter2Map.get(inches);
-    targetVeloRPS3 = Shooter3Map.get(inches);
-    targetVeloRPS4 = Shooter4Map.get(inches);
+    targetVeloRPS1 = Shooter1Map.get(inches) * ShooterMult;
+    targetVeloRPS2 = Shooter2Map.get(inches)* ShooterMult;
+    targetVeloRPS3 = Shooter3Map.get(inches)* ShooterMult;
+    targetVeloRPS4 = Shooter4Map.get(inches)* ShooterMult;
 
     if (targetVeloRPS1 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;}
     if (targetVeloRPS2 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS2 = Constants.ShooterConstants.RPSHardStop;}
     if (targetVeloRPS3 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS3 = Constants.ShooterConstants.RPSHardStop;}
     if (targetVeloRPS4 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS4 = Constants.ShooterConstants.RPSHardStop;}
+
+    if (targetVeloRPS1 >= 104.0){
+      MaxRPM = true;
+    }
+    else{
+      MaxRPM = false;
+    }
 
     shooterEnabled = true;
   }
@@ -126,6 +164,11 @@ public class BangBangShooterSubsystem extends SubsystemBase {
 
  public boolean atTargetVelo() {
   boolean atTargBelo = Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1-2.0;
+  return atTargBelo;
+  }
+
+  public boolean atTargetVeloPassing() {
+  boolean atTargBelo = (Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1-2.0) || ShooterMotor.getVelocity().getValueAsDouble() >= 98.0;
   return atTargBelo;
   }
   
@@ -175,5 +218,9 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("TargetRPS2", targetVeloRPS2);
     SmartDashboard.putNumber("TargetRPS3", targetVeloRPS3);
     SmartDashboard.putNumber("TargetRPS4", targetVeloRPS4);
+
+    SmartDashboard.putNumber("ShooterMult", ShooterMult);
+    SmartDashboard.putBoolean("MaxRPM?", MaxRPM);
+    SmartDashboard.putBoolean("MultpilerOn?", MultiplierOn);
   }
 }

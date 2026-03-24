@@ -14,8 +14,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.utils.HubShiftUtil;
-import frc.robot.utils.HubShiftUtil.ShiftInfo;
 import frc.robot.RobotContainer;
 
 public class ShooterHandler extends SubsystemBase implements StateSubsystem {
@@ -98,7 +96,7 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     private void handleStateChange(){ 
         switch (desiredState) {
             case SHOOTING:
-                shooter.setTargetVeloDistance(DistMeters);
+                shooter.setTargetVeloDistance(DistMeters); 
                 break;
             case SLOW:
                 shooter.setTargetVelocity(Constants.ShooterConstants.SlowShot);
@@ -128,5 +126,5 @@ public void periodic() {
     DistMeters = drivetrain.getDistance();
     update(); // Handle state transitions
     SmartDashboard.putString("ShooterState", currentState.toString());
-    }
+}
 }
