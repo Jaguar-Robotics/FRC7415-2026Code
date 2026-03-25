@@ -54,6 +54,18 @@ public class Constants {
        
     }
 
+    public static abstract class ClimberConstants {
+        public static final int ClimberMotorID = 32; //change me ts NOT a real motor
+        public static final double ClimbSpeed = 0.7;
+        public static final double DescendSpeed = -0.5;
+
+        public static final Distance HighSetPoint = Inches.of(63.0);
+        public static final Distance MiddleSetPoint = Inches.of(45.0);
+        public static final Distance LowSetPoint = Inches.of(27.0);
+
+        public static final Distance LowSetPointDown = Inches.of(23.0);
+    }
+
     public static abstract class HopperConstants {
         public static final int HopperMotorID = 32; //
         public static final double FastRoll = 0.8; 
