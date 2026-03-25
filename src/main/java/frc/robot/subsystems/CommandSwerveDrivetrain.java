@@ -639,38 +639,58 @@ public boolean isAimedAtTarget() {
 }
 
 public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate){
-        return applyRequest(() -> {
-            double closeTrench = (double)getCloseBumpY(drivetrain.getPose()).in(Meters);
-            double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
-            distanceController.setSetpoint(closeTrench); 
-        double yVel = distanceController.calculate(drivetrain.getPose().getY()); 
-        if (distanceController.atSetpoint()) {
-            yVel = 0;
-        }
-        
-        Rotation2d currentRot = drivetrain.getState().Pose.getRotation();
+    return applyRequest(() -> {
+        double closeTrench = (double)getCloseBumpY(drivetrain.getPose()).in(Meters);
+        double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
+        double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
 
-        // Returns whichever of 0 or 180 the robot is facing closest to
-        Rotation2d rotSetpoint = Math.abs(currentRot.getDegrees()) < 90 
-            ? Rotation2d.kZero        // closer to 0
-            : Rotation2d.fromDegrees(180); // closer to 180
+        double robotY = drivetrain.getPose().getY();
+        double error = robotY - closeTrench;
+        double borderLimit = Inches.of(18).in(Meters);
+        double distToTrench = Math.abs(error);
+        double borderY = closeTrench + Math.copySign(borderLimit, error);
+
+        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        double ySpeedFieldRelative = isRed ? -ySpeed : ySpeed;
+        boolean pushingAway = (error > 0 && ySpeedFieldRelative > 0) || (error < 0 && ySpeedFieldRelative < 0);
+
+        double yVel;
+        if (distToTrench > borderLimit) {
+            distanceController.setSetpoint(closeTrench);
+            yVel = distanceController.calculate(robotY);
+            if (isRed) yVel = -yVel; // flip PID output for Red
+        } else if (pushingAway) {
+            distanceController.setSetpoint(borderY);
+            yVel = distanceController.calculate(robotY);
+            if (isRed) yVel = -yVel; // flip PID output for Red
+        } else {
+            if (ySpeed == 0) {
+                // No joystick input — auto-center to trench
+                distanceController.setSetpoint(closeTrench);
+                yVel = distanceController.calculate(robotY);
+                if (isRed) yVel = -yVel;
+            } else {
+                // Driver pushing inward — full driver control
+                yVel = ySpeed;
+            }
+        }
+
+        Rotation2d currentRot = drivetrain.getState().Pose.getRotation();
+        Rotation2d rotSetpoint = Math.abs(currentRot.getDegrees()) < 90
+            ? Rotation2d.kZero
+            : Rotation2d.fromDegrees(180);
         rotationController.setSetpoint(rotSetpoint.getRadians());
 
-        double rotSpeedToStraight =
-                rotationController.calculate(drivetrain.getPose().getRotation().getRadians());
-        if (rotationController.atSetpoint()) {
-            rotSpeedToStraight = 0;
-        }
+        double rotSpeedToStraight = rotationController.calculate(drivetrain.getPose().getRotation().getRadians());
+        if (rotationController.atSetpoint()) rotSpeedToStraight = 0;
 
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red){
-            yVel = -yVel;
-        }
         return drive
-            .withVelocityX(xSpeed*MaxSpeed) // 
-            .withVelocityY(yVel *MaxSpeed)
-            .withRotationalRate(rotSpeedToStraight*MaxAngularRate);
-        });
-    }
+            .withVelocityX(xSpeed * MaxSpeed)
+            .withVelocityY(yVel * MaxSpeed) // no negation
+            .withRotationalRate(rotSpeedToStraight * MaxAngularRate);
+    });
+}
+
 
 public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate) {
         return applyRequest(() -> {
