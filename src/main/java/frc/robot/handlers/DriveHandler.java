@@ -117,9 +117,9 @@ public class DriveHandler extends SubsystemBase {
             case AUTOALLIGN:
                 drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, maxSpeed, maxAngularRate));
                 break;
-            case SHOOTONTHEMOVE:
-                drivetrain.setDefaultCommand(drivetrain.shootOnTheMoveIterative(joystick, maxSpeed, maxAngularRate, "no"));
-                break;
+           // case SHOOTONTHEMOVE:
+            //    drivetrain.setDefaultCommand(drivetrain.shootOnTheMoveIterative(joystick, maxSpeed, maxAngularRate, "no"));
+             //   break;
             case SNAKE:
                 drivetrain.setDefaultCommand(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate));
                 break;

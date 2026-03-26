@@ -17,7 +17,6 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.path.PathConstraints;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -34,7 +33,6 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
 import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.Superstructure;
-import frc.robot.handlers.Superstructure.SuperstructureState;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
@@ -244,7 +242,7 @@ public class RobotContainer {
 
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESLOW)));
+        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
         joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESLOWSLOW)));
 
         joystick.leftStick().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
@@ -268,6 +266,13 @@ public class RobotContainer {
 
         joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.67)); //  out
         joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.67)); //in
+
+        joystick.povLeft().whileTrue(drivetrain.applyRequest(() ->
+    new SwerveRequest.RobotCentric()
+        .withVelocityX(-1.0*MaxSpeed) // negative = backwards, tune speed as needed
+        .withVelocityY(0)
+        .withRotationalRate(0)
+));
 
 
         //CONTROLLER 2 / debug controller 

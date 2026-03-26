@@ -25,8 +25,7 @@ public class KickerSubsystem extends SubsystemBase {
   }
   public void set(double speed){
     kickerMotor.set(speed);
-    SmartDashboard.putBoolean("ranSetMethod", true);
-
+    //System.out.println("peepeehouse");
   }
 
   public void stop(){

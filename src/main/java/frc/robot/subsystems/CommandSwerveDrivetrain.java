@@ -21,6 +21,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -43,6 +44,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import edu.wpi.first.math.filter.LinearFilter;
+
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
@@ -530,95 +533,186 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
     });
 }
 
+        private double lastAimAngleRad = Double.NaN;
+ 
+    // Moving average filter over ~5 samples (at 50Hz that's ~0.1s of smoothing)
+    // Smooths the noisy derivative of the aim angle to get a clean feedforward
+    private final LinearFilter driveAngleFilter = LinearFilter.movingAverage(5);
+ 
+    // Store last commanded speeds so we use setpoint velocity (not noisy measured)
+    // Updated at the end of each SOTM loop, read at the start of the next
+    private ChassisSpeeds lastCommandedSpeeds = new ChassisSpeeds();
+ 
+    // Offset from robot center to the physical shooter position (measure from CAD)
+    // Example: shooter is 0.2m forward and 0.0m sideways from robot center
+    private static final Translation2d ROBOT_TO_SHOOTER = new Translation2d(0.2, 0.0);
+
     //BASED ON MECH A PRAISE THE FRC GODS FOR OPEN ALLIANCE
-    public Command shootOnTheMoveIterative(CommandXboxController controller, double maxSpeed, double maxAngularRate, String tuning) {
+    public Command shootOnTheMoveIterative(CommandXboxController controller, double maxSpeed, double maxAngularRate) {
     return applyRequest(() -> {
-        // === 6328 SHOOTING ALGORITHM ===
-        
-        // 1. Get current state
+ 
+        // ── 1. CURRENT STATE ─────────────────────────────────────────────────────
         Pose2d currentPose = getPose();
-        ChassisSpeeds robotRelativeSpeeds = getState().Speeds;
-        
-        // CRITICAL: Convert robot-relative speeds to field-relative
+ 
+        // Use setpoint speeds (what we COMMANDED last loop) rather than noisy
+        // measured wheel speeds. If first loop, fall back to measured.
+        ChassisSpeeds measuredSpeeds = getState().Speeds;
+        ChassisSpeeds robotRelativeSpeeds = (lastCommandedSpeeds.vxMetersPerSecond == 0
+                && lastCommandedSpeeds.vyMetersPerSecond == 0
+                && lastCommandedSpeeds.omegaRadiansPerSecond == 0)
+                ? measuredSpeeds
+                : lastCommandedSpeeds;
+ 
+        // Convert to field-relative so we can do field-frame geometry
         ChassisSpeeds fieldVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(
-            robotRelativeSpeeds.vxMetersPerSecond,
-            robotRelativeSpeeds.vyMetersPerSecond,
-            robotRelativeSpeeds.omegaRadiansPerSecond,
-            currentPose.getRotation()
+                robotRelativeSpeeds.vxMetersPerSecond,
+                robotRelativeSpeeds.vyMetersPerSecond,
+                robotRelativeSpeeds.omegaRadiansPerSecond,
+                currentPose.getRotation()
         );
-        
-        // 2. Phase delay - predict where robot will be
-        double phaseDelay = 0.25;
+ 
+        // ── 2. PHASE DELAY (account for code→hardware latency) ───────────────────
+        // 0.03s ≈ 1-2 loop cycles. This is NOT a full lookahead — it just shifts
+        // the starting pose slightly to compensate for pipeline delay.
+        double phaseDelay = 0.03;
         Pose2d estimatedPose = currentPose.exp(
-            new Twist2d(
-                fieldVelocity.vxMetersPerSecond * phaseDelay,
-                fieldVelocity.vyMetersPerSecond * phaseDelay,
-                fieldVelocity.omegaRadiansPerSecond * phaseDelay
-            )
+                new Twist2d(
+                        fieldVelocity.vxMetersPerSecond * phaseDelay,
+                        fieldVelocity.vyMetersPerSecond * phaseDelay,
+                        fieldVelocity.omegaRadiansPerSecond * phaseDelay
+                )
         );
-        
-        // 3. Get target (hub position)
+ 
+        // ── 3. SHOOTER POSITION (offset from robot center) ───────────────────────
+        // Rotate the robot-frame offset into field frame using current heading.
+        // If your shooter IS at center, set ROBOT_TO_SHOOTER = new Translation2d(0,0)
+        Translation2d shooterOffsetFieldFrame = ROBOT_TO_SHOOTER.rotateBy(estimatedPose.getRotation());
+        Translation2d shooterPosition = estimatedPose.getTranslation().plus(shooterOffsetFieldFrame);
+ 
+        // ── 4. TARGET ─────────────────────────────────────────────────────────────
         Translation2d target = getHubPose().toPose2d().getTranslation();
-        
-        // 4. Shooter position
-        Translation2d shooterPosition = estimatedPose.getTranslation();
-        
-        // 5. Field-relative shooter velocity
-        double shooterVelocityX = fieldVelocity.vxMetersPerSecond;
-        double shooterVelocityY = fieldVelocity.vyMetersPerSecond;
-        
-        // 6. ITERATIVE LOOP
-        double timeOfFlight = 0.0;
+ 
+        // ── 5. SHOOTER VELOCITY (field-relative, at shooter position) ────────────
+        // The shooter is offset from the robot center, so it has additional
+        // tangential velocity from the robot's rotation: v_tangential = omega × r
+        // This is the same correction 6328 does with GeomUtil.transformVelocity()
+        double omega = fieldVelocity.omegaRadiansPerSecond;
+        // Tangential velocity added by rotation: perpendicular to the offset vector
+        // If offset is (rx, ry), tangential is (-ry*omega, rx*omega)
+        double shooterVelocityX = fieldVelocity.vxMetersPerSecond
+                + (-shooterOffsetFieldFrame.getY() * omega);
+        double shooterVelocityY = fieldVelocity.vyMetersPerSecond
+                + (shooterOffsetFieldFrame.getX() * omega);
+ 
+        // ── 6. ITERATIVE LOOKAHEAD LOOP ───────────────────────────────────────────
+        // Converges in ~3 iterations; 20 guarantees stability.
+        // Each iteration: estimate TOF → predict where we'll be → recalc distance → repeat
+        double timeOfFlight = 0.1; // initial guess
         Translation2d lookaheadShooterPosition = shooterPosition;
         double lookaheadDistance = target.getDistance(shooterPosition);
-        
+ 
         for (int i = 0; i < 20; i++) {
+            // Your TOF regression (distance in inches → time in seconds).
+            // Replace this with your measured lookup table if you have one.
             double distInches = lookaheadDistance * 39.3701;
-            timeOfFlight = 0.0115177* distInches +0.330879;
-            
-            if (timeOfFlight < 0.01) {
-                timeOfFlight = 0.1;
-            }
-            
-            double offsetX = shooterVelocityX *timeOfFlight ; //times both of these by TOF for real robot
-            double offsetY = shooterVelocityY *timeOfFlight;
-            
+            timeOfFlight = 0.0115177 * distInches + 0.330879;
+            timeOfFlight = Math.max(timeOfFlight, 0.05); // guard against degenerate values
+ 
+            // Where will the shooter be when the note arrives?
+            double offsetX = shooterVelocityX * timeOfFlight;
+            double offsetY = shooterVelocityY * timeOfFlight;
             lookaheadShooterPosition = shooterPosition.plus(new Translation2d(offsetX, offsetY));
             lookaheadDistance = target.getDistance(lookaheadShooterPosition);
         }
-        
-        // 7. Calculate aim angle
+ 
+        // ── 7. AIM ANGLE ──────────────────────────────────────────────────────────
         Rotation2d aimAngle = target.minus(lookaheadShooterPosition).getAngle();
-        
-        // === ROTATION CONTROL ===
+ 
+        // ── 8. AIM ANGLE FEEDFORWARD ─────────────────────────────────────────────
+        // 6328's key insight: differentiate the required aim angle over time and feed
+        // that forward so the robot is already spinning at the right rate, not
+        // just reacting to error. The filter removes noise from the derivative.
+        double aimAngleRad = aimAngle.getRadians();
+        double aimAngleVelocityFF = 0.0;
+ 
+        if (!Double.isNaN(lastAimAngleRad)) {
+            // Wrap the delta to handle the ±π boundary cleanly
+            double rawDelta = aimAngleRad - lastAimAngleRad;
+            // Normalize to [-π, π]
+            while (rawDelta > Math.PI) rawDelta -= 2 * Math.PI;
+            while (rawDelta < -Math.PI) rawDelta += 2 * Math.PI;
+ 
+            double rawRate = rawDelta / 0.02; // 20ms loop period
+            aimAngleVelocityFF = driveAngleFilter.calculate(rawRate);
+        }
+        lastAimAngleRad = aimAngleRad;
+ 
+        // ── 9. ROTATION PID + FF ──────────────────────────────────────────────────
         Rotation2d currentAngle = currentPose.getRotation();
-        
-        double rotationalRate = rotationController.calculate(
-            currentAngle.getRadians(), 
-            aimAngle.getRadians()
+        double pidOutput = rotationController.calculate(currentAngle.getRadians(), aimAngleRad);
+ 
+        // FF is in rad/s; scale it to match your maxAngularRate units.
+        // Tune kFF: start at 1.0 and reduce if the robot overshoots on turns.
+        double kFF = 1.0;
+        double rotationalRate = aimAngleVelocityFF * kFF + pidOutput;
+ 
+        // ── 10. DRIVER TRANSLATION INPUT ─────────────────────────────────────────
+        double veloX = MathUtil.applyDeadband(-controller.getLeftY(), Constants.DriveConstants.TranslationDeadband);
+        double veloY = MathUtil.applyDeadband(-controller.getLeftX(), Constants.DriveConstants.TranslationDeadband);
+ 
+        // ── 11. LINEAR VELOCITY LIMITING (6328's polar velocity cap) ─────────────
+        // Prevent the driver from moving so fast perpendicular to the shot that
+        // it would miss. The limit is: lateral_speed ≤ (maxPolarVelocity * distance / TOF)
+        // maxPolarVelocity is the max angular rate (rad/s) you're willing to have
+        // the puck move at the target during flight. Tune this.
+        double maxPolarVelocityRadPerSec = 0.5; // rad/s at target — start here, tune up
+ 
+        Translation2d driverVelocity = new Translation2d(veloX * maxSpeed, veloY * maxSpeed);
+ 
+        if (driverVelocity.getNorm() > 0.01 && timeOfFlight > 0.05) {
+            // Angle between driver's desired velocity and the shot direction
+            double velocityToShotAngle = driverVelocity.getAngle().minus(aimAngle).getRadians();
+ 
+            // Perpendicular (lateral) component relative to shot line
+            double lateralSpeed = Math.abs(driverVelocity.getNorm() * Math.sin(velocityToShotAngle));
+ 
+            // Max allowed lateral speed so the angular deviation ≤ maxPolarVelocityRadPerSec
+            double maxLateralSpeed = maxPolarVelocityRadPerSec * lookaheadDistance / timeOfFlight;
+ 
+            if (lateralSpeed > maxLateralSpeed) {
+                double scale = maxLateralSpeed / lateralSpeed;
+                veloX *= scale;
+                veloY *= scale;
+            }
+        }
+ 
+        // ── 12. BUILD COMMANDED SPEEDS & CACHE THEM ───────────────────────────────
+        // Cache what we're about to command so next loop uses setpoint, not measured
+        // Convert field-relative driver input back to robot-relative for storage
+        ChassisSpeeds fieldRelativeCommanded = new ChassisSpeeds(
+                veloX * maxSpeed,
+                veloY * maxSpeed,
+                rotationalRate
         );
-        
-        // Driver inputs
-        double veloX = -controller.getLeftY();
-        if (Math.abs(veloX) < Constants.DriveConstants.TranslationDeadband) {
-            veloX = 0;
-        }
-
-        double veloY = -controller.getLeftX();
-        if (Math.abs(veloY) < Constants.DriveConstants.TranslationDeadband) {
-            veloY = 0;
-        }
-        
-        if (tuning.equals("PovLeft")) { veloX = 0; veloY = 0.3; }
-        if (tuning.equals("PovRight")) { veloX = 0; veloY = -0.3; }
-        
-        // Visualization
+        lastCommandedSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                fieldRelativeCommanded, currentPose.getRotation()
+        );
+ 
+        // ── 13. VISUALIZATION ─────────────────────────────────────────────────────
         ShootingLocation = new Pose2d(lookaheadShooterPosition, aimAngle);
-        
+ 
+        SmartDashboard.putNumber("SOTM/AimAngleDeg", Math.toDegrees(aimAngleRad));
+        SmartDashboard.putNumber("SOTM/LookaheadDistanceMeters", lookaheadDistance);
+        SmartDashboard.putNumber("SOTM/TimeOfFlight", timeOfFlight);
+        SmartDashboard.putNumber("SOTM/AimAngleFFRadPerSec", aimAngleVelocityFF);
+        SmartDashboard.putNumber("SOTM/AimErrorDeg",
+                aimAngle.minus(currentAngle).getDegrees());
+ 
+        // ── 14. APPLY REQUEST ─────────────────────────────────────────────────────
         return alignRequest
-            .withVelocityX(veloX * maxSpeed) 
-            .withVelocityY(veloY * maxSpeed) 
-            .withRotationalRate(rotationalRate);
+                .withVelocityX(veloX * maxSpeed)
+                .withVelocityY(veloY * maxSpeed)
+                .withRotationalRate(rotationalRate);
     });
 }
 

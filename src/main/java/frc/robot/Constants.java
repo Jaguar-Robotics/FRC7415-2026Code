@@ -35,9 +35,9 @@ public class Constants {
     }
 
     public static abstract class IntakeConstants {
-        public static final int IntakeMotorID = 30; 
-        public static final int KickerMotorID = 99; //change ts
-        public static final int IntakeFollowerReversedMotorID = 31; 
+        public static final int IntakeMotorID = 31; 
+        public static final int KickerMotorID = 45; //change ts
+        public static final int IntakeFollowerReversedMotorID = 30; 
         public static final double FastIntake = 0.87;
         public static final double SlowIntake = 0.67;
         public static final double SlowReverse = -0.3;
