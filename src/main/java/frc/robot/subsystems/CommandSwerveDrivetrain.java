@@ -630,7 +630,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
             double distInches = lookaheadDistance * 39.3701;
             timeOfFlight = 0.0115177 * distInches + 0.330879;
             timeOfFlight = Math.max(timeOfFlight, 0.05); // guard against degenerate values
-            timeOfFlight = 1; //* ****************************************************************************************************** */
+            timeOfFlight = 0.3; //* ****************************************************************************************************** */
  
             // Where will the shooter be when the note arrives?
             double offsetX = shooterVelocityX * timeOfFlight;

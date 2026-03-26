@@ -65,10 +65,13 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
       if((currentState != desiredState)){
         switch (desiredState) {
             case OUT:
+            
               new SequentialCommandGroup(
                 intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT),
                 Commands.waitSeconds(1),
-                intakeSlide.holdPosition());
+                intakeSlide.holdPosition()).schedule();
+              
+              //intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT).schedule();
                 break;
             case MIDDLE:
                 intakeSlide.goToSetpoint(() -> Elevator.Setpoint.Middle).schedule();
