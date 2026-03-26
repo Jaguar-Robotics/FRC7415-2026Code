@@ -213,7 +213,7 @@ public class Elevator extends SubsystemBase {
     /**
      * Recalibrates the elevator zero point. This slowly drives the elevator
      * down until we see a drop in velocity and a spike in stator current,
-     * indicating that we've hit a hard stop.da
+     * indicating that we've hit a hard stop
      *
      * @return Command to run
      */

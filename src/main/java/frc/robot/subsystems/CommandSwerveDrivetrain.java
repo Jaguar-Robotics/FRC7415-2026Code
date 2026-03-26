@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.Volts;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.ejml.dense.row.MatrixFeatures_ZDRM;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -603,6 +605,16 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
                 + (-shooterOffsetFieldFrame.getY() * omega);
         double shooterVelocityY = fieldVelocity.vyMetersPerSecond
                 + (shooterOffsetFieldFrame.getX() * omega);
+
+
+        double veloX = MathUtil.applyDeadband(-controller.getLeftY(), Constants.DriveConstants.TranslationDeadband);
+        double veloY = MathUtil.applyDeadband(-controller.getLeftX(), Constants.DriveConstants.TranslationDeadband);
+        //*************************************************************************************************************************** */
+        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        double allianceFlip = isRed ? -1.0 : 1.0;
+
+        shooterVelocityX = veloX * maxSpeed * allianceFlip;
+        shooterVelocityY = veloY * maxSpeed * allianceFlip;
  
         // ── 6. ITERATIVE LOOKAHEAD LOOP ───────────────────────────────────────────
         // Converges in ~3 iterations; 20 guarantees stability.
@@ -610,6 +622,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         double timeOfFlight = 0.1; // initial guess
         Translation2d lookaheadShooterPosition = shooterPosition;
         double lookaheadDistance = target.getDistance(shooterPosition);
+        
  
         for (int i = 0; i < 20; i++) {
             // Your TOF regression (distance in inches → time in seconds).
@@ -617,6 +630,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
             double distInches = lookaheadDistance * 39.3701;
             timeOfFlight = 0.0115177 * distInches + 0.330879;
             timeOfFlight = Math.max(timeOfFlight, 0.05); // guard against degenerate values
+            timeOfFlight = 1; //* ****************************************************************************************************** */
  
             // Where will the shooter be when the note arrives?
             double offsetX = shooterVelocityX * timeOfFlight;
@@ -624,6 +638,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
             lookaheadShooterPosition = shooterPosition.plus(new Translation2d(offsetX, offsetY));
             lookaheadDistance = target.getDistance(lookaheadShooterPosition);
         }
+
  
         // ── 7. AIM ANGLE ──────────────────────────────────────────────────────────
         Rotation2d aimAngle = target.minus(lookaheadShooterPosition).getAngle();
@@ -653,12 +668,12 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
  
         // FF is in rad/s; scale it to match your maxAngularRate units.
         // Tune kFF: start at 1.0 and reduce if the robot overshoots on turns.
-        double kFF = 1.0;
+        double kFF = 0.0;//********************************************************************************************************************************************* */
         double rotationalRate = aimAngleVelocityFF * kFF + pidOutput;
  
-        // ── 10. DRIVER TRANSLATION INPUT ─────────────────────────────────────────
-        double veloX = MathUtil.applyDeadband(-controller.getLeftY(), Constants.DriveConstants.TranslationDeadband);
-        double veloY = MathUtil.applyDeadband(-controller.getLeftX(), Constants.DriveConstants.TranslationDeadband);
+        // ── 10. DRIVER TRANSLATION INPUT ───────────────────────────────────────── *******************************************UN COMMENT
+        //double veloX = MathUtil.applyDeadband(-controller.getLeftY(), Constants.DriveConstants.TranslationDeadband);
+        //double veloY = MathUtil.applyDeadband(-controller.getLeftX(), Constants.DriveConstants.TranslationDeadband);
  
         // ── 11. LINEAR VELOCITY LIMITING (6328's polar velocity cap) ─────────────
         // Prevent the driver from moving so fast perpendicular to the shot that
@@ -668,7 +683,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         double maxPolarVelocityRadPerSec = 0.5; // rad/s at target — start here, tune up
  
         Translation2d driverVelocity = new Translation2d(veloX * maxSpeed, veloY * maxSpeed);
- 
+        /*
         if (driverVelocity.getNorm() > 0.01 && timeOfFlight > 0.05) {
             // Angle between driver's desired velocity and the shot direction
             double velocityToShotAngle = driverVelocity.getAngle().minus(aimAngle).getRadians();
@@ -685,6 +700,10 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
                 veloY *= scale;
             }
         }
+         */
+        veloX *= 0.5;
+        veloY *= 0.5;
+        
  
         // ── 12. BUILD COMMANDED SPEEDS & CACHE THEM ───────────────────────────────
         // Cache what we're about to command so next loop uses setpoint, not measured
@@ -692,7 +711,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         ChassisSpeeds fieldRelativeCommanded = new ChassisSpeeds(
                 veloX * maxSpeed,
                 veloY * maxSpeed,
-                rotationalRate
+                rotationalRate * maxAngularRate
         );
         lastCommandedSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                 fieldRelativeCommanded, currentPose.getRotation()
@@ -707,12 +726,26 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         SmartDashboard.putNumber("SOTM/AimAngleFFRadPerSec", aimAngleVelocityFF);
         SmartDashboard.putNumber("SOTM/AimErrorDeg",
                 aimAngle.minus(currentAngle).getDegrees());
+        SmartDashboard.putNumber("SOTM/shooterVelocityX", shooterVelocityX);
+        SmartDashboard.putNumber("SOTM/shooterVelocityY", shooterVelocityY);
+        SmartDashboard.putNumber("SOTM/lookaheadOffsetX", lookaheadShooterPosition.getX() - shooterPosition.getX());
+        SmartDashboard.putNumber("SOTM/lookaheadOffsetY", lookaheadShooterPosition.getY() - shooterPosition.getY());
+        SmartDashboard.putNumber("SOTM/shooterPosX", shooterPosition.getX());
+        SmartDashboard.putNumber("SOTM/shooterPosY", shooterPosition.getY());
+        SmartDashboard.putNumber("SOTM/lookaheadPosX", lookaheadShooterPosition.getX());
+        SmartDashboard.putNumber("SOTM/lookaheadPosY", lookaheadShooterPosition.getY());
+        SmartDashboard.putNumber("SOTM/targetX", target.getX());
+        SmartDashboard.putNumber("SOTM/targetY", target.getY());
+        SmartDashboard.putNumber("SOTM/aimAngleDeg", Math.toDegrees(aimAngleRad));
+        SmartDashboard.putNumber("SOTM/currentAngleDeg", currentPose.getRotation().getDegrees());
+        SmartDashboard.putNumber("SOTM/pidOutput", pidOutput);
+        SmartDashboard.putNumber("SOTM/rotationalRate", rotationalRate);
  
         // ── 14. APPLY REQUEST ─────────────────────────────────────────────────────
         return alignRequest
                 .withVelocityX(veloX * maxSpeed)
                 .withVelocityY(veloY * maxSpeed)
-                .withRotationalRate(rotationalRate);
+                .withRotationalRate(rotationalRate * maxAngularRate);
     });
 }
 

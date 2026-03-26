@@ -227,13 +227,15 @@ public class RobotContainer {
          */
         joystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));           
 
-        //joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
+        /*
         joystick.rightBumper().onTrue(new SequentialCommandGroup(
             Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)),
             Commands.waitSeconds(0.5),
             Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT))));
+        */
 
-        //joystick.leftBumper().onTrue(new InstantCommand(() -:drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no"))); //shoot while stationary
+        joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVE)));
+        
         
         joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
@@ -267,7 +269,7 @@ public class RobotContainer {
         joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.67)); //  out
         joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.67)); //in
 
-        joystick.povLeft().whileTrue(drivetrain.applyRequest(() ->
+        joystick.povDown().whileTrue(drivetrain.applyRequest(() ->
     new SwerveRequest.RobotCentric()
         .withVelocityX(-1.0*MaxSpeed) // negative = backwards, tune speed as needed
         .withVelocityY(0)
