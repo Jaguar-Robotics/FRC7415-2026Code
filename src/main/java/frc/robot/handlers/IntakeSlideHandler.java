@@ -60,18 +60,20 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
   }
 
   boolean isAtLowSetpoint = false;
+  boolean isAtOutSetpoint = false;
       @Override
     public void update() {
       if((currentState != desiredState)){
         switch (desiredState) {
             case OUT:
-            
-              new SequentialCommandGroup(
-                intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT),
-                Commands.waitSeconds(1),
-                intakeSlide.holdPosition()).schedule();
-              
-              //intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT).schedule();
+            /*
+                new SequentialCommandGroup(
+                    intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT)
+                        .until(() -> isAtOutSetpoint),
+                    intakeSlide.holdPosition()
+                ).schedule();
+              */
+              intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT).schedule();
                 break;
             case MIDDLE:
                 intakeSlide.goToSetpoint(() -> Elevator.Setpoint.Middle).schedule();
@@ -121,6 +123,7 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
   public void periodic() {
     update();
     isAtLowSetpoint = intakeSlide.isAtSetpoint(Elevator.Setpoint.IN);
+    isAtOutSetpoint = intakeSlide.isAtSetpoint(Elevator.Setpoint.OUT);
     SmartDashboard.putBoolean("isAtLowSetpoint", isAtLowSetpoint);
     SmartDashboard.putString("IntakeSlide State", currentState.toString());
     // This method will be called once per scheduler run

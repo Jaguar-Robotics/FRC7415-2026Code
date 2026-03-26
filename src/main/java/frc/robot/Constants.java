@@ -44,10 +44,9 @@ public class Constants {
         public static final double FastReverse = -0.87;
 
         public static final int IntakeSlideMotorID = 35; 
-        public static final double IntakeSlideOutSetPoint = 25; //In ROTATIONS
+        public static final double IntakeSlideOutSetPoint = 20; //In ROTATIONS 25
         public static final double IntakeSlideMiddleSetPoint = 10;
         public static final double IntakeSlideInSetPoint = 0; 
-        public static final Angle SafeOutPosition = Degree.of(9.3*360); //in rotations
 
         public static final double IntakeSlideOutHardStop = 25.5; //rotations; Used for re-zero out
 

@@ -44,7 +44,7 @@ import frc.robot.Constants;
 public class Elevator extends SubsystemBase {
     /** Position setpoints for the elevator. */
     public enum Setpoint {
-        IN(Rotations.of(Constants.IntakeConstants.IntakeSlideInSetPoint)), //0
+        IN(Rotations.of(Constants.IntakeConstants.IntakeSlideInSetPoint)), 
         Middle(Rotations.of(Constants.IntakeConstants.IntakeSlideMiddleSetPoint)),
         OUT(Rotations.of(Constants.IntakeConstants.IntakeSlideOutSetPoint));
 
@@ -65,9 +65,9 @@ public class Elevator extends SubsystemBase {
 
     private static final int kNumConfigAttempts = 2;
 
-    private static final double kGearRatio = 6;
-    private static final Distance kDrumRadius = Meters.of(0.0254);
-    private static final Distance kMaxHeight = Inches.of(13.3);
+    private static final double kGearRatio = 5.5555555;
+    private static final Distance kDrumRadius = Inches.of(1.1);
+    private static final Distance kMaxHeight = Inches.of(13.9);
 
     /* leader and follower motors */
     private final CANBus kCANBus = new CANBus("Upper");
