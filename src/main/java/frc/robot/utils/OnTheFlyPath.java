@@ -8,8 +8,13 @@ import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+
+import frc.robot.FieldConstants;
 
 import java.util.List;
 import java.util.Set;
@@ -25,14 +30,23 @@ public class OnTheFlyPath {
     }
 
     private static Command buildPathCommand(Pose2d currentPose, Pose2d targetPose, PathConstraints constraints) {
-        double dx = targetPose.getX() - currentPose.getX();
-        double dy = targetPose.getY() - currentPose.getY();
-        Rotation2d travelAngle = new Rotation2d(Math.atan2(dy, dx));
+        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+
+        double midX = alliance == Alliance.Red
+            ? FieldConstants.Trench.RedTrenchX
+            : FieldConstants.Trench.BlueTrenchX;
+
+        double midY = targetPose.getY() > FieldConstants.Field.HalfwayY
+            ? FieldConstants.Trench.TopTrench
+            : FieldConstants.Trench.BtmTrench;
+
+        Rotation2d startToMid = new Rotation2d(Math.atan2(midY - currentPose.getY(), midX - currentPose.getX()));
+        Rotation2d midToEnd   = new Rotation2d(Math.atan2(targetPose.getY() - midY, targetPose.getX() - midX));
 
         List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
-            new Pose2d(currentPose.getTranslation(), travelAngle),
-            new Pose2d(targetPose.getTranslation(), travelAngle)
-            //TODO DO THE POSE OF TRENCH HAVE 2 HAVE IT BE A VARIABLE
+            new Pose2d(currentPose.getTranslation(), startToMid),
+            new Pose2d(new Translation2d(midX, midY), midToEnd),
+            new Pose2d(targetPose.getTranslation(), midToEnd)
         );
 
         PathPlannerPath path = new PathPlannerPath(
@@ -43,7 +57,6 @@ public class OnTheFlyPath {
         );
 
         path.preventFlipping = true;
-
         return AutoBuilder.followPath(path);
     }
 }

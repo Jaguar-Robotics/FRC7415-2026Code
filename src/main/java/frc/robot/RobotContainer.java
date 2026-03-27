@@ -51,6 +51,11 @@ public class RobotContainer {
     static private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     static private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
+    public static final PathConstraints PATH_CONSTRAINTS = new PathConstraints(
+    3.0, 4.0,
+    Units.degreesToRadians(540), Units.degreesToRadians(720)
+);
+
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * Constants.DriveConstants.TranslationDeadband).withRotationalDeadband(MaxAngularRate * Constants.DriveConstants.RotationDeadband) // Add a 10% deadband
@@ -222,7 +227,8 @@ public class RobotContainer {
          * Y - FAST SHOT (use if broken)
          * A - Hold to bump assist - release to idle
          * X - Robot off
-         * Left Stick in - Reverse shi 
+         * Left Stick in - Reverse on some nonchalant shi
+         * LB - TODO Auto trench?
          */
         joystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));           
 
@@ -234,6 +240,8 @@ public class RobotContainer {
 
         //joystick.leftBumper().onTrue(new InstantCommand(() -:drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate, "no"))); //shoot while stationary
         
+        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TRENCH)));
+
         joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
 

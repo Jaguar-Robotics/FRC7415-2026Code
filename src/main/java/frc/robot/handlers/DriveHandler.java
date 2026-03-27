@@ -31,7 +31,8 @@ public class DriveHandler extends SubsystemBase {
         SHOOTONTHEMOVE,
         SNAKE,
         XDRIVE,
-        BUMP_LOCK
+        BUMP_LOCK,
+        TRENCH_AUTO
   }
 
 
@@ -127,8 +128,10 @@ public class DriveHandler extends SubsystemBase {
                 drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> brake));
                 break;
             case BUMP_LOCK:
-                drivetrain.setDefaultCommand(drivetrain.bumpLockCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate)); 
+                drivetrain.setDefaultCommand(drivetrain.bumpLockCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate));
                 break;
+            case TRENCH_AUTO:
+                drivetrain.setDefaultCommand(drivetrain.AutoTrenchPath(drive, drivetrain));
             default:
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
                 break;

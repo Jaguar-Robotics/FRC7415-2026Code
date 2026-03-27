@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -42,7 +43,10 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.utils.OnTheFlyPath;
+
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
@@ -636,6 +640,13 @@ public boolean isAimedAtTarget() {
     SmartDashboard.putNumber("errorDegrees", errorDegrees);
     
     return errorDegrees <= Constants.DriveConstants.RotationalToleranceDegrees;
+}
+
+public Command AutoTrenchPath(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain) {
+    return Commands.defer(
+        () -> OnTheFlyPath.driveToPose(this::getPose, getTargetPose(getPose()), RobotContainer.PATH_CONSTRAINTS),
+        Set.of((CommandSwerveDrivetrain) this)
+    );
 }
 
 public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate){

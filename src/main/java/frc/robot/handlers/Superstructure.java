@@ -28,7 +28,8 @@ public class Superstructure extends SubsystemBase {
     SPINUPFAST,
     FASTSHOT,
     AIM,
-    BUMP
+    BUMP,
+    TRENCH
   }
 
   private static Superstructure instance;
@@ -219,6 +220,13 @@ public class Superstructure extends SubsystemBase {
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.BUMP_LOCK);
         break;
+      case TRENCH:
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
+        driveHandler.setDesiredState(DriveHandler.DriveState.TRENCH_AUTO);
       case OFF:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
