@@ -31,6 +31,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
+import frc.robot.handlers.IntakeHandler;
+import frc.robot.handlers.IntakeSlideHandler;
+import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
 import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.Superstructure;
 import frc.robot.subsystems.BangBangShooterSubsystem;
@@ -98,10 +101,9 @@ public class RobotContainer {
     !joystick.y().getAsBoolean() &&
     !joystick.x().getAsBoolean() &&
     !joystick.rightTrigger().getAsBoolean() &&
-    !joystick.leftTrigger().getAsBoolean() &&
     !joystick.rightBumper().getAsBoolean() &&
     !joystick.leftTrigger().getAsBoolean() &&
-    !joystick.rightBumper().getAsBoolean()
+    !joystick.leftBumper().getAsBoolean()
     );
 
 
@@ -244,8 +246,9 @@ public class RobotContainer {
 
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
-        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESLOWSLOW)));
+        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESNAKE)));
+        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
+        
 
         joystick.leftStick().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
 
@@ -287,8 +290,7 @@ public class RobotContainer {
          */
 
         opJoystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
-        opJoystick.b().onTrue(new InstantCommand(() -> IntakeSlide.calibrateZeroIn()));
-        //AUTO WINNER OVERIDES
+        opJoystick.b().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
         opJoystick.y().onTrue(Commands.runOnce(() -> {
             var current = HubShiftUtil.getAllianceWinOverride();
             HubShiftUtil.setAllianceWinOverride(() -> Optional.of(current.orElse(true) == false));

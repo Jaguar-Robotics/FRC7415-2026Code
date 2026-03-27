@@ -6,8 +6,6 @@ package frc.robot.handlers;
 
 import static edu.wpi.first.units.Units.Rotations;
 
-import com.ctre.phoenix6.signals.Enable5VRailValue;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -87,8 +85,8 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
                 break;
             case SLOWIN: 
                 new SequentialCommandGroup(
-                  Commands.waitSeconds(1),
-                  intakeSlide.manualDrive(() -> -0.125).until(intakeSlide.isHardStop).withTimeout( 5)
+                  Commands.waitSeconds(0.25),
+                  intakeSlide.manualDrive(() -> -0.2).until(() -> intakeSlide.isHardStop.getAsBoolean() && isAtLowSetpoint).withTimeout( 5)
                   ).schedule();
                 break; 
             case OSCILLATE: 

@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7189662173968498,
-        "y": 5.27996100961303
+        "x": 7.956785714285715,
+        "y": 5.914285714285715
       },
       "isLocked": false,
       "linkedName": "ScoringDepot"
     },
     {
       "anchor": {
-        "x": 0.7659077380952382,
-        "y": 6.977909226190477
+        "x": 6.8996875,
+        "y": 6.671220238095239
       },
       "prevControl": {
-        "x": 1.4104430147998999,
-        "y": 7.378144841563533
+        "x": 4.824642857142856,
+        "y": 7.317224702380953
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "D1"
+      "linkedName": "F1Close"
     }
   ],
   "rotationTargets": [],
@@ -33,8 +33,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "Intake",
-      "waypointRelativePos": 0,
+      "name": "",
+      "waypointRelativePos": 0.39566929133858225,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -54,7 +54,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 45.0
+    "rotation": 59.99999999999999
   },
   "reversed": false,
   "folder": null,

@@ -94,6 +94,11 @@ public class Elevator extends SubsystemBase {
             motor_id_35TorqueCurrent.getValue().abs(Amps) > 10;
     }).debounce(0.1);
 
+    public final Trigger isHarderStop = new Trigger(() -> {
+        return motor_id_35Velocity.getValue().abs(RotationsPerSecond) < 1 &&
+            motor_id_35TorqueCurrent.getValue().abs(Amps) > 20;
+    }).debounce(0.1);
+
     /* simulation */
     private final ElevatorSim elevatorSim_motor_id_35 = new ElevatorSim(
         DCMotor.getKrakenX60Foc(1),
