@@ -8,20 +8,36 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.6608064516129035,
-        "y": 2.9597661290322583
+        "x": 5.300989583333334,
+        "y": 2.6190104166666672
       },
       "isLocked": false,
       "linkedName": "S4"
     },
     {
       "anchor": {
-        "x": 7.992048387096775,
-        "y": 0.904387096774194
+        "x": 6.0252976190476195,
+        "y": 2.2079166666666676
       },
       "prevControl": {
-        "x": 7.311798387096775,
-        "y": -0.06844354838709554
+        "x": 5.59521591482523,
+        "y": 2.807907192310248
+      },
+      "nextControl": {
+        "x": 6.553846726190477,
+        "y": 1.4705580357142867
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.498385416666666,
+        "y": 0.7919270833333336
+      },
+      "prevControl": {
+        "x": 6.87358630952381,
+        "y": 0.028467261904762786
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,7 +46,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.3644289450741062,
+      "waypointRelativePos": 0.75,
       "rotationDegrees": 180.0
     }
   ],
@@ -39,7 +55,7 @@
   "eventMarkers": [
     {
       "name": "spinnnynnyny",
-      "waypointRelativePos": 0.322097378277154,
+      "waypointRelativePos": 0.65,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -50,7 +66,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 6.0,
+    "maxVelocity": 5.12,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -58,13 +74,13 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 2.4,
     "rotation": -59.99999999999999
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
-    "velocity": 0,
+    "velocity": 2.4,
     "rotation": 180.0
   },
   "useDefaultConstraints": true

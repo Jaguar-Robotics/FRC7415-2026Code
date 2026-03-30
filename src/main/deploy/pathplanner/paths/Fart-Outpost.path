@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.754854838709678,
-        "y": 2.806161290322582
+        "x": 2.6451934523809526,
+        "y": 2.540706845238095
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.196577380952381,
-        "y": 2.2927455357142854
+        "x": 1.0869159946236555,
+        "y": 2.0272910906297987
       },
       "isLocked": false,
       "linkedName": "fart"
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 6.0,
+    "maxVelocity": 5.12,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -48,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 36.0
   },
   "useDefaultConstraints": true
 }

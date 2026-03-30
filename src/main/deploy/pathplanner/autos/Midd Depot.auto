@@ -23,28 +23,21 @@
           }
         },
         {
-          "type": "sequential",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "ShootAuto"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ShooterOff"
-                }
-              }
-            ]
+            "pathName": "Hub-Depot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LowMidSwipe"
+            "pathName": "D1-D2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D2-Hub"
           }
         },
         {

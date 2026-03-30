@@ -44,7 +44,7 @@ public class Constants {
         public static final double FastReverse = -0.87;
 
         public static final int IntakeSlideMotorID = 35; 
-        public static final double IntakeSlideOutSetPoint = 28; //In ROTATIONS 25
+        public static final double IntakeSlideOutSetPoint = 29.5; //In ROTATIONS 25
         public static final double IntakeSlideMiddleSetPoint = 10;
         public static final double IntakeSlideInSetPoint = 0; 
 

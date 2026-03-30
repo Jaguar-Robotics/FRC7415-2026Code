@@ -22,7 +22,9 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
       FASTINTAKE,
       SLOWINTAKE,
       FASTREVERSE,
+      MAXSPEED,
       SLOWREVERSE,
+      KICKERONLY,
       OFF
   }
 
@@ -67,10 +69,16 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
                 intake.set(Constants.IntakeConstants.FastIntake);
                 kicker.set(Constants.IntakeConstants.FastIntake);
                 break;
+            case MAXSPEED:
+                intake.set(1);
+                kicker.set(Constants.IntakeConstants.FastIntake);
             case SLOWINTAKE:
                 intake.set(Constants.IntakeConstants.SlowIntake);
                 kicker.set(Constants.IntakeConstants.SlowIntake);
                 break;
+            case KICKERONLY:
+                kicker.set(Constants.IntakeConstants.FastIntake);
+                intake.stop();
             case FASTREVERSE:
                 intake.set(Constants.IntakeConstants.FastReverse);
                 kicker.set(Constants.IntakeConstants.FastReverse);

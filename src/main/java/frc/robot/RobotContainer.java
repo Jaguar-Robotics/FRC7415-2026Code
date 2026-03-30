@@ -15,14 +15,20 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -31,7 +37,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
-import frc.robot.handlers.IntakeHandler;
 import frc.robot.handlers.IntakeSlideHandler;
 import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
 import frc.robot.handlers.ShooterHandler;
@@ -128,19 +133,50 @@ public class RobotContainer {
 
     private void configurePathPlanner() {
         NamedCommands.registerCommand("Intake",
-         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
+         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKEFAST)));
         
         NamedCommands.registerCommand("IntakeOff",
          new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
-        NamedCommands.registerCommand("ShootAuto", 
-        new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPAUTO)));
+        NamedCommands.registerCommand("AutoShoot",
+         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPAUTO)));
+        
+        NamedCommands.registerCommand("StartHubAlign", Commands.runOnce(() -> {
+            PPHolonomicDriveController.overrideRotationFeedback(() -> {
+                Pose2d currentPose = drivetrain.getPose();
+                Pose2d targetPose = drivetrain.getHubPose().toPose2d();
+                if (targetPose == null) return 0.0;
 
+               // Translation2d toTarget = targetPose.getTranslation().minus(currentPose.getTranslation());
+                Translation2d toTarget = currentPose.getTranslation().minus(targetPose.getTranslation());
+                Rotation2d desiredAngle = toTarget.getAngle().rotateBy(Rotation2d.k180deg);
+                
+                SmartDashboard.putNumber("AutoStuff/headingCalculated", CommandSwerveDrivetrain.rotationController.calculate(
+                    currentPose.getRotation().getRadians(),
+                    desiredAngle.getRadians()
+                  
+                ));
+                
+                SmartDashboard.putNumber("AutoStuff/currentPoseGetRotation", currentPose.getRotation().getRadians()*180/Math.PI);
+
+                SmartDashboard.putNumber("AutoStuff/desiredAngleRotation", desiredAngle.getRadians()*180/Math.PI);
+
+                return CommandSwerveDrivetrain.rotationController.calculate(
+                    currentPose.getRotation().getRadians(),
+                    desiredAngle.getRadians()
+                    
+                );
+            });
+        }));
+
+        
         NamedCommands.registerCommand("Shoot", 
         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
 
-        NamedCommands.registerCommand("ShooterOff", 
-        new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+        NamedCommands.registerCommand("ShooterOff", Commands.runOnce(() -> {
+            PPHolonomicDriveController.clearRotationFeedbackOverride();
+            superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE);
+        }));
         
         NamedCommands.registerCommand("ShootSafe", 
         new SequentialCommandGroup(
@@ -148,6 +184,7 @@ public class RobotContainer {
             new WaitCommand(2.0),
             new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT))
         ));
+        
 
         NamedCommands.registerCommand("ShootTest", 
         new SequentialCommandGroup(
@@ -169,7 +206,7 @@ public class RobotContainer {
                     .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
-        ); */
+        ); 
         
 
         // Idle while the robot is disabled. This ensures the configured
@@ -221,13 +258,19 @@ public class RobotContainer {
          * RT - Hold to spin up (and shoot hopefully) - relase to idle
          * RB - Shoot (dont use unless robot broken)
          * LT - Hold to Intake - release to idle
-         * B - Spin up Fast (use if broken)
+         * B - Reverse/outtake
          * Y - FAST SHOT (use if broken)
          * A - Hold to bump assist - release to idle
          * X - Robot off
          * Left Stick in - Reverse shi 
          */
-        joystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));           
+        joystick.rightTrigger().onTrue(new InstantCommand(() -> {
+            if (CommandSwerveDrivetrain.isInAllianceZone(drivetrain.getPose())) {
+                superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP);
+            } else {
+                superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE);
+            }
+        }));
 
         /*
         joystick.rightBumper().onTrue(new SequentialCommandGroup(
@@ -236,18 +279,18 @@ public class RobotContainer {
             Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT))));
         */
 
-        joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVE)));
+        joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
         
         
-        joystick.b().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)));
-        joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
+        joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
+        //joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
 
         joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
 
         joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
         joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESNAKE)));
-        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
+        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESNAKEFAST)));
         
 
         joystick.leftStick().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
@@ -287,6 +330,7 @@ public class RobotContainer {
          *  Y - overide alliance winner (on a switch)
          *  DPAD - shift hub by 0.1 M in direction (up is away, down is closer)
          *  A - Reset Shifted Hub to where it should be
+         *  X - toggle hopperfullness
          */
 
         opJoystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
@@ -307,9 +351,12 @@ public class RobotContainer {
         opJoystick.povRight().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, 0.1)));
         opJoystick.povLeft().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, -0.1)));
 
-        opJoystick.x().onTrue(Commands.runOnce(() -> shooter.toggleShooterMult()));
+        opJoystick.y().onTrue(new InstantCommand(() -> superstructure.toggleHopperStatus()));
+        opJoystick.leftTrigger().onTrue(Commands.runOnce(() -> shooter.toggleShooterMult()));
 
-        /* 
+        opJoystick.leftStick().onTrue(new InstantCommand(() -> drivetrain.ToggleSlowTele()));
+
+       /* 
         opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
         joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
         joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));

@@ -19,6 +19,7 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
       OUT,
       MIDDLE,
       IN,
+      FASTSLOWIN,
       SLOWIN,
       BRAKE,
       REZEROIN,
@@ -83,9 +84,15 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
                     intakeSlide.calibrateZeroIn()
                 ).schedule();
                 break;
+            case FASTSLOWIN:
+              new SequentialCommandGroup(
+                    Commands.waitSeconds(0.25),
+                    intakeSlide.manualDrive(() -> -0.2).until(() -> intakeSlide.isHardStop.getAsBoolean() && isAtLowSetpoint).withTimeout( 5)
+                    ).schedule();
+                  break; 
             case SLOWIN: 
                 new SequentialCommandGroup(
-                  Commands.waitSeconds(0.25),
+                  Commands.waitSeconds(1),
                   intakeSlide.manualDrive(() -> -0.2).until(() -> intakeSlide.isHardStop.getAsBoolean() && isAtLowSetpoint).withTimeout( 5)
                   ).schedule();
                 break; 

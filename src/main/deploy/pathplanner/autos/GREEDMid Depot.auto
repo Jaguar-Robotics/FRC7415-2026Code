@@ -19,32 +19,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "F2-Hub"
-          }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "ShootAuto"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ShooterOff"
-                }
-              }
-            ]
+            "pathName": "GReedyF2-Hub"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LowMidSwipe"
+            "pathName": "Hub-Depot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D1-D2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D2-Hub"
           }
         },
         {

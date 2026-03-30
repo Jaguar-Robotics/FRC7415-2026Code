@@ -16,48 +16,64 @@
     },
     {
       "anchor": {
-        "x": 7.519590773809524,
-        "y": 5.340059523809524
+        "x": 7.734925595238096,
+        "y": 5.255230654761905
       },
       "prevControl": {
-        "x": 7.5082221274587155,
-        "y": 5.0347301646735225
+        "x": 7.723556948887287,
+        "y": 4.949901295625904
       },
       "nextControl": {
-        "x": 7.5652678571428575,
-        "y": 6.5668154761904765
+        "x": 7.780602678571429,
+        "y": 6.481986607142858
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.840959821428571,
-        "y": 7.095364583333334
+        "x": 7.108497023809524,
+        "y": 7.0496875
       },
       "prevControl": {
-        "x": 7.235943692396313,
-        "y": 7.095364583333334
+        "x": 7.503480894777266,
+        "y": 7.0496875
       },
       "nextControl": {
-        "x": 5.900677997880291,
-        "y": 7.095364583333334
+        "x": 6.168215200261244,
+        "y": 7.0496875
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.221056547619047,
-        "y": 5.340059523809524
+        "x": 6.403764880952381,
+        "y": 3.571703869047619
       },
       "prevControl": {
-        "x": 6.847786753886937,
-        "y": 5.384508474608665
+        "x": 7.031797732284143,
+        "y": 3.590175423498553
       },
       "nextControl": {
-        "x": 5.300989583333332,
-        "y": 5.274806547619048
+        "x": 5.738184523809524,
+        "y": 3.5521279761904765
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.738184523809524,
+        "y": 5.561919642857143
+      },
+      "prevControl": {
+        "x": 6.182593795831812,
+        "y": 5.207680368056771
+      },
+      "nextControl": {
+        "x": 5.287938988095237,
+        "y": 5.920811011904761
       },
       "isLocked": false,
       "linkedName": null
@@ -94,15 +110,19 @@
       "rotationDegrees": 40.0
     },
     {
-      "waypointRelativePos": 2.603603603603608,
+      "waypointRelativePos": 2.7308558558558564,
       "rotationDegrees": 40.0
     },
     {
-      "waypointRelativePos": 3.15,
+      "waypointRelativePos": 3.4234234234234258,
+      "rotationDegrees": -59.99999999999999
+    },
+    {
+      "waypointRelativePos": 3.947072072072081,
       "rotationDegrees": 0.0
     },
     {
-      "waypointRelativePos": 3.85,
+      "waypointRelativePos": 4.7,
       "rotationDegrees": 0.0
     }
   ],
@@ -111,7 +131,7 @@
   "eventMarkers": [
     {
       "name": "okkkkk",
-      "waypointRelativePos": 3.7,
+      "waypointRelativePos": 4.7739726027397325,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",

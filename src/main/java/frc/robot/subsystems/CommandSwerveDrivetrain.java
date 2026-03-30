@@ -8,8 +8,6 @@ import static edu.wpi.first.units.Units.Volts;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.ejml.dense.row.MatrixFeatures_ZDRM;
-
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -46,7 +44,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import edu.wpi.first.math.filter.LinearFilter;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -471,20 +468,6 @@ public Pose3d getHubPose() {
         
         // Calculate angle from hub to robot
         Translation2d toRobot = drivePose.getTranslation().minus(targetPose.getTranslation());
-        
-        /*
-        if (toRobot.getNorm() < 0.1) {  // Within 10cm of hub
-            double veloX = -controller.getLeftY();
-            if (Math.abs(veloX) < 0.1) veloX = 0;
-            
-            double veloY = -controller.getLeftX();
-            if (Math.abs(veloY) < 0.1) veloY = 0;
-            
-            return alignRequest 
-                .withVelocityX(veloX * maxSpeed) 
-                .withVelocityY(veloY * maxSpeed) 
-                .withRotationalRate(0); 
-        } */
 
         Rotation2d angleToRobot = toRobot.getAngle();
         
@@ -507,6 +490,11 @@ public Pose3d getHubPose() {
     });
 }
 
+private boolean SlowTele = false;
+public void ToggleSlowTele(){
+    if (SlowTele == false) {SlowTele = true;}
+    else if (SlowTele == true) {SlowTele = false;}
+}
 public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
     return applyRequest(() -> {
         // Apply 10% deadband to joystick inputs
@@ -766,6 +754,12 @@ public boolean isAimedAtTarget() {
 }
 
 public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate){
+        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+
+        Rotation2d rotSetpoint = isInAllianceZone(drivetrain.getPose())
+            ? (isRed ? Rotation2d.kZero : Rotation2d.fromDegrees(180))
+            : (isRed ? Rotation2d.fromDegrees(180) : Rotation2d.kZero);
+    
     return applyRequest(() -> {
         double closeTrench = (double)getCloseBumpY(drivetrain.getPose()).in(Meters);
         double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
@@ -777,7 +771,6 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
         double distToTrench = Math.abs(error);
         double borderY = closeTrench + Math.copySign(borderLimit, error);
 
-        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
         double ySpeedFieldRelative = isRed ? -ySpeed : ySpeed;
         boolean pushingAway = (error > 0 && ySpeedFieldRelative > 0) || (error < 0 && ySpeedFieldRelative < 0);
 
@@ -801,11 +794,6 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
                 yVel = ySpeed;
             }
         }
-
-        Rotation2d currentRot = drivetrain.getState().Pose.getRotation();
-        Rotation2d rotSetpoint = Math.abs(currentRot.getDegrees()) < 90
-            ? Rotation2d.kZero
-            : Rotation2d.fromDegrees(180);
         rotationController.setSetpoint(rotSetpoint.getRadians());
 
         double rotSpeedToStraight = rotationController.calculate(drivetrain.getPose().getRotation().getRadians());
@@ -818,47 +806,46 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
     });
 }
 
+    private double SnakeDriveMult = 0.75;
 
-public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate) {
-        return applyRequest(() -> {
-            // Get joystick inputs
-            double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband);
-            double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband);
-            
-            // Convert to velocities
-            double xVelocity = xSpeed * MaxSpeed;
-            double yVelocity = ySpeed * MaxSpeed;
-            
-            // Calculate rotation for snake drive
-            double rotationRate = 0;
-            double translationMagnitude = Math.hypot(xVelocity, yVelocity);
-            
-            if (translationMagnitude > Constants.DriveConstants.TranslationDeadband) {
-                // Calculate target heading from joystick direction
-                Rotation2d targetHeading = new Rotation2d(xVelocity, yVelocity).rotateBy(Rotation2d.k180deg);
-                
-                // Get current heading
-                Rotation2d currentHeading = drivetrain.getState().Pose.getRotation();
-                
-                // Calculate shortest path error
-                double headingError = targetHeading.minus(currentHeading).getRadians();
-                
-                // P controller for rotation
-                rotationRate = headingError * Constants.DriveConstants.rotP*5;
-                
-                // Clamp to max rotation rate 
-                
-                rotationRate = Math.max(-MaxAngularRate, 
-                                       Math.min(MaxAngularRate, rotationRate));
-                
-            }
-            
-            return drive
-                .withVelocityX(xVelocity)
-                .withVelocityY(yVelocity)
-                .withRotationalRate(rotationRate);
-        });
-    }
+        public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate) {
+            return applyRequest(() -> {
+                Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+
+                double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband);
+                double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband);
+
+                double xVelocity = xSpeed * MaxSpeed;
+                double yVelocity = ySpeed * MaxSpeed;
+
+                double rotInput = MathUtil.applyDeadband(-joystick.getRightX(), 0.1); // override deadband
+
+                double rotationRate = 0;
+
+                if (Math.abs(rotInput) > 0) {
+                    // Joystick override — bypass snake drive
+                    rotationRate = rotInput * MaxAngularRate;
+                } else {
+                    double translationMagnitude = Math.hypot(xVelocity, yVelocity);
+                    if (translationMagnitude > Constants.DriveConstants.TranslationDeadband) {
+                        Rotation2d targetHeading;
+                        if (alliance.equals(Alliance.Red)) {
+                            targetHeading = new Rotation2d(xVelocity, yVelocity);
+                        } else {
+                            targetHeading = new Rotation2d(xVelocity, yVelocity).rotateBy(Rotation2d.k180deg);
+                        }
+                        Rotation2d currentHeading = drivetrain.getState().Pose.getRotation();
+                        double headingError = targetHeading.minus(currentHeading).getRadians();
+                        rotationRate = Math.max(-MaxAngularRate, Math.min(MaxAngularRate, headingError * Constants.DriveConstants.rotP * 5));
+                    }
+                }
+
+                return drive
+                    .withVelocityX(xVelocity *  SnakeDriveMult)
+                    .withVelocityY(yVelocity * SnakeDriveMult)
+                    .withRotationalRate(rotationRate);
+            });
+        }
 
 
     @Override
@@ -869,6 +856,7 @@ public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwe
         SmartDashboard.putString("close trench X val", getCloseBumpY(getPose()).toShortString());
         SmartDashboard.putNumber("Hub/OffsetX", hubOffsetX);
         SmartDashboard.putNumber("Hub/OffsetY", hubOffsetY);
+        SmartDashboard.putBoolean("SlowDrive?", SlowTele);
 
         /*
          * Periodically try to apply the operator perspective.

@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.6865423839783285,
-        "y": 6.015788870688875
+        "x": 2.1623214285714285,
+        "y": 6.1426711309523805
       },
       "isLocked": false,
       "linkedName": "ScoringDepot"
@@ -110,6 +110,10 @@
   ],
   "rotationTargets": [
     {
+      "waypointRelativePos": 0.546848381601363,
+      "rotationDegrees": 180.0
+    },
+    {
       "waypointRelativePos": 0.9663677130044842,
       "rotationDegrees": 180.0
     },
@@ -144,9 +148,22 @@
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Intake",
+      "waypointRelativePos": 1.3169291338582674,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
-    "maxVelocity": 6.0,
+    "maxVelocity": 5.12,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -161,7 +178,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -40.0
   },
   "useDefaultConstraints": true
 }
