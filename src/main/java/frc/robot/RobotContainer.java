@@ -12,15 +12,13 @@ import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.path.PathConstraints;
+import choreo.auto.AutoChooser;
+import choreo.auto.AutoFactory;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.utils.HubShiftUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -53,13 +51,12 @@ import frc.robot.utils.HubShiftUtil;
 import frc.robot.utils.RumbleUtils;
 
 public class RobotContainer {
-
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * Constants.DriveConstants.TranslationDeadband).withRotationalDeadband(MaxAngularRate * Constants.DriveConstants.RotationDeadband) // Add a 10% deadband
+            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -72,8 +69,8 @@ public class RobotContainer {
     private final CommandXboxController opJoystick = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    
-    public final Vision vision = new Vision(drivetrain);
+
+        public final Vision vision = new Vision(drivetrain);
 
     public final BangBangShooterSubsystem shooter = new BangBangShooterSubsystem(); 
     public final IntakeSubsystem intake = new IntakeSubsystem();
@@ -84,7 +81,7 @@ public class RobotContainer {
 
     public final Superstructure superstructure = Superstructure.getInstance(); 
 
-    Trigger fiveSecWarning = new Trigger(() -> {
+        Trigger fiveSecWarning = new Trigger(() -> {
     var info = HubShiftUtil.getOfficialShiftInfo();
     return info.remainingTime() <= 5.0;});
 
@@ -113,148 +110,26 @@ public class RobotContainer {
 
 
     /* Path follower */
-    private final SendableChooser<Command> autoChooser;
+    private final AutoFactory autoFactory;
+    private final AutoRoutines autoRoutines;
+    private final AutoChooser autoChooser = new AutoChooser();
 
     public RobotContainer() {
+        autoFactory = drivetrain.createAutoFactory();
+        autoRoutines = new AutoRoutines(autoFactory);
+
         DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate);
         ShooterHandler.getInstance().initialize(drivetrain, shooter);
         Superstructure.getInstance().initialize(shooter, drivetrain);
 
-        configurePathPlanner();
-
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
-        SmartDashboard.putData("Auto Mode", autoChooser);
+        autoChooser.addRoutine("SimplePath", autoRoutines::simplePathAuto);
+        SmartDashboard.putData("Auto Chooser", autoChooser);
 
         configureBindings();
-
-        // Warmup PathPlanner to avoid Java pauses
-        FollowPathCommand.warmupCommand().schedule();
     }
 
-    private void configurePathPlanner() {
-        NamedCommands.registerCommand("Intake",
-         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKEFAST)));
-        
-        NamedCommands.registerCommand("IntakeOff",
-         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
-
-        NamedCommands.registerCommand("AutoShoot",
-         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPAUTO)));
-        
-        NamedCommands.registerCommand("StartHubAlign", Commands.runOnce(() -> {
-            PPHolonomicDriveController.overrideRotationFeedback(() -> {
-                Pose2d currentPose = drivetrain.getPose();
-                Pose2d targetPose = drivetrain.getHubPose().toPose2d();
-                if (targetPose == null) return 0.0;
-
-               // Translation2d toTarget = targetPose.getTranslation().minus(currentPose.getTranslation());
-                Translation2d toTarget = currentPose.getTranslation().minus(targetPose.getTranslation());
-                Rotation2d desiredAngle = toTarget.getAngle().rotateBy(Rotation2d.k180deg);
-                
-                SmartDashboard.putNumber("AutoStuff/headingCalculated", CommandSwerveDrivetrain.rotationController.calculate(
-                    currentPose.getRotation().getRadians(),
-                    desiredAngle.getRadians()
-                  
-                ));
-                
-                SmartDashboard.putNumber("AutoStuff/currentPoseGetRotation", currentPose.getRotation().getRadians()*180/Math.PI);
-
-                SmartDashboard.putNumber("AutoStuff/desiredAngleRotation", desiredAngle.getRadians()*180/Math.PI);
-
-                return CommandSwerveDrivetrain.rotationController.calculate(
-                    currentPose.getRotation().getRadians(),
-                    desiredAngle.getRadians()
-                    
-                );
-            });
-        }));
-
-        
-        NamedCommands.registerCommand("Shoot", 
-        new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
-
-        NamedCommands.registerCommand("ShooterOff", Commands.runOnce(() -> {
-            PPHolonomicDriveController.clearRotationFeedbackOverride();
-            superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE);
-        }));
-        
-        NamedCommands.registerCommand("ShootSafe", 
-        new SequentialCommandGroup(
-            new InstantCommand( () -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)),
-            new WaitCommand(2.0),
-            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT))
-        ));
-        
-
-        NamedCommands.registerCommand("ShootTest", 
-        new SequentialCommandGroup(
-            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)).withTimeout(0.1),
-            new WaitCommand(3.0),
-            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE))
-        ));
-    }
-
-     private void configureBindings() {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-       
-        /*
-        drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward) DriveStraight = robot centric 
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        ); 
-        
-
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
-        final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled().whileTrue(
-            drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
-        
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
-        // Reset the field-centric heading on right stick press.
-        joystick.rightStick().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-        drivetrain.registerTelemetry(logger::telemeterize);
-
-
-
-
-        // Create the constraints to use while pathfinding
-        PathConstraints constraints = new PathConstraints(
-                3.0, 4.0,
-                Units.degreesToRadians(540), Units.degreesToRadians(720));
-
-        //ROTATE 90 degreese
-        /*
-        joystick.leftBumper().onTrue(Commands.runOnce(() -> {
-            Rotation2d targetRotation = drivetrain.getPose().getRotation().plus(Rotation2d.fromDegrees(90));
-            
-            // Use your existing rotation controller
-            drivetrain.applyRequest(() -> {
-                double rotationalRate = CommandSwerveDrivetrain.rotationController.calculate(
-                    drivetrain.getPose().getRotation().getRadians(),
-                    targetRotation.getRadians()
-                );
-                return new SwerveRequest.FieldCentric()
-                    .withVelocityX(0)
-                    .withVelocityY(0)
-                    .withRotationalRate(rotationalRate * 6); // Max angular rate
-            }).withTimeout(2.0).schedule();
-        }));
-        */
-
-        /* Main driver Controller:
+    private void configureBindings() {
+/* Main driver Controller:
          * RT - Hold to spin up (and shoot hopefully) - relase to idle
          * RB - Shoot (dont use unless robot broken)
          * LT - Hold to Intake - release to idle
@@ -371,11 +246,10 @@ public class RobotContainer {
         twoSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.25));
         oneSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 1));
 
-        fiveSecWarning.onTrue(new InstantCommand(() -> SmartDashboard.putBoolean("isTsWorking", true)));
-    }        
+    }
 
     public Command getAutonomousCommand() {
-        /* Run the path selected from the auto chooser */
-        return autoChooser.getSelected();
+        /* Run the routine selected from the auto chooser */
+        return autoChooser.selectedCommand();
     }
 }

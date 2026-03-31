@@ -13,11 +13,10 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import choreo.Choreo.TrajectoryLogger;
+import choreo.auto.AutoFactory;
+import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
@@ -35,6 +34,19 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -44,6 +56,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -65,10 +78,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
 
-    /** Swerve request to apply during robot-centric path following */
-    private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
+    /** Swerve request to apply during field-centric path following */
+    private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds();
+    private final PIDController m_pathXController = new PIDController(10, 0, 0);
+    private final PIDController m_pathYController = new PIDController(10, 0, 0);
+    private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
 
-    /** Swerve request for field-centric driving with rotation control */
+    /** Swerve request for field-centric driving with rotation control I lowk added ts */ 
     private final SwerveRequest.FieldCentric alignRequest = new SwerveRequest.FieldCentric()
     .withDeadband(Constants.DriveConstants.TranslationDeadband)
     .withRotationalDeadband(Constants.DriveConstants.RotationDeadband);
@@ -158,8 +174,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-        configureAutoBuilder();
-        SmartDashboard.putData("field", field);
     }
 
     /**
@@ -184,7 +198,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-        configureAutoBuilder();
     }
 
     /**
@@ -217,36 +230,33 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-        configureAutoBuilder();
     }
 
-    private void configureAutoBuilder() {
-        try {
-            var config = RobotConfig.fromGUISettings();
-            AutoBuilder.configure(
-                () -> getState().Pose,   // Supplier of current robot pose
-                this::resetPose,         // Consumer for seeding pose against auto
-                () -> getState().Speeds, // Supplier of current robot speeds
-                // Consumer of ChassisSpeeds and feedforwards to drive the robot
-                (speeds, feedforwards) -> setControl(
-                    m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
-                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-                ),
-                new PPHolonomicDriveController(
-                    // PID constants for translation
-                    new PIDConstants(Constants.DriveConstants.xyP, Constants.DriveConstants.xyI, Constants.DriveConstants.xyD),
-                    // PID constants for rotation
-                    new PIDConstants(Constants.DriveConstants.rotP,Constants.DriveConstants.rotI,Constants.DriveConstants.rotD)
-                ),
-                config,
-                // Assume the path needs to be flipped for Red vs Blue, this is normally the case
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                this // Subsystem for requirements
-            );
-        } catch (Exception ex) {
-            DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
-        }
+    /**
+     * Creates a new auto factory for this drivetrain.
+     *
+     * @return AutoFactory for this drivetrain
+     */
+    public AutoFactory createAutoFactory() {
+        return createAutoFactory((sample, isStart) -> {});
+    }
+
+    /**
+     * Creates a new auto factory for this drivetrain with the given
+     * trajectory logger.
+     *
+     * @param trajLogger Logger for the trajectory
+     * @return AutoFactory for this drivetrain
+     */
+    public AutoFactory createAutoFactory(TrajectoryLogger<SwerveSample> trajLogger) {
+        return new AutoFactory(
+            () -> getState().Pose,
+            this::resetPose,
+            this::followPath,
+            true,
+            this,
+            trajLogger
+        );
     }
 
     /**
@@ -256,7 +266,35 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @return Command to run
      */
     public Command applyRequest(Supplier<SwerveRequest> request) {
-        return Commands.run(() -> this.setControl(request.get()), this);
+        return run(() -> this.setControl(request.get()));
+    }
+
+    /**
+     * Follows the given field-centric path sample with PID.
+     *
+     * @param sample Sample along the path to follow
+     */
+    public void followPath(SwerveSample sample) {
+        m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        var pose = getState().Pose;
+
+        var targetSpeeds = sample.getChassisSpeeds();
+        targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
+            pose.getX(), sample.x
+        );
+        targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
+            pose.getY(), sample.y
+        );
+        targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
+            pose.getRotation().getRadians(), sample.heading
+        );
+
+        setControl(
+            m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
+                .withWheelForceFeedforwardsX(sample.moduleForcesX())
+                .withWheelForceFeedforwardsY(sample.moduleForcesY())
+        );
     }
 
     /**
@@ -281,8 +319,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return m_sysIdRoutineToApply.dynamic(direction);
     }
 
-
-
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
 
@@ -297,11 +333,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
-
-    public Pose2d getPose() {
-        return getState().Pose;
-    }   
-
 
     /**
      * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
@@ -349,6 +380,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     // --------------------- END GENERATED CODE -------------------
+
+    public Pose2d getPose() {
+        return getState().Pose;
+    }   
     
     private double hubOffsetX = 0.0;
     private double hubOffsetY = 0.0;
@@ -877,3 +912,4 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
         }
     }
 }
+
