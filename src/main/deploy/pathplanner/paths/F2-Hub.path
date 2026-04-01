@@ -107,7 +107,18 @@
     }
   ],
   "constraintZones": [],
-  "pointTowardsZones": [],
+  "pointTowardsZones": [
+    {
+      "fieldPosition": {
+        "x": 4.625,
+        "y": 4.035
+      },
+      "rotationOffset": 0.0,
+      "minWaypointRelativePos": 3.872078720787206,
+      "maxWaypointRelativePos": 4.0,
+      "name": "Point Towards Hub"
+    }
+  ],
   "eventMarkers": [
     {
       "name": "okkkkk",
@@ -131,7 +142,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": -40.0
+    "rotation": -40.65387564539756
   },
   "reversed": false,
   "folder": null,
