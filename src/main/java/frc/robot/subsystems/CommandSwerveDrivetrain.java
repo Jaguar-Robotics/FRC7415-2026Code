@@ -27,6 +27,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -523,19 +524,28 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
     });
 }
 
-        private double lastAimAngleRad = Double.NaN;
+    public static final InterpolatingDoubleTreeMap TOFmap = new InterpolatingDoubleTreeMap();
+    static { //dist inch, time Sec
+        TOFmap.put(70.8 , 1.0);
+        TOFmap.put(100.3 , 1.2);
+        TOFmap.put(112.5, 2.1);
+    }
+
+
+
+    public double lastAimAngleRad = Double.NaN;
  
     // Moving average filter over ~5 samples (at 50Hz that's ~0.1s of smoothing)
     // Smooths the noisy derivative of the aim angle to get a clean feedforward
-    private final LinearFilter driveAngleFilter = LinearFilter.movingAverage(5);
+    public final LinearFilter driveAngleFilter = LinearFilter.movingAverage(5);
  
     // Store last commanded speeds so we use setpoint velocity (not noisy measured)
     // Updated at the end of each SOTM loop, read at the start of the next
-    private ChassisSpeeds lastCommandedSpeeds = new ChassisSpeeds();
+    public ChassisSpeeds lastCommandedSpeeds = new ChassisSpeeds();
  
     // Offset from robot center to the physical shooter position (measure from CAD)
     // Example: shooter is 0.2m forward and 0.0m sideways from robot center
-    private static final Translation2d ROBOT_TO_SHOOTER = new Translation2d(0.2, 0.0);
+    public static final Translation2d ROBOT_TO_SHOOTER = new Translation2d(0.2, 0.0);
 
     //BASED ON MECH A PRAISE THE FRC GODS FOR OPEN ALLIANCE
     public Command shootOnTheMoveIterative(CommandXboxController controller, double maxSpeed, double maxAngularRate) {
@@ -601,8 +611,8 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
         double allianceFlip = isRed ? -1.0 : 1.0;
 
-        shooterVelocityX = veloX * maxSpeed * allianceFlip;
-        shooterVelocityY = veloY * maxSpeed * allianceFlip;
+        shooterVelocityX = fieldVelocity.vxMetersPerSecond; //if allanice flup put it here
+        shooterVelocityY = fieldVelocity.vyMetersPerSecond;
  
         // ── 6. ITERATIVE LOOKAHEAD LOOP ───────────────────────────────────────────
         // Converges in ~3 iterations; 20 guarantees stability.
@@ -616,13 +626,13 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
             // Your TOF regression (distance in inches → time in seconds).
             // Replace this with your measured lookup table if you have one.
             double distInches = lookaheadDistance * 39.3701;
-            timeOfFlight = 0.0115177 * distInches + 0.330879;
+            timeOfFlight = TOFmap.get(distInches);
             timeOfFlight = Math.max(timeOfFlight, 0.05); // guard against degenerate values
-            timeOfFlight = 0.3; //* ****************************************************************************************************** */
+            timeOfFlight = 1; //* ***************************************************************************************************** */
  
             // Where will the shooter be when the note arrives?
-            double offsetX = shooterVelocityX * timeOfFlight;
-            double offsetY = shooterVelocityY * timeOfFlight;
+            double offsetX = shooterVelocityX * timeOfFlight * 0.3;
+            double offsetY = shooterVelocityY * timeOfFlight * 0.3;
             lookaheadShooterPosition = shooterPosition.plus(new Translation2d(offsetX, offsetY));
             lookaheadDistance = target.getDistance(lookaheadShooterPosition);
         }
@@ -656,7 +666,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
  
         // FF is in rad/s; scale it to match your maxAngularRate units.
         // Tune kFF: start at 1.0 and reduce if the robot overshoots on turns.
-        double kFF = 0.0;//********************************************************************************************************************************************* */
+        double kFF = 0.25;//********************************************************************************************************************************************* */
         double rotationalRate = aimAngleVelocityFF * kFF + pidOutput;
  
         // ── 10. DRIVER TRANSLATION INPUT ───────────────────────────────────────── *******************************************UN COMMENT
@@ -689,9 +699,6 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
             }
         }
          */
-        veloX *= 0.5;
-        veloY *= 0.5;
-        
  
         // ── 12. BUILD COMMANDED SPEEDS & CACHE THEM ───────────────────────────────
         // Cache what we're about to command so next loop uses setpoint, not measured
@@ -710,10 +717,10 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
  
         SmartDashboard.putNumber("SOTM/AimAngleDeg", Math.toDegrees(aimAngleRad));
         SmartDashboard.putNumber("SOTM/LookaheadDistanceMeters", lookaheadDistance);
+        SmartDashboard.putNumber("SOTM/LookaheadDistanceMeters", lookaheadDistance * 39.3701);
         SmartDashboard.putNumber("SOTM/TimeOfFlight", timeOfFlight);
         SmartDashboard.putNumber("SOTM/AimAngleFFRadPerSec", aimAngleVelocityFF);
-        SmartDashboard.putNumber("SOTM/AimErrorDeg",
-                aimAngle.minus(currentAngle).getDegrees());
+        SmartDashboard.putNumber("SOTM/AimErrorDeg",aimAngle.minus(currentAngle).getDegrees());
         SmartDashboard.putNumber("SOTM/shooterVelocityX", shooterVelocityX);
         SmartDashboard.putNumber("SOTM/shooterVelocityY", shooterVelocityY);
         SmartDashboard.putNumber("SOTM/lookaheadOffsetX", lookaheadShooterPosition.getX() - shooterPosition.getX());
@@ -731,11 +738,18 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
  
         // ── 14. APPLY REQUEST ─────────────────────────────────────────────────────
         return alignRequest
-                .withVelocityX(veloX * maxSpeed)
-                .withVelocityY(veloY * maxSpeed)
+                .withVelocityX(veloX * maxSpeed * 0.3)
+                .withVelocityY(veloY * maxSpeed*  0.3)
                 .withRotationalRate(rotationalRate * maxAngularRate);
     });
 }
+
+public double getLookaheadDistance() {
+    if (ShootingLocation == null) return getDistance(); // fallback to current distance
+    Pose2d hubPose = getHubPose().toPose2d();
+    return ShootingLocation.getTranslation().getDistance(hubPose.getTranslation());
+}
+
 
 public boolean isAimedAtTarget() {
     Pose2d currentPose = getPose();
@@ -752,6 +766,22 @@ public boolean isAimedAtTarget() {
     
     return errorDegrees <= Constants.DriveConstants.RotationalToleranceDegrees;
 }
+
+public boolean isAimedAtTargetSOTM() {
+    if (ShootingLocation == null) return false;
+    
+    Pose2d currentPose = getPose();
+    Rotation2d currentAngle = currentPose.getRotation();
+    
+    // ShootingLocation.getRotation() is the SOTM aim angle (set each loop in step 13)
+    Rotation2d targetAngle = ShootingLocation.getRotation();
+    
+    double errorDegrees = Math.abs(targetAngle.minus(currentAngle).getDegrees());
+    SmartDashboard.putNumber("SOTM/errorDegrees", errorDegrees);
+    
+    return errorDegrees <= Constants.DriveConstants.RotationalToleranceDegrees + 2;
+}
+
 
 public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate){
         boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
@@ -853,6 +883,7 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
         if(ShootingLocation != null){field.getObject("Shooting Target").setPose(ShootingLocation);}
         field.setRobotPose(getPose());
         SmartDashboard.putNumber("distanceToCenterHubInches", getDistance() * 39.3701);
+        SmartDashboard.putNumber("distanceLookaheadHubInches", getLookaheadDistance() * 39.3701);
         SmartDashboard.putString("close trench X val", getCloseBumpY(getPose()).toShortString());
         SmartDashboard.putNumber("Hub/OffsetX", hubOffsetX);
         SmartDashboard.putNumber("Hub/OffsetY", hubOffsetY);

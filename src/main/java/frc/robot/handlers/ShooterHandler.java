@@ -1,26 +1,17 @@
 package frc.robot.handlers;
 
-import static edu.wpi.first.units.Units.RPM;
-
-import edu.wpi.first.math.controller.BangBangController;
-import edu.wpi.first.units.AngularVelocityUnit;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.RobotContainer;
 
 public class ShooterHandler extends SubsystemBase implements StateSubsystem {
 
 
     public enum ShooterState implements State {
         SHOOTING,
+        SOTM,
         FAST,
         SLOW,
         REVERSE,
@@ -86,17 +77,21 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
         System.out.println("ERROR: ShooterHandler not initialized! Call initialize() first.");
         return;
         }
-        if (currentState != desiredState || currentState == ShooterState.SHOOTING) {
+        if (currentState != desiredState || currentState == ShooterState.SHOOTING || currentState == ShooterState.SOTM) {
             handleStateChange();
         }
     }
 
     double DistMeters = 0;
+    double DistMetersLookAhead = 0;
 
     private void handleStateChange(){ 
         switch (desiredState) {
             case SHOOTING:
                 shooter.setTargetVeloDistance(DistMeters); 
+                break;
+            case SOTM:
+                shooter.setTargetVeloDistance(DistMetersLookAhead);
                 break;
             case SLOW:
                 shooter.setTargetVelocity(Constants.ShooterConstants.SlowShot);
@@ -124,6 +119,8 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     @Override
 public void periodic() {
     DistMeters = drivetrain.getDistance();
+    DistMetersLookAhead = drivetrain.getLookaheadDistance() + 0.2; //0.2M is distance between orgin and shooter (its not acc but its what we measure from)
+    SmartDashboard.putNumber("drive/distanceLookaheadHubInches", DistMetersLookAhead* 39.3701);
     update(); // Handle state transitions
     SmartDashboard.putString("ShooterState", currentState.toString());
 }

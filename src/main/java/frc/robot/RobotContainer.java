@@ -21,6 +21,8 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -161,35 +163,133 @@ public class RobotContainer {
                 Pose2d targetPose = drivetrain.getHubPose().toPose2d();
                 if (targetPose == null) return 0.0;
 
-               // Translation2d toTarget = targetPose.getTranslation().minus(currentPose.getTranslation());
                 Translation2d toTarget = currentPose.getTranslation().minus(targetPose.getTranslation());
                 Rotation2d desiredAngle = toTarget.getAngle().rotateBy(Rotation2d.k180deg);
-                
-                SmartDashboard.putNumber("AutoStuff/headingCalculated", CommandSwerveDrivetrain.rotationController.calculate(
+
+                double error = desiredAngle.getRadians() - currentPose.getRotation().getRadians();
+
+                // Normalize error to [-pi, pi]
+                error = Math.IEEEremainder(error, 2 * Math.PI);
+
+                // Feedforward: adds a small constant push in the direction of the error
+                double kF = 0.80; // <-- tune this, start small
+                double feedforward = Math.signum(error); //* kF;
+
+                double pidOutput = CommandSwerveDrivetrain.rotationController.calculate(
                     currentPose.getRotation().getRadians(),
                     desiredAngle.getRadians()
-                  
-                ));
-                
-                SmartDashboard.putNumber("AutoStuff/currentPoseGetRotation", currentPose.getRotation().getRadians()*180/Math.PI);
-
-                SmartDashboard.putNumber("AutoStuff/desiredAngleRotation", desiredAngle.getRadians()*180/Math.PI);
-
-                return CommandSwerveDrivetrain.rotationController.calculate(
-                    currentPose.getRotation().getRadians(),
-                    desiredAngle.getRadians()
-                    
                 );
+
+                SmartDashboard.putNumber("AutoStuff/headingCalculated", pidOutput + feedforward);
+                SmartDashboard.putNumber("AutoStuff/currentPoseGetRotation", currentPose.getRotation().getRadians() * 180 / Math.PI);
+                SmartDashboard.putNumber("AutoStuff/desiredAngleRotation", desiredAngle.getRadians() * 180 / Math.PI);
+                SmartDashboard.putNumber("AutoStuff/feedforward", feedforward);
+
+                return pidOutput*MaxAngularRate + feedforward;
             });
         }));
 
+        NamedCommands.registerCommand("StartSOTMAlign", Commands.runOnce(() -> {
+        PPHolonomicDriveController.overrideRotationFeedback(() -> {
+
+            // ── 1. CURRENT STATE ──────────────────────────────────────────────
+            Pose2d currentPose = drivetrain.getPose();
+
+            ChassisSpeeds measuredSpeeds = drivetrain.getState().Speeds;
+            ChassisSpeeds robotRelativeSpeeds = 
+                (drivetrain.lastCommandedSpeeds.vxMetersPerSecond == 0
+                && drivetrain.lastCommandedSpeeds.vyMetersPerSecond == 0
+                && drivetrain.lastCommandedSpeeds.omegaRadiansPerSecond == 0)
+                ? measuredSpeeds
+                : drivetrain.lastCommandedSpeeds;
+
+            ChassisSpeeds fieldVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(
+                robotRelativeSpeeds.vxMetersPerSecond,
+                robotRelativeSpeeds.vyMetersPerSecond,
+                robotRelativeSpeeds.omegaRadiansPerSecond,
+                currentPose.getRotation()
+            );
+
+            // ── 2. PHASE DELAY ────────────────────────────────────────────────
+            double phaseDelay = 0.03;
+            Pose2d estimatedPose = currentPose.exp(
+                new Twist2d(
+                    fieldVelocity.vxMetersPerSecond * phaseDelay,
+                    fieldVelocity.vyMetersPerSecond * phaseDelay,
+                    fieldVelocity.omegaRadiansPerSecond * phaseDelay
+                )
+            );
+
+            // ── 3. SHOOTER POSITION ───────────────────────────────────────────
+            Translation2d shooterOffsetFieldFrame = 
+                CommandSwerveDrivetrain.ROBOT_TO_SHOOTER.rotateBy(estimatedPose.getRotation());
+            Translation2d shooterPosition = 
+                estimatedPose.getTranslation().plus(shooterOffsetFieldFrame);
+
+            // ── 4. TARGET ─────────────────────────────────────────────────────
+            Translation2d target = drivetrain.getHubPose().toPose2d().getTranslation();
+
+            // ── 5. SHOOTER VELOCITY ───────────────────────────────────────────
+            double shooterVelocityX = fieldVelocity.vxMetersPerSecond;
+            double shooterVelocityY = fieldVelocity.vyMetersPerSecond;
+
+            // ── 6. ITERATIVE LOOKAHEAD LOOP ───────────────────────────────────
+            double timeOfFlight = 0.1;
+            Translation2d lookaheadShooterPosition = shooterPosition;
+            double lookaheadDistance = target.getDistance(shooterPosition);
+
+            for (int i = 0; i < 20; i++) {
+                double distInches = lookaheadDistance * 39.3701;
+                timeOfFlight = CommandSwerveDrivetrain.TOFmap.get(distInches);
+                timeOfFlight = Math.max(timeOfFlight, 0.05);
+
+                double offsetX = shooterVelocityX * timeOfFlight * 0.3;
+                double offsetY = shooterVelocityY * timeOfFlight * 0.3;
+                lookaheadShooterPosition = shooterPosition.plus(new Translation2d(offsetX, offsetY));
+                lookaheadDistance = target.getDistance(lookaheadShooterPosition);
+            }
+
+            // ── 7. AIM ANGLE ──────────────────────────────────────────────────
+            Rotation2d aimAngle = target.minus(lookaheadShooterPosition).getAngle();
+            double aimAngleRad = aimAngle.getRadians();
+
+            // ── 8. AIM ANGLE FEEDFORWARD ──────────────────────────────────────
+            double aimAngleVelocityFF = 0.0;
+            if (!Double.isNaN(drivetrain.lastAimAngleRad)) {
+                double rawDelta = aimAngleRad - drivetrain.lastAimAngleRad;
+                while (rawDelta > Math.PI)  rawDelta -= 2 * Math.PI;
+                while (rawDelta < -Math.PI) rawDelta += 2 * Math.PI;
+
+                double rawRate = rawDelta / 0.02;
+                aimAngleVelocityFF = drivetrain.driveAngleFilter.calculate(rawRate);
+            }
+            drivetrain.lastAimAngleRad = aimAngleRad;
+
+            // ── 9. ROTATION PID + FF ──────────────────────────────────────────
+            double pidOutput = drivetrain.rotationController.calculate(
+                currentPose.getRotation().getRadians(),
+                aimAngleRad
+            );
+
+            double kFF = 0.25;
+            double rotationalRate = aimAngleVelocityFF * kFF + pidOutput;
+
+            // ── 10. SMARTDASHBOARD ────────────────────────────────────────────
+            SmartDashboard.putNumber("AutoSOTM/AimAngleDeg", Math.toDegrees(aimAngleRad));
+            SmartDashboard.putNumber("AutoSOTM/LookaheadDistanceInches", lookaheadDistance * 39.3701);
+            SmartDashboard.putNumber("AutoSOTM/TimeOfFlight", timeOfFlight);
+            SmartDashboard.putNumber("AutoSOTM/pidOutput", pidOutput);
+            SmartDashboard.putNumber("AutoSOTM/rotationalRate", rotationalRate);
+
+            return rotationalRate * MaxAngularRate;
+        });
+    }));
         
         NamedCommands.registerCommand("Shoot", 
         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
 
-
-        NamedCommands.registerCommand("ShootAuto", 
-        new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPAUTO)));
+        NamedCommands.registerCommand("SOTMAuto", 
+        new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SOTMSPINUPAUTO)));
 
         NamedCommands.registerCommand("ShooterOff", Commands.runOnce(() -> {
             PPHolonomicDriveController.clearRotationFeedbackOverride();
@@ -292,28 +392,29 @@ public class RobotContainer {
 
         /*
         joystick.rightBumper().onTrue(new SequentialCommandGroup(
-            Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)),
-            Commands.waitSeconds(0.5),
-            Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT))));
+            Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVESPINUP)),
+            Commands.waitSeconds(0.2),
+            Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVE))));
         */
 
-        joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
+        //joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
+        joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVESPINUP)));
         
         
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
         //joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
 
-        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
+        /////joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
 
-        joystick.x().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
+        joystick.x().onTrue(new InstantCommand(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
 
         joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESNAKE)));
-        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESNAKEFAST)));
+        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
 
         noButtonsHeld.onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         
 
-       //joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
+       joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
        //joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
 
@@ -323,19 +424,12 @@ public class RobotContainer {
 
 
         
-        //joystick.povDown().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
-        //joystick.povUp().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROOUT))); //in RPM
+        joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1))); 
+        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1))); //in RPs
         
 
         joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.67)); //  out
         joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.67)); //in
-
-        joystick.povDown().whileTrue(drivetrain.applyRequest(() ->
-    new SwerveRequest.RobotCentric()
-        .withVelocityX(-1.0*MaxSpeed) // negative = backwards, tune speed as needed
-        .withVelocityY(0)
-        .withRotationalRate(0)
-));
 
 
         //CONTROLLER 2 / debug controller 
@@ -349,7 +443,6 @@ public class RobotContainer {
          */
 
         opJoystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
-        opJoystick.b().onTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
         opJoystick.y().onTrue(Commands.runOnce(() -> {
             var current = HubShiftUtil.getAllianceWinOverride();
             HubShiftUtil.setAllianceWinOverride(() -> Optional.of(current.orElse(true) == false));

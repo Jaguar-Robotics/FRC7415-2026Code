@@ -33,13 +33,26 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "StartHubAlign",
+      "name": "SOTM",
       "waypointRelativePos": 0.2780821917808223,
       "endWaypointRelativePos": 0.7287671232876731,
       "command": {
-        "type": "named",
+        "type": "sequential",
         "data": {
-          "name": "StartHubAlign"
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "StartSOTMAlign"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "SOTMAuto"
+              }
+            }
+          ]
         }
       }
     },
@@ -51,7 +64,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 0.5,
+    "maxVelocity": 2.0,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 560.0,
     "maxAngularAcceleration": 720.0,

@@ -28,6 +28,8 @@ public class Superstructure extends SubsystemBase {
     IDLE,
     SPINUPAUTO,
     STATIONARYSHOTAUTO,
+    SOTMSPINUPAUTO,
+    SOTMAUTO,
     SPINUPSLOW,
     SPINUPFAST,
     FASTSHOT,
@@ -62,6 +64,7 @@ public class Superstructure extends SubsystemBase {
 
   boolean hopperFul = true;
   boolean DTaimed = false;
+  boolean DTFutAimed = false;
   boolean ShooterAtVelo = false;
   private final edu.wpi.first.wpilibj.Timer spinupTimer = new edu.wpi.first.wpilibj.Timer();
   
@@ -182,8 +185,8 @@ public class Superstructure extends SubsystemBase {
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.SLOWINTAKE);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
-        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
-        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
         driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
           if (hopperFul) {intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);}
           else intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.FASTSLOWIN);
@@ -197,7 +200,7 @@ public class Superstructure extends SubsystemBase {
         intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
         break;
       case SHOOTONTHEMOVE:
-        shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.SOTM);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
@@ -206,12 +209,32 @@ public class Superstructure extends SubsystemBase {
         intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
         break;
       case SHOOTONTHEMOVESPINUP:
-        shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.SOTM);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
         driveHandler.setDesiredState(DriveHandler.DriveState.SHOOTONTHEMOVE);
+        spinupTimer.reset();
+        spinupTimer.start();
+        break;
+      case SOTMSPINUPAUTO:
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.SOTM);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
+        spinupTimer.reset();
+        spinupTimer.start();
+        break;
+      case SOTMAUTO:
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.SOTM);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
+        driveHandler.setDesiredState(DriveHandler.DriveState.SHOOTONTHEMOVE);
+        intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
         break;
       case TUNING: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.TUNING);
@@ -304,6 +327,7 @@ public class Superstructure extends SubsystemBase {
         }
         
         DTaimed = drivetrain.isAimedAtTarget();
+        DTFutAimed = drivetrain.isAimedAtTargetSOTM();
           if (CommandSwerveDrivetrain.isInAllianceZone(drivetrain.getPose())){
               ShooterAtVelo = shooter.atTargetVelo();}
           else {
@@ -316,7 +340,18 @@ public class Superstructure extends SubsystemBase {
         if (currentState == SuperstructureState.SPINUPAUTO && ShooterAtVelo && DTaimed && spinupTimer.hasElapsed(0.05)){ //checks if its at target velo and angle
           setDesiredState(SuperstructureState.STATIONARYSHOTAUTO);
         }
-        
+
+        if (currentState == SuperstructureState.SHOOTONTHEMOVESPINUP && ShooterAtVelo && DTFutAimed && spinupTimer.hasElapsed(0.05)){
+          setDesiredState(SuperstructureState.SHOOTONTHEMOVE);
+        }
+
+        if (currentState == SuperstructureState.SOTMSPINUPAUTO && ShooterAtVelo && DTFutAimed && spinupTimer.hasElapsed(0.05)){
+          setDesiredState(SuperstructureState.SOTMAUTO);
+        }
+
+        if (currentState == SuperstructureState.SHOOTONTHEMOVE && (!DTFutAimed || !ShooterAtVelo)){
+          setDesiredState(SuperstructureState.SHOOTONTHEMOVESPINUP);
+        }
         /*
         if (currentState == SuperstructureState.STATIONARYSHOT && !DTaimed){
           setDesiredState(SuperstructureState.SPINUP);
@@ -327,6 +362,7 @@ public class Superstructure extends SubsystemBase {
         SmartDashboard.putString("SuperState", currentState.toString());
         SmartDashboard.putBoolean("shooterAtVelo?", ShooterAtVelo);
         SmartDashboard.putBoolean("Drivetrain aimed?",DTaimed);
+        SmartDashboard.putBoolean("SOTM aimed?",DTFutAimed);
          
   }
   public SuperstructureState getCurrentState() {

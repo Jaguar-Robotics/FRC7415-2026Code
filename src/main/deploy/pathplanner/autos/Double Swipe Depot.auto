@@ -35,7 +35,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 3.0
+                  "waitTime": 2.0
                 }
               },
               {
@@ -51,6 +51,24 @@
           "type": "path",
           "data": {
             "pathName": "LowMidSwipe"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SOTMHub-Depot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D1-D2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D2-Hub"
           }
         },
         {

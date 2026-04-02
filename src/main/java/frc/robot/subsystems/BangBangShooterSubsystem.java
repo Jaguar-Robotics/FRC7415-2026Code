@@ -136,7 +136,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     shooterEnabled = true;
   }
   // with mult
-  public void setTargetVeloDistance(double  distance) {
+  public void setTargetVeloDistance(double  distance) {//IN METERS
     double inches = distance * 39.3701;
     targetVeloRPS1 = Shooter1Map.get(inches) * ShooterMult;
     targetVeloRPS2 = Shooter2Map.get(inches)* ShooterMult;

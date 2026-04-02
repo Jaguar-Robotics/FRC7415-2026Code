@@ -30,8 +30,8 @@ public class Constants {
         public static final double SlowShot = 20; //HESKEL CHANGE ME SLOW
         public static final double RPSHardStop = 100.0; 
         public static final double RPSTolarance = 1;
-        public static final double kS = 0.3; //volt to overcome static friction feedforawd TUNED ALR
-        public static final double kV = 0.13; //volts per rps 0.125
+        public static final double kS = 0.28; 
+        public static final double kV = 0.13; 
     }
 
     public static abstract class IntakeConstants {
@@ -44,7 +44,7 @@ public class Constants {
         public static final double FastReverse = -0.87;
 
         public static final int IntakeSlideMotorID = 35; 
-        public static final double IntakeSlideOutSetPoint = 29.5; //In ROTATIONS 25
+        public static final double IntakeSlideOutSetPoint = 23.3; //In ROTATIONS 25
         public static final double IntakeSlideMiddleSetPoint = 10;
         public static final double IntakeSlideInSetPoint = 0; 
 
@@ -56,7 +56,7 @@ public class Constants {
 
     public static abstract class HopperConstants {
         public static final int HopperMotorID = 32; //
-        public static final double FastRoll = 0.8; 
+        public static final double FastRoll = 0.8; //used in SS
         public static final double SlowRoll = 0.3; //0.2
         public static final double FastOutRoll = -0.4;
         public static final double SlowOutRoll = -0.2;
@@ -66,9 +66,9 @@ public class Constants {
         public static abstract class IndexerConstants {
         public static final int HighIndexerMotorID = 34; //
         public static final int LowIndexerMotorID = 33; //
-        public static final double FastRoll = -0.87;
+        public static final double FastRoll = -0.8;
         public static final double SlowRoll = -0.6;
-        public static final double FastOutRoll = 0.87;
+        public static final double FastOutRoll = 1;
         public static final double SlowOutRoll = 0.3;
 
     }
