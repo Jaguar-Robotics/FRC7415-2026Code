@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6670806451612905,
-        "y": 5.731967741935485
+        "x": 3.0871428571428567,
+        "y": 5.664702750665483
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.411276254577316,
-        "y": 5.809690152226038
+        "x": 2.8313384665588823,
+        "y": 5.742425160956036
       },
       "isLocked": false,
       "linkedName": "ScoringDepot"
@@ -200,7 +200,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 34.467109438768595
+    "rotation": -46.75340486007153
   },
   "useDefaultConstraints": true
 }

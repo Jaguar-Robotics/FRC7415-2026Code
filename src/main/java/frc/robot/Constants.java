@@ -112,7 +112,7 @@ public class Constants {
         ); 
     }
         public static abstract class DriveConstants{
-            public static final double xyP = 1;
+            public static final double xyP = 20;
             public static final double xyI = 0;
             public static final double xyD = 0;
 

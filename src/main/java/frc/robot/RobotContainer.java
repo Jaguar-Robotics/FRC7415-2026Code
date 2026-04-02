@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
 import frc.robot.handlers.IntakeSlideHandler;
@@ -114,6 +115,7 @@ public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
+        PPHolonomicDriveController.clearRotationFeedbackOverride();
         DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate);
         ShooterHandler.getInstance().initialize(drivetrain, shooter);
         Superstructure.getInstance().initialize(shooter, drivetrain);
@@ -159,6 +161,7 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("StartHubAlign", Commands.runOnce(() -> {
             PPHolonomicDriveController.overrideRotationFeedback(() -> {
+
                 Pose2d currentPose = drivetrain.getPose();
                 Pose2d targetPose = drivetrain.getHubPose().toPose2d();
                 if (targetPose == null) return 0.0;
@@ -172,8 +175,8 @@ public class RobotContainer {
                 error = Math.IEEEremainder(error, 2 * Math.PI);
 
                 // Feedforward: adds a small constant push in the direction of the error
-                double kF = 0.80; // <-- tune this, start small
-                double feedforward = Math.signum(error); //* kF;
+                double kF = 1; // <-- tune this, start small
+                double feedforward = Math.signum(error) * kF;
 
                 double pidOutput = CommandSwerveDrivetrain.rotationController.calculate(
                     currentPose.getRotation().getRadians(),
@@ -185,7 +188,7 @@ public class RobotContainer {
                 SmartDashboard.putNumber("AutoStuff/desiredAngleRotation", desiredAngle.getRadians() * 180 / Math.PI);
                 SmartDashboard.putNumber("AutoStuff/feedforward", feedforward);
 
-                return pidOutput*MaxAngularRate + feedforward;
+                return (pidOutput*MaxAngularRate + feedforward) *2;
             });
         }));
 
@@ -326,7 +329,7 @@ public class RobotContainer {
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         ); 
-        
+        */
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
@@ -337,25 +340,17 @@ public class RobotContainer {
         
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        opJoystick.povUp().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        opJoystick.povRight().whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        opJoystick.povDown().whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        opJoystick.povLeft().whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on right stick press.
         joystick.rightStick().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
         drivetrain.registerTelemetry(logger::telemeterize);
 
-
-
-
-        // Create the constraints to use while pathfinding
-        PathConstraints constraints = new PathConstraints(
-                3.0, 4.0,
-                Units.degreesToRadians(540), Units.degreesToRadians(720));
-
         //ROTATE 90 degreese
-        /*
+        
         joystick.leftBumper().onTrue(Commands.runOnce(() -> {
             Rotation2d targetRotation = drivetrain.getPose().getRotation().plus(Rotation2d.fromDegrees(90));
             
@@ -368,10 +363,10 @@ public class RobotContainer {
                 return new SwerveRequest.FieldCentric()
                     .withVelocityX(0)
                     .withVelocityY(0)
-                    .withRotationalRate(rotationalRate * 6); // Max angular rate
+                    .withRotationalRate(rotationalRate * MaxAngularRate); // Max angular rate
             }).withTimeout(2.0).schedule();
         }));
-        */
+        
 
         /* Main driver Controller:
          * RT - Hold to spin up (and shoot hopefully) - relase to idle
@@ -405,7 +400,7 @@ public class RobotContainer {
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
         //joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
 
-        /////joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
+        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
 
         joystick.x().onTrue(new InstantCommand(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
 
@@ -415,7 +410,7 @@ public class RobotContainer {
         noButtonsHeld.onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         
 
-       joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
+       //joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState((Superstructure.SuperstructureState.TUNING))));
        //joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
 
@@ -443,6 +438,7 @@ public class RobotContainer {
          *  X - toggle hopperfullness
          */
 
+         /*
         opJoystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
         opJoystick.y().onTrue(Commands.runOnce(() -> {
             var current = HubShiftUtil.getAllianceWinOverride();
@@ -464,7 +460,7 @@ public class RobotContainer {
         opJoystick.leftTrigger().onTrue(Commands.runOnce(() -> shooter.toggleShooterMult()));
 
         opJoystick.leftStick().onTrue(new InstantCommand(() -> drivetrain.ToggleSlowTele()));
-
+        */
        /* 
         opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
         joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));

@@ -458,7 +458,7 @@ public Pose3d getHubPose() {
     }
 
     public Pose2d ShootingLocation;
-    
+
     public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate) {
     return applyRequest(() -> {
         
@@ -497,12 +497,12 @@ public void ToggleSlowTele(){
     if (SlowTele == false) {SlowTele = true;}
     else if (SlowTele == true) {SlowTele = false;}
 }
+
 public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
     return applyRequest(() -> {
-        // Apply 10% deadband to joystick inputs
-        double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
-        double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
-        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
+        double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), 0.1));
+        double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), 0.1));
+        double rotSpeed = scaleAxis(MathUtil.applyDeadband(-joystick.getRightX(), 0.1));
         
         return alignRequest
             .withVelocityX(xSpeed * MaxSpeed)
@@ -511,16 +511,24 @@ public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, doub
     });
 }
 
+private double scaleAxis(double input) {
+    double abs = Math.abs(input);
+    if (abs == 0.0) return 0.0; // already zeroed by deadband
+    abs = Math.min(abs, 1.0);
+    double scaled = Math.pow(Math.sin((Math.PI / 2.0) * ((abs - 0.10) / 0.90)), 2);
+
+    return Math.copySign(scaled, input);
+}
+
 public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
     return applyRequest(() -> {
-        // Apply 10% deadband to joystick inputs
-        double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
-        double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
-        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
+        double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), 0.1));
+        double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), 0.1));
+        double rotSpeed = scaleAxis(MathUtil.applyDeadband(-joystick.getRightX(), 0.1));
         
         return alignRequest
-            .withVelocityX(xSpeed * MaxSpeed*0.5)
-            .withVelocityY(ySpeed * MaxSpeed*0.5)
+            .withVelocityX(xSpeed * MaxSpeed * 0.75)
+            .withVelocityY(ySpeed * MaxSpeed* 0.75)
             .withRotationalRate(rotSpeed * MaxAngularRate);
     });
 }
@@ -612,8 +620,8 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
         double allianceFlip = isRed ? -1.0 : 1.0;
 
-        shooterVelocityX = fieldVelocity.vxMetersPerSecond; //if allanice flup put it here
-        shooterVelocityY = fieldVelocity.vyMetersPerSecond;
+        shooterVelocityX = fieldVelocity.vxMetersPerSecond * allianceFlip; //if allanice flup put it here
+        shooterVelocityY = fieldVelocity.vyMetersPerSecond * allianceFlip;
  
         // ── 6. ITERATIVE LOOKAHEAD LOOP ───────────────────────────────────────────
         // Converges in ~3 iterations; 20 guarantees stability.
@@ -843,8 +851,8 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
             return applyRequest(() -> {
                 Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
 
-                double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband);
-                double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband);
+                double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband));
+                double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband));
 
                 double xVelocity = xSpeed * MaxSpeed;
                 double yVelocity = ySpeed * MaxSpeed;
@@ -885,7 +893,6 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
         field.setRobotPose(getPose());
         SmartDashboard.putNumber("distanceToCenterHubInches", getDistance() * 39.3701);
         SmartDashboard.putNumber("distanceLookaheadHubInches", getLookaheadDistance() * 39.3701);
-        SmartDashboard.putString("close trench X val", getCloseBumpY(getPose()).toShortString());
         SmartDashboard.putNumber("Hub/OffsetX", hubOffsetX);
         SmartDashboard.putNumber("Hub/OffsetY", hubOffsetY);
         SmartDashboard.putBoolean("SlowDrive?", SlowTele);
