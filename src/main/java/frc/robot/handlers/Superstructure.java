@@ -233,7 +233,6 @@ public class Superstructure extends SubsystemBase {
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
-        driveHandler.setDesiredState(DriveHandler.DriveState.SHOOTONTHEMOVE);
         intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
         break;
       case TUNING: //dont use

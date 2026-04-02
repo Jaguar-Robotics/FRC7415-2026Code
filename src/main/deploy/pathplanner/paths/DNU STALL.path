@@ -37,22 +37,9 @@
       "waypointRelativePos": 0.2780821917808223,
       "endWaypointRelativePos": 0.7287671232876731,
       "command": {
-        "type": "sequential",
+        "type": "named",
         "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "StartSOTMAlign"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "SOTMAuto"
-              }
-            }
-          ]
+          "name": "StartSOTMAlign"
         }
       }
     },

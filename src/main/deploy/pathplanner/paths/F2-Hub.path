@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.555012508058603,
-        "y": 3.6593629288196947
+        "x": 7.488271820753227,
+        "y": 3.9203591765543795
       },
       "isLocked": false,
       "linkedName": "F2"
     },
     {
       "anchor": {
-        "x": 6.934046140195209,
-        "y": 5.898092280390418
+        "x": 7.062812777284827,
+        "y": 5.43936113575865
       },
       "prevControl": {
-        "x": 7.560776346463099,
-        "y": 5.9425412311895585
+        "x": 7.612228204482071,
+        "y": 5.345599302447126
       },
       "nextControl": {
-        "x": 6.013979175909494,
-        "y": 5.832839304199942
+        "x": 5.524438837423304,
+        "y": 5.701896102524892
       },
       "isLocked": false,
       "linkedName": null
@@ -36,8 +36,8 @@
         "y": 5.731967741935485
       },
       "prevControl": {
-        "x": 4.250416666666666,
-        "y": 5.4770907738095245
+        "x": 3.032081195034505,
+        "y": 5.638333247888172
       },
       "nextControl": null,
       "isLocked": false,
@@ -48,10 +48,6 @@
     {
       "waypointRelativePos": 0.05,
       "rotationDegrees": 50.0
-    },
-    {
-      "waypointRelativePos": 0.15,
-      "rotationDegrees": -70.0
     },
     {
       "waypointRelativePos": 0.35,
@@ -69,10 +65,10 @@
   "constraintZones": [
     {
       "name": "slowtoshoot",
-      "minWaypointRelativePos": 1.7651006711409427,
+      "minWaypointRelativePos": 1.6107382550335552,
       "maxWaypointRelativePos": 2.0,
       "constraints": {
-        "maxVelocity": 2.0,
+        "maxVelocity": 1.5,
         "maxAcceleration": 6.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -84,6 +80,17 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "starbuhallign",
+      "waypointRelativePos": 1.6711409395973145,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StartHubAlign"
+        }
+      }
+    },
+    {
       "name": "okkkkk",
       "waypointRelativePos": 1.7000000000000002,
       "endWaypointRelativePos": null,
@@ -93,21 +100,10 @@
           "name": "IntakeOff"
         }
       }
-    },
-    {
-      "name": "starbuhallign",
-      "waypointRelativePos": 1.791946308724837,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "StartHubAlign"
-        }
-      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 1.0,
+    "maxVelocity": 5.12,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -116,7 +112,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": -40.30336991513212
+    "rotation": 34.467109438768595
   },
   "reversed": false,
   "folder": null,

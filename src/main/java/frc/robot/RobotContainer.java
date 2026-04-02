@@ -190,6 +190,7 @@ public class RobotContainer {
         }));
 
         NamedCommands.registerCommand("StartSOTMAlign", Commands.runOnce(() -> {
+        superstructure.setDesiredState(Superstructure.SuperstructureState.SOTMSPINUPAUTO);
         PPHolonomicDriveController.overrideRotationFeedback(() -> {
 
             // ── 1. CURRENT STATE ──────────────────────────────────────────────
@@ -265,6 +266,9 @@ public class RobotContainer {
             }
             drivetrain.lastAimAngleRad = aimAngleRad;
 
+            drivetrain.ShootingLocation = new Pose2d(lookaheadShooterPosition, aimAngle);
+
+
             // ── 9. ROTATION PID + FF ──────────────────────────────────────────
             double pidOutput = drivetrain.rotationController.calculate(
                 currentPose.getRotation().getRadians(),
@@ -287,9 +291,6 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("Shoot", 
         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
-
-        NamedCommands.registerCommand("SOTMAuto", 
-        new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SOTMSPINUPAUTO)));
 
         NamedCommands.registerCommand("ShooterOff", Commands.runOnce(() -> {
             PPHolonomicDriveController.clearRotationFeedbackOverride();

@@ -457,7 +457,8 @@ public Pose3d getHubPose() {
         return null;
     }
 
-    Pose2d ShootingLocation;
+    public Pose2d ShootingLocation;
+    
     public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate) {
     return applyRequest(() -> {
         
