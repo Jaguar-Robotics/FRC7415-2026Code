@@ -238,7 +238,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     // PID constants for translation
                     new PIDConstants(Constants.DriveConstants.xyP, Constants.DriveConstants.xyI, Constants.DriveConstants.xyD),
                     // PID constants for rotation
-                    new PIDConstants(Constants.DriveConstants.rotP,Constants.DriveConstants.rotI,Constants.DriveConstants.rotD)
+                    new PIDConstants(20,0,0.05)
                 ),
                 config,
                 // Assume the path needs to be flipped for Red vs Blue, this is normally the case

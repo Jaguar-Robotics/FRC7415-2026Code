@@ -79,19 +79,6 @@
         "nominalVoltage": 12.0,
         "unlimited": false
       }
-    },
-    {
-      "name": "slow see tag",
-      "minWaypointRelativePos": 0.19798657718120827,
-      "maxWaypointRelativePos": 1.0906040268456363,
-      "constraints": {
-        "maxVelocity": 0.5,
-        "maxAcceleration": 6.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
     }
   ],
   "pointTowardsZones": [],

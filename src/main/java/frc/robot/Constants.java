@@ -114,9 +114,9 @@ public class Constants {
         public static abstract class DriveConstants{
             public static final double xyP = 20;
             public static final double xyI = 0;
-            public static final double xyD = 0;
+            public static final double xyD = 0.05; //these lowk just for auto
 
-            public static final double rotP = 47; //0.85
+            public static final double rotP = 0.85; //0.85 these for autoallign
             public static final double rotI = 0;
             public static final double rotD = 0.05; //0.05
 
