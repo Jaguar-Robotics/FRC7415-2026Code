@@ -2,9 +2,12 @@ package frc.robot.handlers;
 
 import static edu.wpi.first.units.Units.Degrees;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants;
 import frc.robot.subsystems.BangBangShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -40,6 +43,7 @@ public class Superstructure extends SubsystemBase {
   private static Superstructure instance;
   private BangBangShooterSubsystem shooter; 
   private CommandSwerveDrivetrain drivetrain;
+  private CommandXboxController joystick;
   
   //private final ShooterSubsystem Shooter = new ShooterSubsystem();
   private final ShooterHandler shooterHandler = ShooterHandler.getInstance();
@@ -63,9 +67,14 @@ public class Superstructure extends SubsystemBase {
   private Angle targetAngle = Degrees.of(0);
 
   boolean hopperFul = true;
-  boolean DTaimed = false;
-  boolean DTFutAimed = false;
-  boolean ShooterAtVelo = false;
+  boolean DTaimed;
+  boolean DTFutAimed;
+  double robotSpeed;
+  boolean ShooterAtVelo;
+  boolean driverIsMoving;
+  boolean isMoving;
+  ChassisSpeeds currentSpeeds;
+
   private final edu.wpi.first.wpilibj.Timer spinupTimer = new edu.wpi.first.wpilibj.Timer();
   
 
@@ -79,9 +88,11 @@ public class Superstructure extends SubsystemBase {
     /**
    * Initialize superstructure with required subsystems
    */
-  public void initialize(BangBangShooterSubsystem shooter, CommandSwerveDrivetrain drivetrain) {
+  public void initialize(BangBangShooterSubsystem shooter, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick) {
       this.shooter = shooter;
       this.drivetrain = drivetrain;
+      this.joystick = joystick;
+
   }
 
   public void toggleHopperStatus(){
@@ -187,7 +198,7 @@ public class Superstructure extends SubsystemBase {
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
-        driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
+        driveHandler.setDesiredState(DriveHandler.DriveState.XDRIVE);
           if (hopperFul) {intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);}
           else intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.FASTSLOWIN);
         break;
@@ -201,7 +212,7 @@ public class Superstructure extends SubsystemBase {
         break;
       case SHOOTONTHEMOVE:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SOTM);
-        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.SLOWINTAKE);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
@@ -210,7 +221,7 @@ public class Superstructure extends SubsystemBase {
         break;
       case SHOOTONTHEMOVESPINUP:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SOTM);
-        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.SLOWINTAKE);
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
@@ -318,15 +329,26 @@ public class Superstructure extends SubsystemBase {
   @Override
   public void periodic() {
 
+    double joystickMagnitude = Math.hypot(
+    joystick.getLeftX(), 
+    joystick.getLeftY()
+);
+  
+
     SmartDashboard.putBoolean("Hopper Full?", hopperFul);
 
         if (shooter == null) {
         System.err.println("ERROR: Superstructure not initialized!");
         return;
         }
-        
+
+        currentSpeeds = drivetrain.getState().Speeds;
+        robotSpeed = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+        driverIsMoving = joystickMagnitude > Constants.DriveConstants.TranslationDeadband; // matches your deadband
+        isMoving = robotSpeed > 0.3 || driverIsMoving;
         DTaimed = drivetrain.isAimedAtTarget();
         DTFutAimed = drivetrain.isAimedAtTargetSOTM();
+
           if (CommandSwerveDrivetrain.isInAllianceZone(drivetrain.getPose())){
               ShooterAtVelo = shooter.atTargetVelo();}
           else {
@@ -351,6 +373,17 @@ public class Superstructure extends SubsystemBase {
         if (currentState == SuperstructureState.SHOOTONTHEMOVE && (!DTFutAimed || !ShooterAtVelo)){
           setDesiredState(SuperstructureState.SHOOTONTHEMOVESPINUP);
         }
+
+        // STATIONARYSHOT → SHOOTONTHEMOVE if robot starts moving
+        if ((currentState == SuperstructureState.STATIONARYSHOT || currentState == SuperstructureState.SPINUP) && isMoving) {
+            setDesiredState(SuperstructureState.SHOOTONTHEMOVESPINUP);
+        }
+
+        // SHOOTONTHEMOVE → SPINUP (which auto-transitions to STATIONARYSHOT) if robot stops
+        if ((currentState == SuperstructureState.SHOOTONTHEMOVE || currentState == SuperstructureState.SHOOTONTHEMOVESPINUP) && !isMoving) {
+          setDesiredState(SuperstructureState.SPINUP);
+        }
+
         /*
         if (currentState == SuperstructureState.STATIONARYSHOT && !DTaimed){
           setDesiredState(SuperstructureState.SPINUP);

@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.0871428571428567,
-        "y": 5.664702750665483
+        "x": 2.523788819875776,
+        "y": 5.415217391304347
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.288199065151824,
-        "y": 6.045952174974795
+        "x": 1.0510204081632648,
+        "y": 5.801517302573202
       },
       "isLocked": false,
       "linkedName": "ScoringDepot"
@@ -81,27 +81,27 @@
     {
       "anchor": {
         "x": 5.726858917480035,
-        "y": 5.622250000003312
+        "y": 5.141588287488908
       },
       "prevControl": {
         "x": 6.209733806566104,
-        "y": 5.552031943212066
+        "y": 5.071370230697662
       },
       "nextControl": {
         "x": 4.065854730600393,
-        "y": 5.863787692190125
+        "y": 5.383125979675721
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.6670806451612905,
-        "y": 5.731967741935485
+        "x": 3.046903283052351,
+        "y": 5.246211180124224
       },
       "prevControl": {
-        "x": 2.569400311793272,
-        "y": 5.501840489153219
+        "x": 2.9492229496843323,
+        "y": 5.016083927341958
       },
       "nextControl": null,
       "isLocked": false,
@@ -110,11 +110,11 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.546848381601363,
+      "waypointRelativePos": 0.4058355437665784,
       "rotationDegrees": 180.0
     },
     {
-      "waypointRelativePos": 0.9663677130044842,
+      "waypointRelativePos": 1.1220159151193625,
       "rotationDegrees": 180.0
     },
     {
@@ -134,7 +134,7 @@
       "rotationDegrees": -63.56915012635896
     },
     {
-      "waypointRelativePos": 5.132286995515679,
+      "waypointRelativePos": 4.973474801061007,
       "rotationDegrees": 0.0
     },
     {
@@ -205,7 +205,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 5.12,
+    "maxVelocity": 2.5,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -220,7 +220,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -46.75340486007153
+    "rotation": -32.64934171284159
   },
   "useDefaultConstraints": true
 }

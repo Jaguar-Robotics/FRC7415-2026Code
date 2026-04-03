@@ -500,9 +500,9 @@ public void ToggleSlowTele(){
 
 public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
     return applyRequest(() -> {
-        double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), 0.1));
-        double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), 0.1));
-        double rotSpeed = scaleAxis(MathUtil.applyDeadband(-joystick.getRightX(), 0.1));
+        double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband));
+        double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband));
+        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), Constants.DriveConstants.TranslationDeadband);
         
         return alignRequest
             .withVelocityX(xSpeed * MaxSpeed)
@@ -524,7 +524,8 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
     return applyRequest(() -> {
         double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), 0.1));
         double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), 0.1));
-        double rotSpeed = scaleAxis(MathUtil.applyDeadband(-joystick.getRightX(), 0.1));
+        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
+
         
         return alignRequest
             .withVelocityX(xSpeed * MaxSpeed * 0.75)
@@ -640,8 +641,8 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
             timeOfFlight = 1; //* ***************************************************************************************************** */
  
             // Where will the shooter be when the note arrives?
-            double offsetX = shooterVelocityX * timeOfFlight * 0.3;
-            double offsetY = shooterVelocityY * timeOfFlight * 0.3;
+            double offsetX = shooterVelocityX * timeOfFlight * 0.25;
+            double offsetY = shooterVelocityY * timeOfFlight * 0.25;
             lookaheadShooterPosition = shooterPosition.plus(new Translation2d(offsetX, offsetY));
             lookaheadDistance = target.getDistance(lookaheadShooterPosition);
         }
@@ -682,33 +683,6 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         //double veloX = MathUtil.applyDeadband(-controller.getLeftY(), Constants.DriveConstants.TranslationDeadband);
         //double veloY = MathUtil.applyDeadband(-controller.getLeftX(), Constants.DriveConstants.TranslationDeadband);
  
-        // ── 11. LINEAR VELOCITY LIMITING (6328's polar velocity cap) ─────────────
-        // Prevent the driver from moving so fast perpendicular to the shot that
-        // it would miss. The limit is: lateral_speed ≤ (maxPolarVelocity * distance / TOF)
-        // maxPolarVelocity is the max angular rate (rad/s) you're willing to have
-        // the puck move at the target during flight. Tune this.
-        double maxPolarVelocityRadPerSec = 0.5; // rad/s at target — start here, tune up
- 
-        Translation2d driverVelocity = new Translation2d(veloX * maxSpeed, veloY * maxSpeed);
-        /*
-        if (driverVelocity.getNorm() > 0.01 && timeOfFlight > 0.05) {
-            // Angle between driver's desired velocity and the shot direction
-            double velocityToShotAngle = driverVelocity.getAngle().minus(aimAngle).getRadians();
- 
-            // Perpendicular (lateral) component relative to shot line
-            double lateralSpeed = Math.abs(driverVelocity.getNorm() * Math.sin(velocityToShotAngle));
- 
-            // Max allowed lateral speed so the angular deviation ≤ maxPolarVelocityRadPerSec
-            double maxLateralSpeed = maxPolarVelocityRadPerSec * lookaheadDistance / timeOfFlight;
- 
-            if (lateralSpeed > maxLateralSpeed) {
-                double scale = maxLateralSpeed / lateralSpeed;
-                veloX *= scale;
-                veloY *= scale;
-            }
-        }
-         */
- 
         // ── 12. BUILD COMMANDED SPEEDS & CACHE THEM ───────────────────────────────
         // Cache what we're about to command so next loop uses setpoint, not measured
         // Convert field-relative driver input back to robot-relative for storage
@@ -747,8 +721,8 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
  
         // ── 14. APPLY REQUEST ─────────────────────────────────────────────────────
         return alignRequest
-                .withVelocityX(veloX * maxSpeed * 0.3)
-                .withVelocityY(veloY * maxSpeed*  0.3)
+                .withVelocityX(veloX * maxSpeed * 0.2)
+                .withVelocityY(veloY * maxSpeed*  0.2)
                 .withRotationalRate(rotationalRate * maxAngularRate);
     });
 }

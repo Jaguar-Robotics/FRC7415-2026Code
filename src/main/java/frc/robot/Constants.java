@@ -56,7 +56,7 @@ public class Constants {
 
     public static abstract class HopperConstants {
         public static final int HopperMotorID = 32; //
-        public static final double FastRoll = 0.8; //used in SS
+        public static final double FastRoll = 0.9; //used in SS
         public static final double SlowRoll = 0.3; //0.2
         public static final double FastOutRoll = -0.4;
         public static final double SlowOutRoll = -0.2;
@@ -66,7 +66,7 @@ public class Constants {
         public static abstract class IndexerConstants {
         public static final int HighIndexerMotorID = 34; //
         public static final int LowIndexerMotorID = 33; //
-        public static final double FastRoll = -0.8;
+        public static final double FastRoll = -1;
         public static final double SlowRoll = -0.6;
         public static final double FastOutRoll = 1;
         public static final double SlowOutRoll = 0.3;
@@ -104,7 +104,7 @@ public class Constants {
             Units.Inches.of(265), 
             new Rotation2d()
         );
-
+        
         public static final Pose2d redTargetLowPose = new Pose2d(
             Units.Inches.of(630), 
             Units.Inches.of(50), 
@@ -116,7 +116,7 @@ public class Constants {
             public static final double xyI = 0;
             public static final double xyD = 0;
 
-            public static final double rotP = 0.85; //0.05
+            public static final double rotP = 47; //0.85
             public static final double rotI = 0;
             public static final double rotD = 0.05; //0.05
 

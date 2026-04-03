@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.0871428571428567,
-        "y": 5.664702750665483
+        "x": 2.523788819875776,
+        "y": 5.415217391304347
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.408876931682564,
-        "y": 5.924343819802322
+        "x": 1.845522894415483,
+        "y": 5.674858460441187
       },
       "isLocked": false,
       "linkedName": "ScoringDepot"
@@ -70,7 +70,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 5.12,
+    "maxVelocity": 2.5,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -85,7 +85,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 2.0,
-    "rotation": -46.75340486007153
+    "rotation": -32.64934171284159
   },
   "useDefaultConstraints": true
 }

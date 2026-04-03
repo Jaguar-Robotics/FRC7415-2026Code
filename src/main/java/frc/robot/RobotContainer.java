@@ -8,14 +8,11 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import java.util.Optional;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -58,7 +55,7 @@ public class RobotContainer {
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * Constants.DriveConstants.TranslationDeadband).withRotationalDeadband(MaxAngularRate * Constants.DriveConstants.RotationDeadband) // Add a 10% deadband
+            .withDeadband(Constants.DriveConstants.TranslationDeadband).withRotationalDeadband(Constants.DriveConstants.RotationDeadband) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -118,28 +115,11 @@ public class RobotContainer {
         PPHolonomicDriveController.clearRotationFeedbackOverride();
         DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate);
         ShooterHandler.getInstance().initialize(drivetrain, shooter);
-        Superstructure.getInstance().initialize(shooter, drivetrain);
+        Superstructure.getInstance().initialize(shooter, drivetrain, joystick);
 
         configurePathPlanner();
 
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
-
-        autoChooser.addOption("Mid -> left 2nd swipe",
-            Commands.sequence(
-                new PathPlannerAuto("Mid"),
-                new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPAUTO)),
-                Commands.deadline(
-                    Commands.waitSeconds(5),
-                    Commands.run(() -> drivetrain.headingLocktoHub(joystick, MaxSpeed, MaxAngularRate), drivetrain)
-                ),
-                /*U
-                Commands.runOnce(() -> {
-                    Command current = drivetrain.getCurrentCommand();
-                    if (current != null) current.cancel();
-                }), */
-                new PathPlannerAuto("Left 2nd Swipe")
-            )
-        );
 
         SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -169,29 +149,21 @@ public class RobotContainer {
                 Translation2d toTarget = currentPose.getTranslation().minus(targetPose.getTranslation());
                 Rotation2d desiredAngle = toTarget.getAngle().rotateBy(Rotation2d.k180deg);
 
-                double error = desiredAngle.getRadians() - currentPose.getRotation().getRadians();
-
-                // Normalize error to [-pi, pi]
-                error = Math.IEEEremainder(error, 2 * Math.PI);
-
-                // Feedforward: adds a small constant push in the direction of the error
-                double kF = 1; // <-- tune this, start small
-                double feedforward = Math.signum(error) * kF;
-
+                // rotationController already has enableContinuousInput — use it directly
                 double pidOutput = CommandSwerveDrivetrain.rotationController.calculate(
                     currentPose.getRotation().getRadians(),
                     desiredAngle.getRadians()
                 );
 
-                SmartDashboard.putNumber("AutoStuff/headingCalculated", pidOutput + feedforward);
-                SmartDashboard.putNumber("AutoStuff/currentPoseGetRotation", currentPose.getRotation().getRadians() * 180 / Math.PI);
-                SmartDashboard.putNumber("AutoStuff/desiredAngleRotation", desiredAngle.getRadians() * 180 / Math.PI);
-                SmartDashboard.putNumber("AutoStuff/feedforward", feedforward);
+                SmartDashboard.putNumber("AutoStuff/headingCalculated", pidOutput);
+                SmartDashboard.putNumber("AutoStuff/currentPoseGetRotation", currentPose.getRotation().getDegrees());
+                SmartDashboard.putNumber("AutoStuff/desiredAngleRotation", desiredAngle.getDegrees());
 
-                return (pidOutput*MaxAngularRate + feedforward) *2;
+                return pidOutput * MaxAngularRate * 5;
             });
         }));
-
+    
+        /*
         NamedCommands.registerCommand("StartSOTMAlign", Commands.runOnce(() -> {
         superstructure.setDesiredState(Superstructure.SuperstructureState.SOTMSPINUPAUTO);
         PPHolonomicDriveController.overrideRotationFeedback(() -> {
@@ -290,7 +262,7 @@ public class RobotContainer {
 
             return rotationalRate * MaxAngularRate;
         });
-    }));
+    }));  */
         
         NamedCommands.registerCommand("Shoot", 
         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
@@ -350,7 +322,7 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         //ROTATE 90 degreese
-        
+        /*
         joystick.leftBumper().onTrue(Commands.runOnce(() -> {
             Rotation2d targetRotation = drivetrain.getPose().getRotation().plus(Rotation2d.fromDegrees(90));
             
@@ -366,6 +338,7 @@ public class RobotContainer {
                     .withRotationalRate(rotationalRate * MaxAngularRate); // Max angular rate
             }).withTimeout(2.0).schedule();
         }));
+         */
         
 
         /* Main driver Controller:
@@ -393,8 +366,8 @@ public class RobotContainer {
             Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVE))));
         */
 
-        //joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
-        joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVESPINUP)));
+        joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
+        //joystick.rightBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVESPINUP)));
         
         
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
@@ -404,8 +377,8 @@ public class RobotContainer {
 
         joystick.x().onTrue(new InstantCommand(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
 
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESNAKE)));
-        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
+        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
+        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESNAKE)));
 
         noButtonsHeld.onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         
@@ -470,6 +443,8 @@ public class RobotContainer {
 
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
+        RobotModeTriggers.autonomous().onTrue(new InstantCommand (() ->PPHolonomicDriveController.clearRotationFeedbackOverride()));
+        RobotModeTriggers.autonomous().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
         fiveSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.5));
         threeSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.25));
