@@ -16,16 +16,32 @@
     },
     {
       "anchor": {
-        "x": 6.507506654835847,
-        "y": 5.415217391304347
+        "x": 7.119148181011536,
+        "y": 6.075146406388642
       },
       "prevControl": {
-        "x": 7.056922082033092,
-        "y": 5.321455557992823
+        "x": 7.437736918754196,
+        "y": 5.617817411887081
       },
       "nextControl": {
-        "x": 4.969132714974324,
-        "y": 5.677752358070589
+        "x": 6.620177462289264,
+        "y": 6.791410825199645
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.702715173025732,
+        "y": 5.584223602484472
+      },
+      "prevControl": {
+        "x": 6.386787932564331,
+        "y": 5.664702750665484
+      },
+      "nextControl": {
+        "x": 5.248132606995699,
+        "y": 5.530743300598585
       },
       "isLocked": false,
       "linkedName": null
@@ -54,25 +70,21 @@
       "rotationDegrees": -50.0
     },
     {
-      "waypointRelativePos": 0.655172413793103,
-      "rotationDegrees": -150.0
+      "waypointRelativePos": 0.8435013262599472,
+      "rotationDegrees": -50.0
     },
     {
-      "waypointRelativePos": 1.1618037135278516,
-      "rotationDegrees": 0.0
-    },
-    {
-      "waypointRelativePos": 1.5915119363395227,
+      "waypointRelativePos": 1.8779840848806364,
       "rotationDegrees": 0.0
     }
   ],
   "constraintZones": [
     {
       "name": "slowtoshoot",
-      "minWaypointRelativePos": 1.6275167785234894,
-      "maxWaypointRelativePos": 2.0,
+      "minWaypointRelativePos": 2.526845637583893,
+      "maxWaypointRelativePos": 3.0,
       "constraints": {
-        "maxVelocity": 0.5,
+        "maxVelocity": 1.0,
         "maxAcceleration": 1.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -84,24 +96,24 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "okkkkk",
-      "waypointRelativePos": 1.7000000000000002,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "IntakeOff"
-        }
-      }
-    },
-    {
       "name": "starbuhallign",
-      "waypointRelativePos": 1.7348993288590573,
+      "waypointRelativePos": 2.5922818791946303,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
           "name": "StartHubAlign"
+        }
+      }
+    },
+    {
+      "name": "okkkkk",
+      "waypointRelativePos": 2.607382550335576,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeOff"
         }
       }
     }
@@ -122,7 +134,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 3.0,
-    "rotation": 59.99999999999999
+    "rotation": 75.0
   },
   "useDefaultConstraints": true
 }

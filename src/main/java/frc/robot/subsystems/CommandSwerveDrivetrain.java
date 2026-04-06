@@ -159,6 +159,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        SmartDashboard.putNumber("AutoMoveP", 1);
+        SmartDashboard.putNumber("AutoMoveD", 1);
+
         configureAutoBuilder();
         SmartDashboard.putData("field", field);
     }
@@ -222,6 +226,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     private void configureAutoBuilder() {
+        double tP = SmartDashboard.getNumber("AutoMoveP", 1);
+        double tD = SmartDashboard.getNumber("AutoMoveD", 1);
+
         try {
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
@@ -236,9 +243,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 ),
                 new PPHolonomicDriveController(
                     // PID constants for translation
-                    new PIDConstants(Constants.DriveConstants.xyP, Constants.DriveConstants.xyI, Constants.DriveConstants.xyD),
+                    new PIDConstants(5, 0, 0), //TP ,  TD
                     // PID constants for rotation
-                    new PIDConstants(20,0,0.05)
+                    new PIDConstants(5,0,0)//okherejakegay
                 ),
                 config,
                 // Assume the path needs to be flipped for Red vs Blue, this is normally the case
@@ -513,10 +520,9 @@ public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, doub
 
 private double scaleAxis(double input) {
     double abs = Math.abs(input);
-    if (abs == 0.0) return 0.0; // already zeroed by deadband
+    if (abs == 0.0) return 0.0;
     abs = Math.min(abs, 1.0);
-    double scaled = Math.pow(Math.sin((Math.PI / 2.0) * ((abs - 0.10) / 0.90)), 2);
-
+    double scaled = Math.pow(Math.sin((Math.PI / 2.0) * abs), 2); // no offset
     return Math.copySign(scaled, input);
 }
 
@@ -536,6 +542,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
 
     public static final InterpolatingDoubleTreeMap TOFmap = new InterpolatingDoubleTreeMap();
     static { //dist inch, time Sec
+        TOFmap.put(53.7, 0.2); //53.7, 0.83 is real value
         TOFmap.put(70.8 , 1.0);
         TOFmap.put(100.3 , 1.2);
         TOFmap.put(112.5, 2.1);
@@ -600,7 +607,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         Translation2d shooterPosition = estimatedPose.getTranslation().plus(shooterOffsetFieldFrame);
  
         // ── 4. TARGET ─────────────────────────────────────────────────────────────
-        Translation2d target = getHubPose().toPose2d().getTranslation();
+        Translation2d target = getTargetPose(currentPose).getTranslation();
  
         // ── 5. SHOOTER VELOCITY (field-relative, at shooter position) ────────────
         // The shooter is offset from the robot center, so it has additional
@@ -641,8 +648,8 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
             timeOfFlight = 1; //* ***************************************************************************************************** */
  
             // Where will the shooter be when the note arrives?
-            double offsetX = shooterVelocityX * timeOfFlight * 0.25;
-            double offsetY = shooterVelocityY * timeOfFlight * 0.25;
+            double offsetX = shooterVelocityX * timeOfFlight * 0.15; //*0.25
+            double offsetY = shooterVelocityY * timeOfFlight * 0.15;
             lookaheadShooterPosition = shooterPosition.plus(new Translation2d(offsetX, offsetY));
             lookaheadDistance = target.getDistance(lookaheadShooterPosition);
         }

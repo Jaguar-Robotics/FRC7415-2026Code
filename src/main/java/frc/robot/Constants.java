@@ -56,7 +56,7 @@ public class Constants {
 
     public static abstract class HopperConstants {
         public static final int HopperMotorID = 32; //
-        public static final double FastRoll = 0.9; //used in SS
+        public static final double FastRoll = 1; //used in SS
         public static final double SlowRoll = 0.3; //0.2
         public static final double FastOutRoll = -0.4;
         public static final double SlowOutRoll = -0.2;
@@ -114,7 +114,7 @@ public class Constants {
         public static abstract class DriveConstants{
             public static final double xyP = 20;
             public static final double xyI = 0;
-            public static final double xyD = 0.05; //these lowk just for auto
+            public static final double xyD = 0.05; //these lowk just for auto lowk i got rid of them they uselss
 
             public static final double rotP = 0.85; //0.85 these for autoallign
             public static final double rotI = 0;
