@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.697395833333333,
-        "y": 5.013794642857143
+        "x": 2.545172043010753,
+        "y": 5.585677419354839
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2769826327270044,
-        "y": 6.402047055235139
+        "x": 2.1247588424044244,
+        "y": 6.973929831732835
       },
       "isLocked": false,
       "linkedName": "hubok"
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 2.5,
+    "maxVelocity": 4.5,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
