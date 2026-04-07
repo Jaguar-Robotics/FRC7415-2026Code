@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 2.6451934523809526,
-        "y": 2.540706845238095
+        "y": 2.6232983870967748
       },
       "prevControl": null,
       "nextControl": {
         "x": 1.0869159946236555,
-        "y": 2.0272910906297987
+        "y": 2.1098826324884783
       },
       "isLocked": false,
       "linkedName": "fart"
@@ -48,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 36.0
+    "rotation": 36.21766692145154
   },
   "useDefaultConstraints": true
 }

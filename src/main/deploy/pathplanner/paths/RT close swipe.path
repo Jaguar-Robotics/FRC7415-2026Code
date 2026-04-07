@@ -8,104 +8,104 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.7728803624901017,
-        "y": 2.4792599230689185
+        "x": 2.9038559910363992,
+        "y": 2.4285455621660277
       },
       "isLocked": false,
       "linkedName": "fart"
     },
     {
       "anchor": {
-        "x": 5.490223214285715,
-        "y": 2.396548387096775
+        "x": 3.552137096774194,
+        "y": 0.6337500000000011
       },
       "prevControl": {
-        "x": 5.143788413143582,
-        "y": 2.522262161499371
+        "x": 2.674395161290323,
+        "y": 0.736153225806453
       },
       "nextControl": {
-        "x": 5.795944791190981,
-        "y": 2.2856085703625246
+        "x": 4.886460684883111,
+        "y": 0.47807891472062736
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.508169642857142,
-        "y": 0.8441294642857144
+        "x": 5.951298387096774,
+        "y": 0.6337500000000011
       },
       "prevControl": {
-        "x": 6.16269069491306,
-        "y": 1.1943366048218316
+        "x": 5.764030297345383,
+        "y": 0.39738044925630256
       },
       "nextControl": {
-        "x": 6.690794058643932,
-        "y": 0.6590056678131084
+        "x": 6.557438600722235,
+        "y": 1.3988194262569937
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.225952380952381,
-        "y": 0.8441294642857144
+        "x": 6.382854838709677,
+        "y": 3.479096774193549
       },
       "prevControl": {
-        "x": 7.022725608529101,
-        "y": 0.6482736342923165
+        "x": 5.6565796231123215,
+        "y": 2.889753669018799
       },
       "nextControl": {
-        "x": 7.700039484002846,
-        "y": 1.3010216441394649
+        "x": 6.73193009262624,
+        "y": 3.7623572926096216
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.493489583333332,
-        "y": 2.5015550595238096
+        "x": 7.509290322580645,
+        "y": 3.2669758064516135
       },
       "prevControl": {
-        "x": 7.369075213268334,
-        "y": 2.2638913914819057
+        "x": 7.213702926779017,
+        "y": 3.680798160573892
       },
       "nextControl": {
-        "x": 7.6313601650505944,
-        "y": 2.764923576752787
+        "x": 7.911588709677419,
+        "y": 2.7037580645161303
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.3515625,
-        "y": 3.3367931547619047
+        "x": 7.509290322580645,
+        "y": 0.992161290322582
       },
       "prevControl": {
-        "x": 7.131659379627074,
-        "y": 3.9347383264268303
+        "x": 8.260334959472393,
+        "y": 1.3386475743598305
       },
       "nextControl": {
-        "x": 6.100380836566644,
-        "y": 3.14426211562669
+        "x": 6.513476844408096,
+        "y": 0.5327535604782295
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.490223214285715,
-        "y": 2.5015550595238096
+        "x": 5.439282258064517,
+        "y": 2.6232983870967748
       },
       "prevControl": {
-        "x": 5.743548569665857,
-        "y": 2.335882529755578
+        "x": 5.9686842731823635,
+        "y": 2.6780641127986207
       },
       "nextControl": {
-        "x": 5.2600483760514765,
-        "y": 2.652087356940451
+        "x": 4.802919354838711,
+        "y": 2.557467741935485
       },
       "isLocked": false,
       "linkedName": null
@@ -116,45 +116,49 @@
         "y": 2.6232983870967748
       },
       "prevControl": {
-        "x": 2.3410738305654766,
-        "y": 2.573757705091373
+        "x": 3.4959971401051457,
+        "y": 2.58107410954114
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "fart"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.3295964125560538,
-      "rotationDegrees": 180.0
+      "waypointRelativePos": 1.0358744394618846,
+      "rotationDegrees": -90.0
     },
     {
-      "waypointRelativePos": 1.1692825112107632,
-      "rotationDegrees": 180.0
+      "waypointRelativePos": 2.1345291479820623,
+      "rotationDegrees": -90.0
     },
     {
-      "waypointRelativePos": 1.5067264573991028,
-      "rotationDegrees": 119.99999999999999
+      "waypointRelativePos": 2.7309417040358763,
+      "rotationDegrees": -110.0
     },
     {
-      "waypointRelativePos": 3.115470852017944,
-      "rotationDegrees": -80.0
+      "waypointRelativePos": 3.554932735426011,
+      "rotationDegrees": 160.0
     },
     {
-      "waypointRelativePos": 4.323991031390129,
-      "rotationDegrees": -80.0
+      "waypointRelativePos": 4.112107623318373,
+      "rotationDegrees": 110.0
     },
     {
-      "waypointRelativePos": 5.155829596412523,
-      "rotationDegrees": 50.0
+      "waypointRelativePos": 4.73991031390134,
+      "rotationDegrees": 59.99999999999999
     },
     {
-      "waypointRelativePos": 5.720852017937192,
+      "waypointRelativePos": 5.3441704035874364,
+      "rotationDegrees": -50.0
+    },
+    {
+      "waypointRelativePos": 5.830717488789205,
       "rotationDegrees": 0.0
     },
     {
-      "waypointRelativePos": 6.591928251121064,
+      "waypointRelativePos": 6.693946188340799,
       "rotationDegrees": 0.0
     }
   ],
@@ -163,7 +167,7 @@
   "eventMarkers": [
     {
       "name": "Intake",
-      "waypointRelativePos": 0.07749077490774936,
+      "waypointRelativePos": 1.8167281672816746,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -174,7 +178,7 @@
     },
     {
       "name": "IntakeOff",
-      "waypointRelativePos": 6.707257072570704,
+      "waypointRelativePos": 6.698646986469857,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -194,7 +198,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 33.25270198557574
+    "rotation": 36.21766692145154
   },
   "reversed": false,
   "folder": null,

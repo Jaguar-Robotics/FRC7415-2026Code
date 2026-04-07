@@ -7,19 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "S1-F1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "F1-F2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "F2-Hub"
+            "pathName": "LT far swipe"
           }
         },
         {
@@ -35,7 +23,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 5.0
+                  "waitTime": 4.0
                 }
               },
               {
@@ -50,7 +38,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LowMidSwipeGreed"
+            "pathName": "Hub-Depot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D1-D2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D2-Hub"
           }
         },
         {

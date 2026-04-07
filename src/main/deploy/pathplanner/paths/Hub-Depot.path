@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.523788819875776,
-        "y": 5.415217391304347
+        "x": 2.545172043010753,
+        "y": 5.585677419354839
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.845522894415483,
-        "y": 5.674858460441187
+        "x": 1.8669061175504602,
+        "y": 5.845318488491679
       },
       "isLocked": false,
-      "linkedName": "ScoringDepot"
+      "linkedName": "hubok"
     },
     {
       "anchor": {
@@ -34,23 +34,12 @@
   "eventMarkers": [
     {
       "name": "Intake",
-      "waypointRelativePos": 0,
+      "waypointRelativePos": 0.5325953259532588,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
           "name": "Intake"
-        }
-      }
-    },
-    {
-      "name": "ShooterOff",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "ShooterOff"
         }
       }
     }
@@ -71,7 +60,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 3.0,
-    "rotation": -32.64934171284159
+    "rotation": -37.0
   },
   "useDefaultConstraints": true
 }

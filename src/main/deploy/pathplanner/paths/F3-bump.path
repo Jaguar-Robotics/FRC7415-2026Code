@@ -80,12 +80,12 @@
     },
     {
       "anchor": {
-        "x": 2.6042679680567873,
-        "y": 5.342786157941436
+        "x": 2.396443548387097,
+        "y": 5.227266129032258
       },
       "prevControl": {
-        "x": 2.525373174937129,
-        "y": 5.5800109703422605
+        "x": 2.7036532258064523,
+        "y": 5.344298387096774
       },
       "nextControl": null,
       "isLocked": false,
@@ -111,14 +111,28 @@
     },
     {
       "waypointRelativePos": 2.904509283819631,
-      "rotationDegrees": 180.0
+      "rotationDegrees": 0.0
     },
     {
-      "waypointRelativePos": 4.0,
-      "rotationDegrees": 180.0
+      "waypointRelativePos": 3.890134529147986,
+      "rotationDegrees": 0.0
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Slow2Shoot",
+      "minWaypointRelativePos": 3.954489544895443,
+      "maxWaypointRelativePos": 5.0,
+      "constraints": {
+        "maxVelocity": 1.0,
+        "maxAcceleration": 6.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
@@ -129,6 +143,17 @@
         "type": "named",
         "data": {
           "name": "IntakeOff"
+        }
+      }
+    },
+    {
+      "name": "StartHubAlign",
+      "waypointRelativePos": 4.089790897908982,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StartHubAlign"
         }
       }
     }
@@ -143,7 +168,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -37.40535663140845
+    "rotation": -33.554278016514424
   },
   "reversed": false,
   "folder": null,

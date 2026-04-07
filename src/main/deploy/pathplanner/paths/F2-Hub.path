@@ -48,16 +48,16 @@
     },
     {
       "anchor": {
-        "x": 2.523788819875776,
-        "y": 5.415217391304347
+        "x": 2.545172043010753,
+        "y": 5.585677419354839
       },
       "prevControl": {
-        "x": 2.88878936974899,
-        "y": 5.321582897257034
+        "x": 2.9101725928839675,
+        "y": 5.492042925307526
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "ScoringDepot"
+      "linkedName": "hubok"
     }
   ],
   "rotationTargets": [
@@ -75,6 +75,10 @@
     },
     {
       "waypointRelativePos": 1.8779840848806364,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 2.6367713004484186,
       "rotationDegrees": 0.0
     }
   ],
@@ -128,7 +132,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": -32.64934171284159
+    "rotation": -37.0
   },
   "reversed": false,
   "folder": null,
