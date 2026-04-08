@@ -35,20 +35,20 @@ public class Constants {
     }
 
     public static abstract class IntakeConstants {
-        public static final int IntakeMotorID = 31; 
+        public static final int IntakeMotorID = 30; 
         public static final int KickerMotorID = 45; //change ts
-        public static final int IntakeFollowerReversedMotorID = 30; 
-        public static final double FastIntake = 0.87;
+        public static final int IntakeFollowerReversedMotorID = 31; 
+        public static final double FastIntake = 1;
         public static final double SlowIntake = 0.67;
         public static final double SlowReverse = -0.3;
         public static final double FastReverse = -0.87;
 
         public static final int IntakeSlideMotorID = 35; 
-        public static final double IntakeSlideOutSetPoint = 23.3; //In ROTATIONS 25
+        public static final double IntakeSlideOutSetPoint = 23.6; //In ROTATIONS 25
         public static final double IntakeSlideMiddleSetPoint = 10;
         public static final double IntakeSlideInSetPoint = 0; 
 
-        public static final double IntakeSlideOutHardStop = 25.5; //rotations; Used for re-zero out
+        public static final double IntakeSlideOutHardStop = 23.7; //rotations; Used for re-zero out
 
         public static final double PositionTolerance = 0.3; //in degreee
        
