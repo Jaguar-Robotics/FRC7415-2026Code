@@ -28,7 +28,7 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
   }
 
   private static IntakeSlideHandler instance;
-  private final Elevator intakeSlide = new Elevator(); //name it correct 
+  private final Elevator intakeSlide = new Elevator(); 
 
   
   Trigger intakeAboveFive = new Trigger(() -> intakeSlide.getPosition().in(Rotations) > 5.0);

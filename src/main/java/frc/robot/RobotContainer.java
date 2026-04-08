@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -414,7 +416,7 @@ public class RobotContainer {
          *  X - toggle hopperfullness
          */
 
-         /*
+         
         opJoystick.rightTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOT)));
         opJoystick.y().onTrue(Commands.runOnce(() -> {
             var current = HubShiftUtil.getAllianceWinOverride();
@@ -432,16 +434,14 @@ public class RobotContainer {
         opJoystick.povRight().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, 0.1)));
         opJoystick.povLeft().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, -0.1)));
 
-        opJoystick.y().onTrue(new InstantCommand(() -> superstructure.toggleHopperStatus()));
         opJoystick.leftTrigger().onTrue(Commands.runOnce(() -> shooter.toggleShooterMult()));
 
         opJoystick.leftStick().onTrue(new InstantCommand(() -> drivetrain.ToggleSlowTele()));
-        */
-       /* 
+ 
         opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
         joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
         joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
-        */
+        
 
 
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));

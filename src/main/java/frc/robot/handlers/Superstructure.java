@@ -1,6 +1,7 @@
 package frc.robot.handlers;
 
 import static edu.wpi.first.units.Units.Degrees;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
@@ -65,8 +66,9 @@ public class Superstructure extends SubsystemBase {
   private SuperstructureState desiredState = SuperstructureState.IDLE;
   private SuperstructureState currentState = SuperstructureState.IDLE;
   private Angle targetAngle = Degrees.of(0);
+  private final SendableChooser<Boolean> IsTallChooser = new SendableChooser<>();
 
-  boolean hopperFul = true;
+  boolean BumpHeight = true;
   boolean DTaimed;
   boolean DTFutAimed;
   double robotSpeed;
@@ -93,15 +95,13 @@ public class Superstructure extends SubsystemBase {
       this.drivetrain = drivetrain;
       this.joystick = joystick;
 
-  }
+      // Set up the chooser options
+    IsTallChooser.setDefaultOption("Bump Height", true);
+    IsTallChooser.addOption("Trench Height", false);
+    
+    // Put the chooser on the dashboard
+    SmartDashboard.putData("height Chooser", IsTallChooser);
 
-  public void toggleHopperStatus(){
-    if (hopperFul == true){
-      hopperFul = false;
-    }
-    else if (hopperFul == false){
-      hopperFul = true;
-    }
   }
 
   private Superstructure() {}
@@ -199,7 +199,7 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
         driveHandler.setDesiredState(DriveHandler.DriveState.XDRIVE);
-          if (hopperFul) {intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);}
+          if (BumpHeight) {intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);}
           else intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.FASTSLOWIN);
         break;
       case STATIONARYSHOTAUTO:
@@ -329,13 +329,15 @@ public class Superstructure extends SubsystemBase {
   @Override
   public void periodic() {
 
+    BumpHeight = IsTallChooser.getSelected();
+
     double joystickMagnitude = Math.hypot(
     joystick.getLeftX(), 
     joystick.getLeftY()
 );
   
 
-    SmartDashboard.putBoolean("Hopper Full?", hopperFul);
+    SmartDashboard.putBoolean("BumpHeight?", BumpHeight);
 
         if (shooter == null) {
         System.err.println("ERROR: Superstructure not initialized!");
