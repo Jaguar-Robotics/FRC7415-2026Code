@@ -87,19 +87,19 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
             case FASTSLOWIN:
               new SequentialCommandGroup(
                     Commands.waitSeconds(0.25),
-                    intakeSlide.manualDrive(() -> -0.2).until(() -> intakeSlide.isHardStop.getAsBoolean() && isAtLowSetpoint).withTimeout( 5)
+                    intakeSlide.manualDrive(() -> -0.5).until(() -> intakeSlide.isHarderStop.getAsBoolean() && isAtLowSetpoint).withTimeout( 5)
                     ).schedule();
                   break; 
             case SLOWIN: 
                 new SequentialCommandGroup(
                   Commands.waitSeconds(1),
-                  intakeSlide.manualDrive(() -> -0.2).until(() -> intakeSlide.isHardStop.getAsBoolean() && isAtLowSetpoint).withTimeout( 5)
+                  intakeSlide.manualDrive(() -> -0.2).until(() -> intakeSlide.isHarderStop.getAsBoolean() && isAtLowSetpoint).withTimeout( 5)
                   ).schedule();
                 break; 
             case OSCILLATE: 
                 new SequentialCommandGroup(
                   intakeSlide.goToSetpoint(() -> Elevator.Setpoint.OUT).withTimeout(0.5),
-                  Commands.waitSeconds(0.5),
+                  Commands.waitSeconds(0.3),
                   intakeSlide.goToSetpoint(() -> Elevator.Setpoint.IN).withTimeout(0.5)
                 ).repeatedly().schedule();
                 break;

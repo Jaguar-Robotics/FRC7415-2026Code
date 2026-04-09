@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.586113575865128,
-        "y": 5.56812777284827
+        "x": 2.808325892857143,
+        "y": 5.333534226190477
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.310425909494231,
-        "y": 5.680798580301686
+        "x": 3.808325892857143,
+        "y": 5.333534226190478
       },
       "isLocked": false,
-      "linkedName": "S2"
+      "linkedName": "hubok"
     },
     {
       "anchor": {
-        "x": 5.533708961845608,
-        "y": 5.56812777284827
+        "x": 5.598092280390417,
+        "y": 5.519840283939662
       },
       "prevControl": {
-        "x": 3.66659272404614,
-        "y": 5.527888198757764
+        "x": 4.632342502218279,
+        "y": 5.399121561668145
       },
       "nextControl": {
-        "x": 6.459379010364691,
-        "y": 5.588077558376699
+        "x": 6.518324163112154,
+        "y": 5.634869269279879
       },
       "isLocked": false,
       "linkedName": null
@@ -36,8 +36,8 @@
         "y": 6.879937888198758
       },
       "prevControl": {
-        "x": 6.797231588287488,
-        "y": 8.062981366459628
+        "x": 7.280106477373559,
+        "y": 7.688642993101868
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,29 +46,17 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.65,
-      "rotationDegrees": 180.0
+      "waypointRelativePos": 0.28647214854111397,
+      "rotationDegrees": 0.0
     },
     {
-      "waypointRelativePos": 1.1724137931034484,
-      "rotationDegrees": -130.0
+      "waypointRelativePos": 1.0450928381962885,
+      "rotationDegrees": 0.0
     }
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "intakeokn",
-      "waypointRelativePos": 0.75,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "Intake"
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.75,
     "maxAcceleration": 6.0,
@@ -78,14 +66,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 3.0,
+    "velocity": 0,
     "rotation": 75.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -37.0
   },
   "useDefaultConstraints": true
 }

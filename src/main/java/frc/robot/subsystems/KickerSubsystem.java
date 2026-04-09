@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -22,6 +23,14 @@ public class KickerSubsystem extends SubsystemBase {
   private final TalonFX  kickerMotor = new TalonFX(Constants.IntakeConstants.KickerMotorID, "Upper");
   
   public KickerSubsystem() {
+    var talonFXConfigurator = kickerMotor.getConfigurator();
+  var limitConfigs = new CurrentLimitsConfigs();
+
+  // enable stator current limit
+  limitConfigs.StatorCurrentLimit = 80;
+  limitConfigs.StatorCurrentLimitEnable = true;
+
+  talonFXConfigurator.apply(limitConfigs);
   }
   public void set(double speed){
     kickerMotor.set(speed);
@@ -33,6 +42,8 @@ public class KickerSubsystem extends SubsystemBase {
   }
   @Override
   public void periodic() {
+    double KickerRPS = Math.abs(kickerMotor.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("KickerSpeed", KickerRPS);
     // This method will be called once per scheduler run
   }
 } 

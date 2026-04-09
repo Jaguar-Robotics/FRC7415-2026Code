@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -24,6 +26,17 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public IntakeSubsystem() {
     intakeFollowerMotor.setControl(new Follower(Constants.IntakeConstants.IntakeMotorID, MotorAlignmentValue.Opposed));
+
+    TalonFXConfigurator leaderConfigurator = intakeMotor.getConfigurator();
+    TalonFXConfigurator followerConfigurator = intakeFollowerMotor.getConfigurator();
+    CurrentLimitsConfigs limitConfigs = new CurrentLimitsConfigs();
+
+    // enable stator current limit
+    limitConfigs.StatorCurrentLimit = 80;
+    limitConfigs.StatorCurrentLimitEnable = true;
+
+    leaderConfigurator.apply(limitConfigs);
+    followerConfigurator.apply(limitConfigs);
   }
   public void set(double speed){
     intakeMotor.set(speed);
@@ -37,6 +50,8 @@ public class IntakeSubsystem extends SubsystemBase {
   }
   @Override
   public void periodic() {
+    double IntakeRPS = Math.abs(intakeMotor.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("IntakeSpeed", IntakeRPS);
     // This method will be called once per scheduler run
   }
 } 

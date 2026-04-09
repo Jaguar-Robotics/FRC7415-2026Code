@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 2.545172043010753,
-        "y": 5.585677419354839
+        "x": 2.808325892857143,
+        "y": 5.333534226190477
       },
       "prevControl": {
-        "x": 1.804763879745447,
-        "y": 6.108791882531413
+        "x": 1.8556324404761906,
+        "y": 6.149196428571429
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,7 +29,21 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "slow2Shoot",
+      "minWaypointRelativePos": 0.8671232876712361,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 1.5,
+        "maxAcceleration": 6.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
@@ -42,10 +56,16 @@
           "name": "IntakeOff"
         }
       }
+    },
+    {
+      "name": "StartHubAlign",
+      "waypointRelativePos": 0.8557046979865789,
+      "endWaypointRelativePos": null,
+      "command": null
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.5,
+    "maxVelocity": 4.75,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,

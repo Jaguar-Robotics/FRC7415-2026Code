@@ -56,7 +56,7 @@ public class Constants {
 
     public static abstract class HopperConstants {
         public static final int HopperMotorID = 32; //
-        public static final double FastRoll = 1; //used in SS
+        public static final double FastRoll = 0.7415; //used in SS
         public static final double SlowRoll = 0.3; //0.2
         public static final double FastOutRoll = -0.4;
         public static final double SlowOutRoll = -0.2;
