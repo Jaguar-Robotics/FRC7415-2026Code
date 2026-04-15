@@ -46,6 +46,7 @@ import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
 import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.KickerSubsystem;
 import frc.robot.subsystems.Vision;
 import frc.robot.utils.HubShiftUtil;
 import frc.robot.utils.RumbleUtils;
@@ -139,11 +140,14 @@ public class RobotContainer {
          new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
         NamedCommands.registerCommand("AutoShoot",
-         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPAUTO)));
+        new SequentialCommandGroup(
+            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPAUTO)).withTimeout(0.1),
+            new WaitCommand(0.3),
+            new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.STATIONARYSHOTAUTO))
+        ));
         
         NamedCommands.registerCommand("StartHubAlign", Commands.runOnce(() -> {
             PPHolonomicDriveController.overrideRotationFeedback(() -> {
-
                 Pose2d currentPose = drivetrain.getPose();
                 Pose2d targetPose = drivetrain.getHubPose().toPose2d();
                 if (targetPose == null) return 0.0;
@@ -382,7 +386,8 @@ public class RobotContainer {
         joystick.b().whileTrue(new SequentialCommandGroup(
             Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)),
             Commands.waitSeconds(0.2),
-            Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT))));
+            Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)))
+        );
 
         joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESLOW)));
         joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
@@ -447,6 +452,7 @@ public class RobotContainer {
 
 
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));
+        RobotModeTriggers.teleop().onTrue(Commands.runOnce(KickerSubsystem.getInstance()::setSlowCurrent));
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand (() ->PPHolonomicDriveController.clearRotationFeedbackOverride()));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));

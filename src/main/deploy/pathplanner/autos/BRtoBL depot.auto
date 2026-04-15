@@ -7,19 +7,32 @@
         {
           "type": "path",
           "data": {
-            "pathName": "S1-F1"
+            "pathName": "S4-S2 bigahhSwipe"
           }
         },
         {
-          "type": "path",
+          "type": "sequential",
           "data": {
-            "pathName": "F1-F2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "GReedyF2-Hub"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AutoShoot"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 6.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShooterOff"
+                }
+              }
+            ]
           }
         },
         {

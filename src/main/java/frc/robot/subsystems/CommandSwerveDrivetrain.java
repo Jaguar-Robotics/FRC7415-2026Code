@@ -511,10 +511,18 @@ public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, doub
         double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband));
         double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), Constants.DriveConstants.TranslationDeadband);
         
-        return alignRequest
-            .withVelocityX(xSpeed * MaxSpeed)
-            .withVelocityY(ySpeed * MaxSpeed)
+        if (SlowTele){
+            return alignRequest
+                .withVelocityX(xSpeed * MaxSpeed * 0.5)
+                .withVelocityY(ySpeed * MaxSpeed * 0.5)
+                .withRotationalRate(rotSpeed * MaxAngularRate);
+        }
+        else {
+            return alignRequest
+            .withVelocityX(xSpeed * MaxSpeed * 0.8)
+            .withVelocityY(ySpeed * MaxSpeed * 0.8)
             .withRotationalRate(rotSpeed * MaxAngularRate);
+        }
     });
 }
 
@@ -755,6 +763,22 @@ public boolean isAimedAtTarget() {
     SmartDashboard.putNumber("errorDegrees", errorDegrees);
     
     return errorDegrees <= Constants.DriveConstants.RotationalToleranceDegrees;
+}
+
+public boolean isAimedAtTargetAuto() {
+    Pose2d currentPose = getPose();
+    Rotation2d currentAngle = currentPose.getRotation();
+    
+    // Calculate required aim angle (same as headingLocktoHub)
+    Translation2d target = getTargetPose(currentPose).getTranslation();
+    Translation2d toTarget = target.minus(currentPose.getTranslation());
+    Rotation2d targetAngle = toTarget.getAngle(); // Face towards from hub .plus(Krot180) or sum idk
+    
+    // Calculate angle error
+    double errorDegrees = Math.abs(targetAngle.minus(currentAngle).getDegrees());
+    SmartDashboard.putNumber("errorDegrees", errorDegrees);
+    
+    return errorDegrees <= Constants.DriveConstants.RotationalToleranceDegreesAUTO;
 }
 
 public boolean isAimedAtTargetSOTM() {

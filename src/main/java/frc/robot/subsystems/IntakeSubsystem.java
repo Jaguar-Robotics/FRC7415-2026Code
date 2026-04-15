@@ -31,9 +31,9 @@ public class IntakeSubsystem extends SubsystemBase {
     TalonFXConfigurator followerConfigurator = intakeFollowerMotor.getConfigurator();
     CurrentLimitsConfigs limitConfigs = new CurrentLimitsConfigs();
 
-    // enable stator current limit
-    limitConfigs.StatorCurrentLimit = 80;
-    limitConfigs.StatorCurrentLimitEnable = true;
+    // enable suply current limit
+    limitConfigs.SupplyCurrentLimit = 60;
+    limitConfigs.SupplyCurrentLimitEnable = true;
 
     leaderConfigurator.apply(limitConfigs);
     followerConfigurator.apply(limitConfigs);

@@ -70,6 +70,7 @@ public class Superstructure extends SubsystemBase {
 
   boolean BumpHeight = true;
   boolean DTaimed;
+  boolean DTAUTOaimed;
   boolean DTFutAimed;
   double robotSpeed;
   boolean ShooterAtVelo;
@@ -348,8 +349,8 @@ public class Superstructure extends SubsystemBase {
         currentSpeeds = drivetrain.getState().Speeds;
         robotSpeed = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
         driverIsMoving = joystickMagnitude > Constants.DriveConstants.TranslationDeadband; // matches your deadband
-        isMoving = robotSpeed > 0.3 || driverIsMoving;
         DTaimed = drivetrain.isAimedAtTarget();
+        DTAUTOaimed = drivetrain.isAimedAtTargetAuto();
         DTFutAimed = drivetrain.isAimedAtTargetSOTM();
 
           if (CommandSwerveDrivetrain.isInAllianceZone(drivetrain.getPose())){
@@ -360,10 +361,10 @@ public class Superstructure extends SubsystemBase {
         if (currentState == SuperstructureState.SPINUP && ShooterAtVelo && DTaimed && spinupTimer.hasElapsed(0.05)){ //checks if its at target velo and angle
           setDesiredState(SuperstructureState.STATIONARYSHOT);
         }
-
-        if (currentState == SuperstructureState.SPINUPAUTO && ShooterAtVelo && DTaimed && spinupTimer.hasElapsed(0.05)){ //checks if its at target velo and angle
+        /* I do ts by waiting for 0.5 sec spinup
+        if (currentState == SuperstructureState.SPINUPAUTO && ShooterAtVelo && DTAUTOaimed && spinupTimer.hasElapsed(0.05)){ //checks if its at target velo and angle
           setDesiredState(SuperstructureState.STATIONARYSHOTAUTO);
-        }
+        } */
 
         if (currentState == SuperstructureState.SHOOTONTHEMOVESPINUP && ShooterAtVelo && DTFutAimed && spinupTimer.hasElapsed(0.05)){
           setDesiredState(SuperstructureState.SHOOTONTHEMOVE);
@@ -378,12 +379,12 @@ public class Superstructure extends SubsystemBase {
         }
 
         // STATIONARYSHOT → SHOOTONTHEMOVE if robot starts moving
-        if ((currentState == SuperstructureState.STATIONARYSHOT || currentState == SuperstructureState.SPINUP) && isMoving) {
+        if ((currentState == SuperstructureState.STATIONARYSHOT || currentState == SuperstructureState.SPINUP) && driverIsMoving) {
             setDesiredState(SuperstructureState.SHOOTONTHEMOVESPINUP);
         }
 
         // SHOOTONTHEMOVE → SPINUP (which auto-transitions to STATIONARYSHOT) if robot stops
-        if ((currentState == SuperstructureState.SHOOTONTHEMOVE || currentState == SuperstructureState.SHOOTONTHEMOVESPINUP) && !isMoving) {
+        if ((currentState == SuperstructureState.SHOOTONTHEMOVE || currentState == SuperstructureState.SHOOTONTHEMOVESPINUP) && !driverIsMoving) {
           setDesiredState(SuperstructureState.SPINUP);
         }
 

@@ -28,17 +28,17 @@ public class Constants {
         public static final int ShooterFollowerReversed2ID = 23; //
         public static final double FastShot = 100; // IN RPS
         public static final double SlowShot = 20; //HESKEL CHANGE ME SLOW
-        public static final double RPSHardStop = 100.0; 
+        public static final double RPSHardStop = 200.0; 
         public static final double RPSTolarance = 1;
         public static final double kS = 0.28; 
-        public static final double kV = 0.13; 
+        public static final double kV = 0.13; //0.13 
     }
 
     public static abstract class IntakeConstants {
         public static final int IntakeMotorID = 30; 
         public static final int KickerMotorID = 45; //change ts
         public static final int IntakeFollowerReversedMotorID = 31; 
-        public static final double FastIntake = 1;
+        public static final double FastIntake = 0.87;
         public static final double SlowIntake = 0.67;
         public static final double SlowReverse = -0.3;
         public static final double FastReverse = -0.87;
@@ -123,6 +123,7 @@ public class Constants {
             public static final double TranslationDeadband = 0.1;
             public static final double RotationDeadband = 0.1;
 
-            public static final double RotationalToleranceDegrees = 3.0;
+            public static final double RotationalToleranceDegrees = 3.5;
+            public static final double RotationalToleranceDegreesAUTO = 6.0;
         }
 }

@@ -3,35 +3,47 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.7300223214285713,
-        "y": 2.782142857142858
+        "x": 2.2903992901508423,
+        "y": 6.82360248447205
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.3466592261904762,
-        "y": 2.051309523809524
+        "x": 1.9523868677943668,
+        "y": 7.4674356699168225
       },
       "isLocked": false,
-      "linkedName": "HubThing"
+      "linkedName": "LTshot"
     },
     {
       "anchor": {
-        "x": 0.4331175595238095,
-        "y": 2.475453869047619
+        "x": 0.6615029761847733,
+        "y": 6.951808035709802
       },
       "prevControl": {
-        "x": 1.6925000000000041,
-        "y": 2.384099702380952
+        "x": 1.2763620230700972,
+        "y": 7.362812777284827
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "D1"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Intake",
+      "waypointRelativePos": 0.2667785234899327,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Intake"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 4.75,
     "maxAcceleration": 6.0,
@@ -42,13 +54,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 45.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 33.62064554135593
+    "rotation": -51.92216038470881
   },
   "useDefaultConstraints": true
 }
