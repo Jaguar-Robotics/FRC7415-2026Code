@@ -1,5 +1,6 @@
 package frc.robot.handlers;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -26,6 +27,9 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
 
     private ShooterState desiredState = ShooterState.OFF;
     private ShooterState currentState = ShooterState.OFF;
+
+    Pose2d currPose2d;
+    Pose2d LookaheadPose2d;
 
     private ShooterHandler() {}
 
@@ -54,7 +58,7 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
         if (drivetrain == null){
             return 0;
         }
-        double DistM= drivetrain.getDistance();
+        double DistM= drivetrain.getDistance(drivetrain.getPose());
         return DistM;
     }
 
@@ -82,16 +86,13 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
         }
     }
 
-    double DistMeters = 0;
-    double DistMetersLookAhead = 0;
-
     private void handleStateChange(){ 
         switch (desiredState) {
             case SHOOTING:
-                shooter.setTargetVeloDistance(DistMeters); 
+                shooter.setTargetVeloDistance(currPose2d); 
                 break;
             case SOTM:
-                shooter.setTargetVeloDistance(DistMetersLookAhead);
+                shooter.setTargetVeloDistance(LookaheadPose2d);
                 break;
             case SLOW:
                 shooter.setTargetVelocity(Constants.ShooterConstants.SlowShot);
@@ -118,9 +119,8 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
 
     @Override
 public void periodic() {
-    DistMeters = drivetrain.getDistance();
-    DistMetersLookAhead = drivetrain.getLookaheadDistance() + 0.2; //0.2M is distance between orgin and shooter (its not acc but its what we measure from)
-    SmartDashboard.putNumber("drive/distanceLookaheadHubInches", DistMetersLookAhead* 39.3701);
+    currPose2d = drivetrain.getPose();
+    LookaheadPose2d = drivetrain.getLookaheadPose(); //0.2M is distance between orgin and shooter (its not acc but its what we measure from)
     update(); // Handle state transitions
     SmartDashboard.putString("ShooterState", currentState.toString());
 }

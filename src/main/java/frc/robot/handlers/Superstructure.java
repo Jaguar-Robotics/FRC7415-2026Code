@@ -199,7 +199,7 @@ public class Superstructure extends SubsystemBase {
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
-        driveHandler.setDesiredState(DriveHandler.DriveState.XDRIVE);
+        driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
           if (BumpHeight) {intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);}
           else intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.FASTSLOWIN);
         break;

@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -161,7 +162,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
         SmartDashboard.putNumber("AutoMoveP", 1);
-        SmartDashboard.putNumber("AutoMoveD", 1);
+        SmartDashboard.putNumber("AutoMoveD", 1);  
+
+                // Set up the chooser options
+        BumDriveMode.setDefaultOption("Noah's driving", true);
+        BumDriveMode.addOption("Noah's not driving", false);
+        
+        // Put the chooser on the dashboard
+        SmartDashboard.putData("height Chooser", BumDriveMode);
 
         configureAutoBuilder();
         SmartDashboard.putData("field", field);
@@ -360,6 +368,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     
     private double hubOffsetX = 0.0;
     private double hubOffsetY = 0.0;
+    boolean Noahdrive = false;
 
     public void setHubOffset(double offsetX, double offsetY) {
     hubOffsetX += offsetX;
@@ -371,6 +380,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     hubOffsetY = 0.0;
     }
     
+    private final SendableChooser<Boolean> BumDriveMode = new SendableChooser<>();
+
     // Get hub pose based on alliance
 // Replace the existing static getHubPose() with this instance version
 public Pose3d getHubPose() {
@@ -429,8 +440,7 @@ public Pose3d getHubPose() {
         return controller;
     }   
 
-    public double getDistance(){
-        Pose2d drivePose = getState().Pose;
+    public double getDistance(Pose2d drivePose){
         Pose2d hubPose = getHubPose().toPose2d();
         double currentDistance = drivePose.getTranslation().getDistance(hubPose.getTranslation());
         return currentDistance;
@@ -463,6 +473,39 @@ public Pose3d getHubPose() {
         }
         return null;
     }
+
+    public Pose2d getShooter1Pose(Pose2d currentPose) {
+        Translation2d offset = new Translation2d(-0.2524252, 0.103124).rotateBy(currentPose.getRotation());
+        return new Pose2d(currentPose.getTranslation().plus(offset), currentPose.getRotation());}
+    public Pose2d getShooter2Pose(Pose2d currentPose) {
+        Translation2d offset = new Translation2d(-0.0841502, 0.103124).rotateBy(currentPose.getRotation());
+        return new Pose2d(currentPose.getTranslation().plus(offset), currentPose.getRotation());}
+    public Pose2d getShooter3Pose(Pose2d currentPose) {
+        Translation2d offset = new Translation2d(0.0841502, 0.103124).rotateBy(currentPose.getRotation());
+        return new Pose2d(currentPose.getTranslation().plus(offset), currentPose.getRotation());}
+    public Pose2d getShooter4Pose(Pose2d currentPose) {
+        Translation2d offset = new Translation2d(0.2524252, 0.103124).rotateBy(currentPose.getRotation());
+        return new Pose2d(currentPose.getTranslation().plus(offset), currentPose.getRotation());}
+
+public double getShooter1DistanceInches() {
+    Pose2d currentPose = getPose();
+    return getShooter1Pose(currentPose).getTranslation().getDistance(getTargetPose(currentPose).getTranslation()) * 39.3701;
+}
+
+public double getShooter2DistanceInches() {
+    Pose2d currentPose = getPose();
+    return getShooter2Pose(currentPose).getTranslation().getDistance(getTargetPose(currentPose).getTranslation()) * 39.3701;
+}
+
+public double getShooter3DistanceInches() {
+    Pose2d currentPose = getPose();
+    return getShooter3Pose(currentPose).getTranslation().getDistance(getTargetPose(currentPose).getTranslation()) * 39.3701;
+}
+
+public double getShooter4DistanceInches() {
+    Pose2d currentPose = getPose();
+    return getShooter4Pose(currentPose).getTranslation().getDistance(getTargetPose(currentPose).getTranslation()) * 39.3701;
+}
 
     public Pose2d ShootingLocation;
 
@@ -519,8 +562,8 @@ public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, doub
         }
         else {
             return alignRequest
-            .withVelocityX(xSpeed * MaxSpeed * 0.8)
-            .withVelocityY(ySpeed * MaxSpeed * 0.8)
+            .withVelocityX(xSpeed * MaxSpeed)
+            .withVelocityY(ySpeed * MaxSpeed)
             .withRotationalRate(rotSpeed * MaxAngularRate);
         }
     });
@@ -742,10 +785,9 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
     });
 }
 
-public double getLookaheadDistance() {
-    if (ShootingLocation == null) return getDistance(); // fallback to current distance
-    Pose2d hubPose = getHubPose().toPose2d();
-    return ShootingLocation.getTranslation().getDistance(hubPose.getTranslation());
+public Pose2d getLookaheadPose() {
+    if (ShootingLocation == null) return getPose(); // fallback to current distance
+    return ShootingLocation;
 }
 
 
@@ -896,11 +938,16 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
     public void periodic() {
         if(ShootingLocation != null){field.getObject("Shooting Target").setPose(ShootingLocation);}
         field.setRobotPose(getPose());
-        SmartDashboard.putNumber("distanceToCenterHubInches", getDistance() * 39.3701);
-        SmartDashboard.putNumber("distanceLookaheadHubInches", getLookaheadDistance() * 39.3701);
+        SmartDashboard.putNumber("distanceToCenterHubInches", getDistance(getPose()) * 39.3701);
         SmartDashboard.putNumber("Hub/OffsetX", hubOffsetX);
         SmartDashboard.putNumber("Hub/OffsetY", hubOffsetY);
         SmartDashboard.putBoolean("SlowDrive?", SlowTele);
+        SmartDashboard.putNumber("Shooter1DistInches", getShooter1DistanceInches());
+        SmartDashboard.putNumber("Shooter2DistInches", getShooter2DistanceInches());
+        SmartDashboard.putNumber("Shooter3DistInches", getShooter3DistanceInches());
+        SmartDashboard.putNumber("Shooter4DistInches", getShooter4DistanceInches());
+
+        Noahdrive = BumDriveMode.getSelected();
 
         /*
          * Periodically try to apply the operator perspective.

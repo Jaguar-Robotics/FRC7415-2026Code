@@ -119,6 +119,7 @@ public class RobotContainer {
         DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate);
         ShooterHandler.getInstance().initialize(drivetrain, shooter);
         Superstructure.getInstance().initialize(shooter, drivetrain, joystick);
+        BangBangShooterSubsystem.getInstance().initialize(drivetrain);
 
         configurePathPlanner();
 
@@ -446,16 +447,16 @@ public class RobotContainer {
         opJoystick.leftStick().onTrue(new InstantCommand(() -> drivetrain.ToggleSlowTele()));
  
         opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
-        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
-        joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
         
 
-
+        /*
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(KickerSubsystem.getInstance()::setSlowCurrent));
+        RobotModeTriggers.teleop().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand (() ->PPHolonomicDriveController.clearRotationFeedbackOverride()));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+        */
 
         fiveSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.5));
         threeSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.25));

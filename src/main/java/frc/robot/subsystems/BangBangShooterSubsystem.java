@@ -10,12 +10,11 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -26,6 +25,8 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   private final TalonFX ShooterMotor2 = new TalonFX(Constants.ShooterConstants.ShooterFollowerID, "Upper");
   private final TalonFX ShooterMotorRev3 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversed2ID, "Upper");
   private final TalonFX ShooterMotorRev4 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversedID, "Upper");
+
+  CommandSwerveDrivetrain drivetrain;
 
   private final BangBangController controllerBangBang = new BangBangController();
 
@@ -58,21 +59,26 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     Shooter2Map.put(69.0, 60.0);
     Shooter2Map.put(56.7,52.0);
 
+    Shooter3Map.put(200.0, 100.0);
+    Shooter3Map.put(174.2 ,75.0);
+    Shooter3Map.put(160.0 ,73.0);
+    Shooter3Map.put(145.0 ,69.0);
+    Shooter3Map.put(130.0 ,65.0);
+    Shooter3Map.put(99.98 ,55.0);
+    Shooter3Map.put(82.5, 50.0);
+    Shooter3Map.put(64.9,46.0);
+    Shooter3Map.put(58.6, 46.0);
 
-    Shooter3Map.put(138.4 ,105.0);
-    Shooter3Map.put(121.4 ,77.0);
-    Shooter3Map.put(104.6 ,70.0);
-    Shooter3Map.put(85.8, 64.0);
-    Shooter3Map.put(69.0, 60.0);
-    Shooter3Map.put(56.7,52.0);
 
-
-    Shooter4Map.put(138.4 ,105.0);
-    Shooter4Map.put(121.4 ,77.0);
-    Shooter4Map.put(104.6 ,70.0);
-    Shooter4Map.put(85.8, 64.0);
-    Shooter4Map.put(69.0, 60.0);
-    Shooter4Map.put(56.7,52.0);
+    Shooter4Map.put(200.0, 100.0);
+    Shooter4Map.put(174.2 ,75.0);
+    Shooter4Map.put(160.0 ,73.0);
+    Shooter4Map.put(145.0 ,69.0);
+    Shooter4Map.put(130.0 ,65.0);
+    Shooter4Map.put(99.98 ,55.0);
+    Shooter4Map.put(82.5, 50.0);
+    Shooter4Map.put(64.9,46.0);
+    Shooter4Map.put(58.6, 46.0);
 
   }
 
@@ -95,6 +101,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   private boolean MultiplierOn = true;
   
   public BangBangShooterSubsystem() {    
+    instance = this;
     
     ShooterMotor.setNeutralMode(NeutralModeValue.Coast);
     ShooterMotor2.setNeutralMode(NeutralModeValue.Coast);
@@ -102,6 +109,10 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     ShooterMotorRev4.setNeutralMode(NeutralModeValue.Coast);
 
     controllerBangBang.setTolerance(Constants.ShooterConstants.RPSTolarance);
+  }
+
+  public void initialize(CommandSwerveDrivetrain drivetrain){
+    this.drivetrain = drivetrain;
   }
 
 
@@ -144,7 +155,36 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     shooterEnabled = true;
   }
   // with mult
-  public void setTargetVeloDistance(double  distance) {//IN METERS
+  
+  public void setTargetVeloDistance(Pose2d currentPose) {
+    // Translate each shooter's position relative to robot origin:
+
+    double inches1 = drivetrain.getShooter1DistanceInches();
+    double inches2 = drivetrain.getShooter2DistanceInches();
+    double inches3 = drivetrain.getShooter3DistanceInches();
+    double inches4 = drivetrain.getShooter4DistanceInches(); 
+
+    targetVeloRPS1 = Shooter1Map.get(inches1) * ShooterMult;
+    targetVeloRPS2 = Shooter2Map.get(inches2) * ShooterMult;
+    targetVeloRPS3 = Shooter3Map.get(inches3) * ShooterMult;
+    targetVeloRPS4 = Shooter4Map.get(inches4) * ShooterMult;
+
+    if (targetVeloRPS1 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop; }
+    if (targetVeloRPS2 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS2 = Constants.ShooterConstants.RPSHardStop; }
+    if (targetVeloRPS3 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS3 = Constants.ShooterConstants.RPSHardStop; }
+    if (targetVeloRPS4 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS4 = Constants.ShooterConstants.RPSHardStop; }
+
+    MaxRPM = targetVeloRPS1 >= 104.0;
+    shooterEnabled = true;
+
+    // Debug
+    SmartDashboard.putNumber("Shooter1DistInches", inches1);
+    SmartDashboard.putNumber("Shooter2DistInches", inches2);
+    SmartDashboard.putNumber("Shooter3DistInches", inches3);
+    SmartDashboard.putNumber("Shooter4DistInches", inches4);
+} 
+/*
+public void setTargetVeloDistance(double distance) {//IN METERS
     double inches = distance * 39.3701;
     targetVeloRPS1 = Shooter1Map.get(inches) * ShooterMult; //get rid of shootermult
     targetVeloRPS2 = Shooter2Map.get(inches) * ShooterMult;
@@ -162,10 +202,9 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     else{
       MaxRPM = false;
     }
-
     shooterEnabled = true;
   }
-
+*/
   public void coast(){
     shooterEnabled = false;
     targetVeloRPS1 = 0;
