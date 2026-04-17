@@ -176,12 +176,6 @@ public class BangBangShooterSubsystem extends SubsystemBase {
 
     MaxRPM = targetVeloRPS1 >= 104.0;
     shooterEnabled = true;
-
-    // Debug
-    SmartDashboard.putNumber("Shooter1DistInches", inches1);
-    SmartDashboard.putNumber("Shooter2DistInches", inches2);
-    SmartDashboard.putNumber("Shooter3DistInches", inches3);
-    SmartDashboard.putNumber("Shooter4DistInches", inches4);
 } 
 /*
 public void setTargetVeloDistance(double distance) {//IN METERS
@@ -270,6 +264,13 @@ public void setTargetVeloDistance(double distance) {//IN METERS
     SmartDashboard.putNumber("TargetRPS2", targetVeloRPS2);
     SmartDashboard.putNumber("TargetRPS3", targetVeloRPS3);
     SmartDashboard.putNumber("TargetRPS4", targetVeloRPS4);
+
+    if (drivetrain != null) {
+      SmartDashboard.putNumber("Shooter1DistInches", drivetrain.getShooter1DistanceInches());
+      SmartDashboard.putNumber("Shooter2DistInches", drivetrain.getShooter2DistanceInches());
+      SmartDashboard.putNumber("Shooter3DistInches", drivetrain.getShooter3DistanceInches());
+      SmartDashboard.putNumber("Shooter4DistInches", drivetrain.getShooter4DistanceInches());
+    }
 
     SmartDashboard.putNumber("ShooterMult", ShooterMult);
     SmartDashboard.putBoolean("MaxRPM?", MaxRPM);

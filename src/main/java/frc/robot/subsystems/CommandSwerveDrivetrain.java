@@ -475,16 +475,16 @@ public Pose3d getHubPose() {
     }
 
     public Pose2d getShooter1Pose(Pose2d currentPose) {
-        Translation2d offset = new Translation2d(-0.2524252, 0.103124).rotateBy(currentPose.getRotation());
+        Translation2d offset = new Translation2d(0.103124, 0.2524252).rotateBy(currentPose.getRotation());
         return new Pose2d(currentPose.getTranslation().plus(offset), currentPose.getRotation());}
     public Pose2d getShooter2Pose(Pose2d currentPose) {
-        Translation2d offset = new Translation2d(-0.0841502, 0.103124).rotateBy(currentPose.getRotation());
+        Translation2d offset = new Translation2d(0.103124,0.0841502).rotateBy(currentPose.getRotation());
         return new Pose2d(currentPose.getTranslation().plus(offset), currentPose.getRotation());}
     public Pose2d getShooter3Pose(Pose2d currentPose) {
-        Translation2d offset = new Translation2d(0.0841502, 0.103124).rotateBy(currentPose.getRotation());
+        Translation2d offset = new Translation2d(0.103124, -0.0841502).rotateBy(currentPose.getRotation());
         return new Pose2d(currentPose.getTranslation().plus(offset), currentPose.getRotation());}
     public Pose2d getShooter4Pose(Pose2d currentPose) {
-        Translation2d offset = new Translation2d(0.2524252, 0.103124).rotateBy(currentPose.getRotation());
+        Translation2d offset = new Translation2d(0.103124, -0.2524252).rotateBy(currentPose.getRotation());
         return new Pose2d(currentPose.getTranslation().plus(offset), currentPose.getRotation());}
 
 public double getShooter1DistanceInches() {
