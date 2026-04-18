@@ -46,6 +46,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.util.JoystickDriveUtil;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -550,44 +551,32 @@ public void ToggleSlowTele(){
 
 public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
     return applyRequest(() -> {
-        double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband));
-        double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband));
-        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), Constants.DriveConstants.TranslationDeadband);
-        
-        if (SlowTele){
-            return alignRequest
-                .withVelocityX(xSpeed * MaxSpeed * 0.5)
-                .withVelocityY(ySpeed * MaxSpeed * 0.5)
-                .withRotationalRate(rotSpeed * MaxAngularRate);
-        }
-        else {
-            return alignRequest
-            .withVelocityX(xSpeed * MaxSpeed)
-            .withVelocityY(ySpeed * MaxSpeed)
-            .withRotationalRate(rotSpeed * MaxAngularRate);
-        }
-    });
-}
+        // Polar shaping: deadband + sin^2 curve on magnitude, preserve direction.
+        // Per-axis shaping biases diagonals toward cardinal axes (axis snap).
+        Translation2d linear = JoystickDriveUtil.getLinearVelocityFromJoysticks(
+            -joystick.getLeftY(), -joystick.getLeftX(),
+            Constants.DriveConstants.TranslationDeadband);
+        double omega = JoystickDriveUtil.getOmegaFromJoysticks(
+            -joystick.getRightX(), Constants.DriveConstants.TranslationDeadband);
 
-private double scaleAxis(double input) {
-    double abs = Math.abs(input);
-    if (abs == 0.0) return 0.0;
-    abs = Math.min(abs, 1.0);
-    double scaled = Math.pow(Math.sin((Math.PI / 2.0) * abs), 2); // no offset
-    return Math.copySign(scaled, input);
+        double speedMult = SlowTele ? 0.5 : 1.0;
+        return alignRequest
+            .withVelocityX(linear.getX() * MaxSpeed * speedMult)
+            .withVelocityY(linear.getY() * MaxSpeed * speedMult)
+            .withRotationalRate(omega * MaxAngularRate);
+    });
 }
 
 public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
     return applyRequest(() -> {
-        double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), 0.1));
-        double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), 0.1));
-        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
+        Translation2d linear = JoystickDriveUtil.getLinearVelocityFromJoysticks(
+            -joystick.getLeftY(), -joystick.getLeftX(), 0.1);
+        double omega = JoystickDriveUtil.getOmegaFromJoysticks(-joystick.getRightX(), 0.1);
 
-        
         return alignRequest
-            .withVelocityX(xSpeed * MaxSpeed * 0.75)
-            .withVelocityY(ySpeed * MaxSpeed* 0.75)
-            .withRotationalRate(rotSpeed * MaxAngularRate);
+            .withVelocityX(linear.getX() * MaxSpeed * 0.75)
+            .withVelocityY(linear.getY() * MaxSpeed * 0.75)
+            .withRotationalRate(omega * MaxAngularRate);
     });
 }
 
@@ -904,11 +893,12 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
             return applyRequest(() -> {
                 Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
 
-                double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband));
-                double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband));
+                Translation2d linear = JoystickDriveUtil.getLinearVelocityFromJoysticks(
+                    -joystick.getLeftY(), -joystick.getLeftX(),
+                    Constants.DriveConstants.TranslationDeadband);
 
-                double xVelocity = xSpeed * MaxSpeed;
-                double yVelocity = ySpeed * MaxSpeed;
+                double xVelocity = linear.getX() * MaxSpeed;
+                double yVelocity = linear.getY() * MaxSpeed;
 
                 double rotInput = MathUtil.applyDeadband(-joystick.getRightX(), 0.1); // override deadband
 
