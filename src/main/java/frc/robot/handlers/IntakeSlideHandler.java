@@ -63,6 +63,13 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
       @Override
     public void update() {
       if((currentState != desiredState)){
+        // Cancel any currently running command on the elevator (e.g. lingering
+        // waitSeconds from SLOWIN/FASTSLOWIN) so OUT can schedule immediately
+        var runningCmd = intakeSlide.getCurrentCommand();
+        if (runningCmd != null) {
+            runningCmd.cancel();
+        }
+
         switch (desiredState) {
             case OUT:
             /*

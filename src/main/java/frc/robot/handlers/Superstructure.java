@@ -109,7 +109,7 @@ public class Superstructure extends SubsystemBase {
 
   /** Call this from commands or joystick logic to set the next goal. */
   public void setDesiredState(SuperstructureState newState) {
-    System.out.print("SetDesiredState:" + newState);
+    //System.out.print("SetDesiredState:" + newState);
     if (desiredState != newState) {
       desiredState = newState;
       handleStateTransition();
@@ -199,7 +199,7 @@ public class Superstructure extends SubsystemBase {
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
-        driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
+        driveHandler.setDesiredState(DriveHandler.DriveState.XDRIVE);
           if (BumpHeight) {intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);}
           else intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.FASTSLOWIN);
         break;
@@ -348,7 +348,8 @@ public class Superstructure extends SubsystemBase {
 
         currentSpeeds = drivetrain.getState().Speeds;
         robotSpeed = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
-        driverIsMoving = joystickMagnitude > Constants.DriveConstants.TranslationDeadband; // matches your deadband
+        SmartDashboard.putNumber("joystickMag", joystickMagnitude);
+        driverIsMoving = joystickMagnitude > Constants.DriveConstants.TranslationDeadband*2; // matches your deadband
         DTaimed = drivetrain.isAimedAtTarget();
         DTAUTOaimed = drivetrain.isAimedAtTargetAuto();
         DTFutAimed = drivetrain.isAimedAtTargetSOTM();

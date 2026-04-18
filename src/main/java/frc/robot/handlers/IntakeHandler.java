@@ -67,7 +67,7 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
         switch (desiredState) {
             case FASTINTAKE:
                 intake.set(Constants.IntakeConstants.FastIntake);
-                kicker.set(Constants.IntakeConstants.FastIntake * 0.5);
+                kicker.set(Constants.IntakeConstants.FastIntake * 0.58);
                 break;
             case MAXSPEED:
                 intake.set(1);

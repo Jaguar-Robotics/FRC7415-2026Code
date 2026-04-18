@@ -100,7 +100,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   private double targetVeloRPS3 = 0;
   private double targetVeloRPS4 = 0;
 
-  private double ShooterMult = 0.95; //0.95
+  private double ShooterMult = 1.0; //0.95
 
 
 

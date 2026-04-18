@@ -60,7 +60,6 @@ public class KickerSubsystem extends SubsystemBase {
 
   public void setSlowCurrent() {
     AutotalonFXConfigurator.apply(teleoplimitConfig);
-    System.out.println(kickerMotor.getSupplyCurrent().toString());
   }
 
   public void stop(){
