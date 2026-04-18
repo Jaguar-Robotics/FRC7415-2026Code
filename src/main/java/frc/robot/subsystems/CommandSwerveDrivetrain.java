@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.units.*;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.util.JoystickDriveUtil;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /**
@@ -446,11 +447,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 }
 
     public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
-        return applyRequest(() ->{
-                return alignRequest.withVelocityX(-joystick.getLeftY() * MaxSpeed).withDeadband(Constants.DriveConstants.TranslationDeadband) // Drive forward with negative Y (forward) DriveStraight = robot centric 
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed).withDeadband(Constants.DriveConstants.TranslationDeadband) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate).withDeadband(Constants.DriveConstants.RotationDeadband);} // Drive counterclockwise with negative X (left)
-            ); }
+        return applyRequest(() -> {
+            // Polar shaping: deadband + square the magnitude, preserve direction.
+            // Per-axis deadband/squaring would snap diagonals toward cardinal axes.
+            double rawX = -joystick.getLeftY();
+            double rawY = -joystick.getLeftX();
+            Translation2d linear = JoystickDriveUtil.getLinearVelocityFromJoysticks(
+                rawX, rawY, Constants.DriveConstants.TranslationDeadband);
+            double omega = JoystickDriveUtil.getOmegaFromJoysticks(
+                -joystick.getRightX(), Constants.DriveConstants.RotationDeadband);
+            return alignRequest
+                .withVelocityX(linear.getX() * MaxSpeed)
+                .withVelocityY(linear.getY() * MaxSpeed)
+                .withRotationalRate(omega * MaxAngularRate);
+        });
+    }
 
     double futureDistance = 0.0;
     public double GetFutureDistMeters(){
