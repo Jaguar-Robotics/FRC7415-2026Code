@@ -790,6 +790,12 @@ public Pose2d getLookaheadPose() {
     return ShootingLocation;
 }
 
+public double getLookaheadDistance() {
+    if (ShootingLocation == null) return getDistance(getPose()); // fallback to current distance
+    Pose2d hubPose = getHubPose().toPose2d();
+    return ShootingLocation.getTranslation().getDistance(hubPose.getTranslation());
+}
+
 
 public boolean isAimedAtTarget() {
     Pose2d currentPose = getPose();

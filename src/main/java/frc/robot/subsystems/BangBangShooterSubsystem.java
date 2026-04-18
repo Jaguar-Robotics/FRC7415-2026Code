@@ -37,27 +37,36 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   
   //inches to center hub from Robot orign , RPS
   static {
+    /* 20 deg
     Shooter1Map.put(138.4 ,105.0);
     Shooter1Map.put(121.4 ,77.0);
-    Shooter1Map.put(104.6 ,70.0);
-    /*
-    Shooter1Map.put(74.3, 56.0);
-    Shooter1Map.put(60.5, 52.0);
-    Shooter1Map.put(52.1, 50.0);
-    */
-    
+    Shooter1Map.put(104.6 ,70.0);    
     Shooter1Map.put(85.8, 64.0);
     Shooter1Map.put(69.0, 60.0);
     Shooter1Map.put(56.7,52.0);
+    */
+
+    Shooter1Map.put(200.0, 100.0);
+    Shooter1Map.put(174.2 ,75.0);
+    Shooter1Map.put(160.0 ,73.0);
+    Shooter1Map.put(145.0 ,69.0);
+    Shooter1Map.put(130.0 ,65.0);
+    Shooter1Map.put(99.98 ,55.0);
+    Shooter1Map.put(82.5, 50.0);
+    Shooter1Map.put(64.9,46.0);
+    Shooter1Map.put(58.6, 46.0);
     
 
 
-    Shooter2Map.put(138.4 ,105.0);
-    Shooter2Map.put(121.4 ,77.0);
-    Shooter2Map.put(104.6 ,70.0);
-    Shooter2Map.put(85.8, 64.0);
-    Shooter2Map.put(69.0, 60.0);
-    Shooter2Map.put(56.7,52.0);
+    Shooter2Map.put(200.0, 100.0);
+    Shooter2Map.put(174.2 ,75.0);
+    Shooter2Map.put(160.0 ,73.0);
+    Shooter2Map.put(145.0 ,69.0);
+    Shooter2Map.put(130.0 ,65.0);
+    Shooter2Map.put(99.98 ,55.0);
+    Shooter2Map.put(82.5, 50.0);
+    Shooter2Map.put(64.9,46.0);
+    Shooter2Map.put(58.6, 46.0);
 
     Shooter3Map.put(200.0, 100.0);
     Shooter3Map.put(174.2 ,75.0);
@@ -177,7 +186,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     MaxRPM = targetVeloRPS1 >= 104.0;
     shooterEnabled = true;
 } 
-/*
+
 public void setTargetVeloDistance(double distance) {//IN METERS
     double inches = distance * 39.3701;
     targetVeloRPS1 = Shooter1Map.get(inches) * ShooterMult; //get rid of shootermult
@@ -198,7 +207,7 @@ public void setTargetVeloDistance(double distance) {//IN METERS
     }
     shooterEnabled = true;
   }
-*/
+
   public void coast(){
     shooterEnabled = false;
     targetVeloRPS1 = 0;

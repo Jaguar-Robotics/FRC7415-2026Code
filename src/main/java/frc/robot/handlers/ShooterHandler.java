@@ -58,7 +58,7 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
         if (drivetrain == null){
             return 0;
         }
-        double DistM= drivetrain.getDistance(drivetrain.getPose());
+        double DistM = drivetrain.getDistance(drivetrain.getPose());
         return DistM;
     }
 
@@ -86,13 +86,18 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
         }
     }
 
+    double DistMeters = 0;
+    double DistMetersLookAhead = 0;
+
     private void handleStateChange(){ 
         switch (desiredState) {
             case SHOOTING:
-                shooter.setTargetVeloDistance(currPose2d); 
+                //shooter.setTargetVeloDistance(currPose2d); 
+                shooter.setTargetVeloDistance(DistMeters);
                 break;
             case SOTM:
-                shooter.setTargetVeloDistance(LookaheadPose2d);
+                //shooter.setTargetVeloDistance(LookaheadPose2d);
+                shooter.setTargetVeloDistance(DistMetersLookAhead);
                 break;
             case SLOW:
                 shooter.setTargetVelocity(Constants.ShooterConstants.SlowShot);
@@ -119,6 +124,8 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
 
     @Override
 public void periodic() {
+    DistMeters = drivetrain.getDistance(drivetrain.getPose());
+    DistMetersLookAhead = drivetrain.getLookaheadDistance() + 0.2;
     currPose2d = drivetrain.getPose();
     LookaheadPose2d = drivetrain.getLookaheadPose(); //0.2M is distance between orgin and shooter (its not acc but its what we measure from)
     update(); // Handle state transitions
