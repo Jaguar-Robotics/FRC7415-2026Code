@@ -195,7 +195,7 @@ public class Superstructure extends SubsystemBase {
         break;
       case STATIONARYSHOT:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SHOOTING);
-        intakeHandler.setDesiredState(IntakeHandler.IntakeState.SLOWINTAKE);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.FAST);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);

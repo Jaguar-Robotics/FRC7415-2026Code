@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -28,6 +29,8 @@ public class IndexerLowSubsystem extends SubsystemBase {
   }
   @Override
   public void periodic() {
+    double lowindexRPS = Math.abs(indexerLowMotor.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("indeherlowmotorRPS", lowindexRPS);
     // This method will be called once per scheduler run
   }
 }

@@ -22,6 +22,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,7 +34,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
 import frc.robot.handlers.IntakeSlideHandler;
@@ -172,6 +173,8 @@ public class RobotContainer {
     
         
         NamedCommands.registerCommand("StartSOTMAlign", Commands.runOnce(() -> {
+            drivetrain.lastAimAngleRad = Double.NaN;
+            drivetrain.driveAngleFilter.reset();
         superstructure.setDesiredState(Superstructure.SuperstructureState.SOTMSPINUPAUTO);
         PPHolonomicDriveController.overrideRotationFeedback(() -> {
 
@@ -213,8 +216,20 @@ public class RobotContainer {
             Translation2d target = drivetrain.getHubPose().toPose2d().getTranslation();
 
             // ── 5. SHOOTER VELOCITY ───────────────────────────────────────────
-            double shooterVelocityX = fieldVelocity.vxMetersPerSecond;
-            double shooterVelocityY = fieldVelocity.vyMetersPerSecond;
+
+            double omega = fieldVelocity.omegaRadiansPerSecond;
+            // Tangential velocity added by rotation: perpendicular to the offset vector
+            // If offset is (rx, ry), tangential is (-ry*omega, rx*omega)
+            double shooterVelocityX = fieldVelocity.vxMetersPerSecond
+                    + (-shooterOffsetFieldFrame.getY() * omega);
+            double shooterVelocityY = fieldVelocity.vyMetersPerSecond
+                    + (shooterOffsetFieldFrame.getX() * omega);
+
+            boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+            double allianceFlip = isRed ? -1.0 : 1.0;
+
+            shooterVelocityX = fieldVelocity.vxMetersPerSecond;// * allianceFlip; //if allanice flup put it here
+            shooterVelocityY = fieldVelocity.vyMetersPerSecond;// * allianceFlip;
 
             // ── 6. ITERATIVE LOOKAHEAD LOOP ───────────────────────────────────
             double timeOfFlight = 0.1;
@@ -226,8 +241,8 @@ public class RobotContainer {
                 timeOfFlight = CommandSwerveDrivetrain.TOFmap.get(distInches);
                 timeOfFlight = Math.max(timeOfFlight, 0.05);
 
-                double offsetX = shooterVelocityX * timeOfFlight * 0.3;
-                double offsetY = shooterVelocityY * timeOfFlight * 0.3;
+                double offsetX = shooterVelocityX * timeOfFlight * 1; // *0.15
+                double offsetY = shooterVelocityY * timeOfFlight * 1;
                 lookaheadShooterPosition = shooterPosition.plus(new Translation2d(offsetX, offsetY));
                 lookaheadDistance = target.getDistance(lookaheadShooterPosition);
             }
@@ -327,28 +342,8 @@ public class RobotContainer {
         */
 
         // Reset the field-centric heading on right stick press.
-        joystick.rightStick().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-        drivetrain.registerTelemetry(logger::telemeterize);
-
-        //ROTATE 90 degreese
-        /*
-        joystick.leftBumper().onTrue(Commands.runOnce(() -> {
-            Rotation2d targetRotation = drivetrain.getPose().getRotation().plus(Rotation2d.fromDegrees(90));
-            
-            // Use your existing rotation controller
-            drivetrain.applyRequest(() -> {
-                double rotationalRate = CommandSwerveDrivetrain.rotationController.calculate(
-                    drivetrain.getPose().getRotation().getRadians(),
-                    targetRotation.getRadians()
-                );
-                return new SwerveRequest.FieldCentric()
-                    .withVelocityX(0)
-                    .withVelocityY(0)
-                    .withRotationalRate(rotationalRate * MaxAngularRate); // Max angular rate
-            }).withTimeout(2.0).schedule();
-        }));
-         */
-        
+        //joystick.rightStick().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        drivetrain.registerTelemetry(logger::telemeterize);        
 
         /* Main driver Controller:
          * RT - Hold to spin up (and shoot hopefully) - relase to idle
@@ -402,18 +397,15 @@ public class RobotContainer {
        //joystick.a().onFalse(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.OFF)));
 
 
+
+        joystick.povUp().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(0.05)));
+        joystick.povDown().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(-0.05)));
         
 
-        joystick.rightStick().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
+        joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.67));
+        joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.67));
 
-
-        
-        joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1))); 
-        joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1))); //in RPs
-        
-
-        joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.67)); //  out
-        joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.67)); //in
+        joystick.start().onTrue(Commands.runOnce(() -> shooter.resetShooterMult()));
 
 
         //CONTROLLER 2 / debug controller 
@@ -433,12 +425,12 @@ public class RobotContainer {
             HubShiftUtil.setAllianceWinOverride(() -> Optional.of(current.orElse(true) == false));
         }));
 
-        opJoystick.a().onTrue(Commands.runOnce(() -> drivetrain.resetHubOffset()));
-        opJoystick.a().onTrue(Commands.runOnce(() -> shooter.resetShooterMult()));
+
 
         // Change Shooter Power
-        opJoystick.povUp().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(0.05)));
-        opJoystick.povDown().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(-0.05)));
+        
+        opJoystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1))); 
+        opJoystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1))); //in RPs
 
         // Adjust Y offset
         opJoystick.povRight().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, 0.1)));
@@ -449,15 +441,17 @@ public class RobotContainer {
         opJoystick.leftStick().onTrue(new InstantCommand(() -> drivetrain.ToggleSlowTele()));
  
         opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
+        opJoystick.y().onTrue(Commands.runOnce(() -> drivetrain.resetHubOffset()));
         
 
-        
+        /*
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(KickerSubsystem.getInstance()::setSlowCurrent));
         RobotModeTriggers.teleop().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand (() ->PPHolonomicDriveController.clearRotationFeedbackOverride()));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+        */
         
 
         fiveSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.5));

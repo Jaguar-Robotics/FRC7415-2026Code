@@ -37,9 +37,20 @@ public final class JoystickDriveUtil {
         .getTranslation();
   }
 
+  /*
   // Omega is 1D so a signed square preserves direction trivially.
   public static double getOmegaFromJoysticks(double omegaInput, double deadband) {
     double omega = MathUtil.applyDeadband(omegaInput, deadband);
     return omega * omega * Math.signum(omega);
   }
+  */
+
+  public static double getOmegaFromJoysticks(double omegaInput, double deadband) {
+    double omega = MathUtil.applyDeadband(omegaInput, deadband);
+    if (omega == 0.0) return 0.0;
+    // Rescale so deadband edge = 0, full stick = 1, then apply squaring
+    double scaled = omega / (1.0 - deadband);
+    scaled = MathUtil.clamp(scaled, -1.0, 1.0);
+    return scaled * scaled * Math.signum(scaled);
+}
 }

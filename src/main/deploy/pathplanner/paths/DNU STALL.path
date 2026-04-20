@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.795275297619048,
-        "y": 7.082313988095239
+        "x": 2.660603371783496,
+        "y": 5.246211180124224
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.038629589702442,
-        "y": 7.025054154663852
+        "x": 2.660603371783496,
+        "y": 4.996211180124224
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.795275297619048,
-        "y": 1.1769196428571433
+        "x": 2.660603371783496,
+        "y": 2.8801242236024835
       },
       "prevControl": {
-        "x": 2.5454920293459598,
-        "y": 1.1873272790351885
+        "x": 2.660603371783496,
+        "y": 3.1301242236024835
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,8 +34,8 @@
   "eventMarkers": [
     {
       "name": "SOTM",
-      "waypointRelativePos": 0.2780821917808223,
-      "endWaypointRelativePos": 0.7287671232876731,
+      "waypointRelativePos": 0.19630872483221448,
+      "endWaypointRelativePos": 0.7634228187919465,
       "command": {
         "type": "named",
         "data": {
@@ -51,7 +51,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 1.0,
+    "maxVelocity": 0.768,
     "maxAcceleration": 1.0,
     "maxAngularVelocity": 560.0,
     "maxAngularAcceleration": 720.0,

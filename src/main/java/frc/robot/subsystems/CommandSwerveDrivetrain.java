@@ -73,8 +73,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /** Swerve request for field-centric driving with rotation control */
     private final SwerveRequest.FieldCentric alignRequest = new SwerveRequest.FieldCentric()
-    .withDeadband(Constants.DriveConstants.TranslationDeadband)
-    .withRotationalDeadband(Constants.DriveConstants.RotationDeadband);
+    .withDeadband(0)
+    .withRotationalDeadband(0);
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -555,11 +555,12 @@ public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, doub
         // Per-axis shaping biases diagonals toward cardinal axes (axis snap).
         Translation2d linear = JoystickDriveUtil.getLinearVelocityFromJoysticks(
             -joystick.getLeftY(), -joystick.getLeftX(),
-            Constants.DriveConstants.TranslationDeadband);
-        double omega = JoystickDriveUtil.getOmegaFromJoysticks(
-            -joystick.getRightX(), Constants.DriveConstants.TranslationDeadband);
+            0);
+        //double omega = JoystickDriveUtil.getOmegaFromJoysticks(-joystick.getRightX(), 0);
+        double omega = JoystickDriveUtil.getOmegaFromJoysticks(-joystick.getRightX(), Constants.DriveConstants.RotationDeadband);
+        double rotnoSin = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
 
-        double speedMult = SlowTele ? 0.5 : 1.0;
+        double speedMult = SlowTele ? 0.5 : 0.8; //left = slowmode right = default
         return alignRequest
             .withVelocityX(linear.getX() * MaxSpeed * speedMult)
             .withVelocityY(linear.getY() * MaxSpeed * speedMult)
@@ -572,6 +573,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         Translation2d linear = JoystickDriveUtil.getLinearVelocityFromJoysticks(
             -joystick.getLeftY(), -joystick.getLeftX(), 0.1);
         double omega = JoystickDriveUtil.getOmegaFromJoysticks(-joystick.getRightX(), 0.1);
+        double rotnoSin = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
 
         return alignRequest
             .withVelocityX(linear.getX() * MaxSpeed * 0.75)
@@ -582,10 +584,21 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
 
     public static final InterpolatingDoubleTreeMap TOFmap = new InterpolatingDoubleTreeMap();
     static { //dist inch, time Sec
-        TOFmap.put(53.7, 0.2); //53.7, 0.83 is real value
+        /*
+        TOFmap.put(53.7, 0.83); //53.7, 0.83 is real value
         TOFmap.put(70.8 , 1.0);
         TOFmap.put(100.3 , 1.2);
         TOFmap.put(112.5, 2.1);
+        */
+
+        TOFmap.put(64.2, 0.8);
+        TOFmap.put(95.2, 1.0);
+        TOFmap.put(112.3, 1.05);
+        TOFmap.put(116.0, 1.5);
+        TOFmap.put(122.8, 1.0);
+        TOFmap.put(181.8, 1.45);
+
+
     }
 
 
@@ -601,7 +614,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
     public ChassisSpeeds lastCommandedSpeeds = new ChassisSpeeds();
  
     // Offset from robot center to the physical shooter position (measure from CAD)
-    // Example: shooter is 0.2m forward and 0.0m sideways from robot center
+    // Example: shooter is 0.2m forward and 0.0m sideways from robot center TS isnt right bro but like its close enough yk
     public static final Translation2d ROBOT_TO_SHOOTER = new Translation2d(0.2, 0.0);
 
     //BASED ON MECH A PRAISE THE FRC GODS FOR OPEN ALLIANCE
@@ -685,7 +698,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
             double distInches = lookaheadDistance * 39.3701;
             timeOfFlight = TOFmap.get(distInches);
             timeOfFlight = Math.max(timeOfFlight, 0.05); // guard against degenerate values
-            timeOfFlight = 1; //* ***************************************************************************************************** */
+            
  
             // Where will the shooter be when the note arrives?
             double offsetX = shooterVelocityX * timeOfFlight * 0.15; //*0.25
@@ -726,10 +739,6 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         double kFF = 0.25;//********************************************************************************************************************************************* */
         double rotationalRate = aimAngleVelocityFF * kFF + pidOutput;
  
-        // ── 10. DRIVER TRANSLATION INPUT ───────────────────────────────────────── *******************************************UN COMMENT
-        //double veloX = MathUtil.applyDeadband(-controller.getLeftY(), Constants.DriveConstants.TranslationDeadband);
-        //double veloY = MathUtil.applyDeadband(-controller.getLeftX(), Constants.DriveConstants.TranslationDeadband);
- 
         // ── 12. BUILD COMMANDED SPEEDS & CACHE THEM ───────────────────────────────
         // Cache what we're about to command so next loop uses setpoint, not measured
         // Convert field-relative driver input back to robot-relative for storage
@@ -744,11 +753,11 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
  
         // ── 13. VISUALIZATION ─────────────────────────────────────────────────────
         ShootingLocation = new Pose2d(lookaheadShooterPosition, aimAngle);
- 
+        
         SmartDashboard.putNumber("SOTM/AimAngleDeg", Math.toDegrees(aimAngleRad));
-        SmartDashboard.putNumber("SOTM/LookaheadDistanceMeters", lookaheadDistance);
-        SmartDashboard.putNumber("SOTM/LookaheadDistanceMeters", lookaheadDistance * 39.3701);
+        SmartDashboard.putNumber("SOTM/LookaheadDistanceInches", lookaheadDistance * 39.3701);
         SmartDashboard.putNumber("SOTM/TimeOfFlight", timeOfFlight);
+        /*
         SmartDashboard.putNumber("SOTM/AimAngleFFRadPerSec", aimAngleVelocityFF);
         SmartDashboard.putNumber("SOTM/AimErrorDeg",aimAngle.minus(currentAngle).getDegrees());
         SmartDashboard.putNumber("SOTM/shooterVelocityX", shooterVelocityX);
@@ -763,8 +772,8 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         SmartDashboard.putNumber("SOTM/targetY", target.getY());
         SmartDashboard.putNumber("SOTM/aimAngleDeg", Math.toDegrees(aimAngleRad));
         SmartDashboard.putNumber("SOTM/currentAngleDeg", currentPose.getRotation().getDegrees());
-        SmartDashboard.putNumber("SOTM/pidOutput", pidOutput);
         SmartDashboard.putNumber("SOTM/rotationalRate", rotationalRate);
+        */
  
         // ── 14. APPLY REQUEST ─────────────────────────────────────────────────────
         return alignRequest

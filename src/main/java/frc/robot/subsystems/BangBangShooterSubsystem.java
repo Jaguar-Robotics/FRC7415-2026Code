@@ -143,7 +143,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   }
 
   public void resetShooterMult(){
-    ShooterMult = 1.0; //change to 0.95
+    ShooterMult = 1.0; 
   }
 
   // without mult
@@ -173,10 +173,10 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     double inches3 = drivetrain.getShooter3DistanceInches();
     double inches4 = drivetrain.getShooter4DistanceInches(); 
 
-    targetVeloRPS1 = Shooter1Map.get(inches1) * ShooterMult;
-    targetVeloRPS2 = Shooter2Map.get(inches2) * ShooterMult;
-    targetVeloRPS3 = Shooter3Map.get(inches3) * ShooterMult;
-    targetVeloRPS4 = Shooter4Map.get(inches4) * ShooterMult;
+    targetVeloRPS1 = Shooter1Map.get(inches1 + 4.06) * ShooterMult; //4.06 = inches from robot origin to mid of "drum"
+    targetVeloRPS2 = Shooter2Map.get(inches2 + 4.06) * ShooterMult;
+    targetVeloRPS3 = Shooter3Map.get(inches3 + 4.06) * ShooterMult;
+    targetVeloRPS4 = Shooter4Map.get(inches4 + 4.06) * ShooterMult;
 
     if (targetVeloRPS1 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop; }
     if (targetVeloRPS2 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS2 = Constants.ShooterConstants.RPSHardStop; }
@@ -218,12 +218,12 @@ public void setTargetVeloDistance(double distance) {//IN METERS
 
  public boolean atTargetVelo() {
   if (RobotBase.isSimulation()) return true;
-  boolean atTargBelo = Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1-2.0;
+  boolean atTargBelo = Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1 - 1.0;
   return atTargBelo;
   }
 
   public boolean atTargetVeloPassing() {
-  boolean atTargBelo = (Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1-2.0) || ShooterMotor.getVelocity().getValueAsDouble() >= 98.0;
+  boolean atTargBelo = (Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1 - 1.0) || ShooterMotor.getVelocity().getValueAsDouble() >= 98.0;
   return atTargBelo;
   }
   
@@ -248,7 +248,7 @@ public void setTargetVeloDistance(double distance) {//IN METERS
     double bangBangVolts3 = controllerBangBang.calculate(currentVelocity3RPS, targetVeloRPS3)*12;
     double bangBangVolts4 = controllerBangBang.calculate(currentVelocity4RPS, targetVeloRPS4)*12;
 
-    double feedfowardVolts1 = feedFoward.calculate(targetVeloRPS1)*0.9; //*0.9 */
+    double feedfowardVolts1 = feedFoward.calculate(targetVeloRPS1)*0.9; //*0.9 0.875 is better maybe? idk we tuned on 0.9
     double feedfowardVolts2 = feedFoward.calculate(targetVeloRPS2)*0.9;
     double feedfowardVolts3 = feedFoward.calculate(targetVeloRPS3)*0.9;
     double feedfowardVolts4 = feedFoward.calculate(targetVeloRPS4)*0.9;
@@ -257,12 +257,6 @@ public void setTargetVeloDistance(double distance) {//IN METERS
     ShooterMotor2.setControl(voltageRequest.withOutput(-(bangBangVolts2 + feedfowardVolts2)).withEnableFOC(false)); //backwards in phy tuner
     ShooterMotorRev3.setControl(voltageRequest.withOutput(-(bangBangVolts3 + feedfowardVolts3)).withEnableFOC(false)); //-
     ShooterMotorRev4.setControl(voltageRequest.withOutput(-(bangBangVolts4 + feedfowardVolts4)).withEnableFOC(false)); //-
-
-
-    SmartDashboard.putNumber("Shooter1Volts", bangBangVolts1 + feedfowardVolts1);
-    SmartDashboard.putNumber("Shooter2Volts", bangBangVolts2 + feedfowardVolts2);
-    SmartDashboard.putNumber("Shooter3Volts", bangBangVolts3 + feedfowardVolts3);
-    SmartDashboard.putNumber("Shooter4Volts", bangBangVolts4 + feedfowardVolts4);
 
     SmartDashboard.putNumber("Shooter1RPS", currentVelocity1RPS);
     SmartDashboard.putNumber("Shooter2RPS", currentVelocity2RPS);

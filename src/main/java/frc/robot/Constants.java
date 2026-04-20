@@ -31,7 +31,7 @@ public class Constants {
         public static final double SlowShot = 20; //HESKEL CHANGE ME SLOW
         public static final double RPSHardStop = 200.0; 
         public static final double RPSTolarance = 1;
-        public static final double kS = 0.28; 
+        public static final double kS = 0.28; //0.28
         public static final double kV = 0.13; //0.13 
     }
 
@@ -89,25 +89,25 @@ public class Constants {
             new Rotation3d()
         );
         public static final Pose2d blueTargetHighPose = new Pose2d(
-            Units.Inches.of(20),
+            Units.Inches.of(10),
             Units.Inches.of(265), 
             new Rotation2d()
         );
 
         public static final Pose2d blueTargetLowPose = new Pose2d(
-            Units.Inches.of(20),
+            Units.Inches.of(10),
             Units.Inches.of(50), 
             new Rotation2d()
         );
 
         public static final Pose2d redTargetHighPose = new Pose2d(
-            Units.Inches.of(630), 
+            Units.Inches.of(640), 
             Units.Inches.of(265), 
             new Rotation2d()
         );
         
         public static final Pose2d redTargetLowPose = new Pose2d(
-            Units.Inches.of(630), 
+            Units.Inches.of(640), 
             Units.Inches.of(50), 
             new Rotation2d()
         ); 

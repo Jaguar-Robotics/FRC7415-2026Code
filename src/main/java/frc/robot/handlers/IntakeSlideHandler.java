@@ -93,13 +93,13 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
                 break;
             case FASTSLOWIN:
               new SequentialCommandGroup(
-                    Commands.waitSeconds(0.5),
+                    Commands.waitSeconds(1),
                     intakeSlide.manualDrive(() -> -0.35).until(() -> intakeSlide.isHarderStop.getAsBoolean() && isAtLowSetpoint).withTimeout( 5)
                     ).schedule();
                   break; 
             case SLOWIN: 
                 new SequentialCommandGroup(
-                  Commands.waitSeconds(1),
+                  Commands.waitSeconds(2),
                   intakeSlide.manualDrive(() -> -0.2).until(() -> intakeSlide.isHarderStop.getAsBoolean() && isAtLowSetpoint).withTimeout( 5)
                   ).schedule();
                 break; 

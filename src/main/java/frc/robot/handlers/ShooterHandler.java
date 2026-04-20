@@ -92,12 +92,12 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     private void handleStateChange(){ 
         switch (desiredState) {
             case SHOOTING:
-                //shooter.setTargetVeloDistance(currPose2d); 
-                shooter.setTargetVeloDistance(DistMeters);
+                shooter.setTargetVeloDistance(currPose2d); 
+                //shooter.setTargetVeloDistance(DistMeters);
                 break;
             case SOTM:
-                //shooter.setTargetVeloDistance(LookaheadPose2d);
                 shooter.setTargetVeloDistance(DistMetersLookAhead);
+                //shooter.setTargetVeloDistance(DistMetersLookAhead);
                 break;
             case SLOW:
                 shooter.setTargetVelocity(Constants.ShooterConstants.SlowShot);
@@ -125,9 +125,9 @@ public class ShooterHandler extends SubsystemBase implements StateSubsystem {
     @Override
 public void periodic() {
     DistMeters = drivetrain.getDistance(drivetrain.getPose());
-    DistMetersLookAhead = drivetrain.getLookaheadDistance() + 0.2;
+    DistMetersLookAhead = drivetrain.getLookaheadDistance() + 0.2; //0.2M is distance between orgin and shooter (its not acc but its what we measure from)
     currPose2d = drivetrain.getPose();
-    LookaheadPose2d = drivetrain.getLookaheadPose(); //0.2M is distance between orgin and shooter (its not acc but its what we measure from)
+    LookaheadPose2d = drivetrain.getLookaheadPose();
     update(); // Handle state transitions
     SmartDashboard.putString("ShooterState", currentState.toString());
 }
