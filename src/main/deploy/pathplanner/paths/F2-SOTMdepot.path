@@ -48,16 +48,16 @@
     },
     {
       "anchor": {
-        "x": 2.7330346051464063,
-        "y": 5.334738243123336
+        "x": 2.6256175595238096,
+        "y": 5.196502976190477
       },
       "prevControl": {
-        "x": 3.0497619047619047,
-        "y": 5.561919642857143
+        "x": 3.03885536823425,
+        "y": 5.238163265306123
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "hubok"
+      "linkedName": "HubToDepot"
     }
   ],
   "rotationTargets": [
@@ -89,10 +89,10 @@
   "constraintZones": [
     {
       "name": "slowtoshoot",
-      "minWaypointRelativePos": 2.526845637583893,
+      "minWaypointRelativePos": 2.576712328767123,
       "maxWaypointRelativePos": 3.0,
       "constraints": {
-        "maxVelocity": 1.0,
+        "maxVelocity": 0.625,
         "maxAcceleration": 1.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -104,24 +104,13 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "starbuhallign",
-      "waypointRelativePos": 2.5922818791946303,
+      "name": "SOTM",
+      "waypointRelativePos": 2.76342281879195,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "StartHubAlign"
-        }
-      }
-    },
-    {
-      "name": "okkkkk",
-      "waypointRelativePos": 2.607382550335576,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "IntakeOff"
+          "name": "StartSOTMAlign"
         }
       }
     }
@@ -135,8 +124,8 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": -37.0
+    "velocity": 0.625,
+    "rotation": -30.50768035789512
   },
   "reversed": false,
   "folder": null,

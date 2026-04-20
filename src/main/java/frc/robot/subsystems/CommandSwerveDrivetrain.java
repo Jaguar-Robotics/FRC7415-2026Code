@@ -551,13 +551,22 @@ public void ToggleSlowTele(){
 
 public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
     return applyRequest(() -> {
+
+        double rawX = -joystick.getRightX();
+        SmartDashboard.putNumber("Debug/RawRightX", rawX);
+        
+        double omega = JoystickDriveUtil.getOmegaFromJoysticks(rawX, Constants.DriveConstants.RotationDeadband);
+        SmartDashboard.putNumber("Debug/OmegaPostProcess", omega);
+        SmartDashboard.putNumber("Debug/MaxAngularRate", MaxAngularRate);
+        SmartDashboard.putNumber("Debug/FinalRotRate", omega * MaxAngularRate);
+
         // Polar shaping: deadband + sin^2 curve on magnitude, preserve direction.
         // Per-axis shaping biases diagonals toward cardinal axes (axis snap).
         Translation2d linear = JoystickDriveUtil.getLinearVelocityFromJoysticks(
             -joystick.getLeftY(), -joystick.getLeftX(),
             0);
         //double omega = JoystickDriveUtil.getOmegaFromJoysticks(-joystick.getRightX(), 0);
-        double omega = JoystickDriveUtil.getOmegaFromJoysticks(-joystick.getRightX(), Constants.DriveConstants.RotationDeadband);
+        //double omega = JoystickDriveUtil.getOmegaFromJoysticks(-joystick.getRightX(), Constants.DriveConstants.RotationDeadband);
         double rotnoSin = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
 
         double speedMult = SlowTele ? 0.5 : 0.8; //left = slowmode right = default
