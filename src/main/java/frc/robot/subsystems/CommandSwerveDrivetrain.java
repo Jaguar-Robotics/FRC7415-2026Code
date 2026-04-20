@@ -557,7 +557,6 @@ public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, doub
         
         double omega = JoystickDriveUtil.getOmegaFromJoysticks(rawX, Constants.DriveConstants.RotationDeadband);
         SmartDashboard.putNumber("Debug/OmegaPostProcess", omega);
-        SmartDashboard.putNumber("Debug/MaxAngularRate", MaxAngularRate);
         SmartDashboard.putNumber("Debug/FinalRotRate", omega * MaxAngularRate);
 
         // Polar shaping: deadband + sin^2 curve on magnitude, preserve direction.

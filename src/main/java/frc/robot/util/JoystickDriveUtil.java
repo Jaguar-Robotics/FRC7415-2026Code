@@ -37,21 +37,31 @@ public final class JoystickDriveUtil {
         .getTranslation();
   }
 
-  
+  /*
   // Omega is 1D so a signed square preserves direction trivially.
   public static double getOmegaFromJoysticks(double omegaInput, double deadband) {
     double omega = MathUtil.applyDeadband(omegaInput, deadband);
     return omega * omega * Math.signum(omega);
   }
+  */
   
-  /* 
-  public static double getOmegaFromJoysticks(double omegaInput, double deadband) {
-    double omega = MathUtil.applyDeadband(omegaInput, deadband);
-    if (omega == 0.0) return 0.0;
-    // Rescale so deadband edge = 0, full stick = 1, then apply squaring
-    double scaled = omega / (1.0 - deadband);
-    scaled = MathUtil.clamp(scaled, -1.0, 1.0);
-    return scaled * scaled * Math.signum(scaled);
+public static double getOmegaFromJoysticks(double omegaInput, double deadband) {
+    // 1. Initial Deadband Check (The 'Hard' Zero)
+    if (Math.abs(omegaInput) < deadband) {
+        return 0.0;
+    }
+
+    // 2. Linear Interpolation (The 'Mapping')
+    // This maps [0.1 -> 1.0] joystick input to [10.0 -> 100.0] equation input.
+    // This removes the "dead air" between the deadband and the curve.
+    double absInput = Math.abs(omegaInput);
+    double x = (absInput - deadband) / (1.0 - deadband) * (100.0 - 10.0) + 10.0;
+    
+    // 3. Apply the Equation: 100 * sin^2( (pi / 190) * (x - 5) )
+    double term = (Math.PI / 190.0) * (x - 5.0);
+    double shaped = 100.0 * Math.pow(Math.sin(term), 2);
+
+    // 4. Return as a normalized multiplier (-1.0 to 1.0)
+    return (shaped / 100.0) * Math.signum(omegaInput);
 }
-*/
 }
