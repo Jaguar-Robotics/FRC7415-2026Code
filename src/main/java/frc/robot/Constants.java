@@ -4,19 +4,13 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Add your docs here. */
 public class Constants {
@@ -111,20 +105,24 @@ public class Constants {
             Units.Inches.of(50), 
             new Rotation2d()
         ); 
+
+        public static final  Rectangle2d RedTower = new Rectangle2d(new Pose2d(0.5, 3.75, new Rotation2d()), 1.0, 2.0);
+        public static final  Rectangle2d BlueTower = new Rectangle2d(new Pose2d(16, 4.35, new Rotation2d()), 1.0, 2.0);
+
     }
-        public static abstract class DriveConstants{
-            public static final double xyP = 20;
-            public static final double xyI = 0;
-            public static final double xyD = 0.05; //these lowk just for auto lowk i got rid of them they uselss
+public static abstract class DriveConstants {
+    public static final double xyP = 20;
+    public static final double xyI = 0;
+    public static final double xyD = 0.05;
 
-            public static final double rotP = 0.85; //0.85 these for autoallign
-            public static final double rotI = 0;
-            public static final double rotD = 0.05; //0.05
+    public static double rotP = 0.85; // removed 'final'
+    public static double rotI = 0;
+    public static double rotD = 0.05; // removed 'final'
 
-            public static final double TranslationDeadband = 0.1;
-            public static final double RotationDeadband = 0.1;
+    public static final double TranslationDeadband = 0.1;
+    public static final double RotationDeadband = 0.1;
 
-            public static final double RotationalToleranceDegrees = 3.5;
-            public static final double RotationalToleranceDegreesAUTO = 6.0;
-        }
+    public static final double RotationalToleranceDegrees = 3.5;
+    public static final double RotationalToleranceDegreesAUTO = 6.0;
+}
 }

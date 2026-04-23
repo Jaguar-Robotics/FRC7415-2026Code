@@ -20,10 +20,10 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -171,10 +171,16 @@ public class RobotContainer {
             });
         }));
     
-        
+        /*
         NamedCommands.registerCommand("StartSOTMAlign", Commands.runOnce(() -> {
             drivetrain.lastAimAngleRad = Double.NaN;
             drivetrain.driveAngleFilter.reset();
+            drivetrain.lastCommandedSpeeds = new ChassisSpeeds();
+
+            drivetrain.vxFilter.reset();
+            drivetrain.vyFilter.reset();
+            drivetrain.omegaFilter.reset();
+
         superstructure.setDesiredState(Superstructure.SuperstructureState.SOTMSPINUPAUTO);
         PPHolonomicDriveController.overrideRotationFeedback(() -> {
 
@@ -189,13 +195,13 @@ public class RobotContainer {
                 ? measuredSpeeds
                 : drivetrain.lastCommandedSpeeds;
 
+                
             ChassisSpeeds fieldVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(
                 robotRelativeSpeeds.vxMetersPerSecond,
                 robotRelativeSpeeds.vyMetersPerSecond,
                 robotRelativeSpeeds.omegaRadiansPerSecond,
                 currentPose.getRotation()
             );
-
             // ── 2. PHASE DELAY ────────────────────────────────────────────────
             double phaseDelay = 0.03;
             Pose2d estimatedPose = currentPose.exp(
@@ -241,8 +247,10 @@ public class RobotContainer {
                 timeOfFlight = CommandSwerveDrivetrain.TOFmap.get(distInches);
                 timeOfFlight = Math.max(timeOfFlight, 0.05);
 
-                double offsetX = shooterVelocityX * timeOfFlight * 1; // *0.15
-                double offsetY = shooterVelocityY * timeOfFlight * 1;
+                if(RobotBase.isSimulation()){ timeOfFlight = 1;}
+
+                double offsetX = shooterVelocityX * timeOfFlight; // *0.15
+                double offsetY = shooterVelocityY * timeOfFlight;
                 lookaheadShooterPosition = shooterPosition.plus(new Translation2d(offsetX, offsetY));
                 lookaheadDistance = target.getDistance(lookaheadShooterPosition);
             }
@@ -272,7 +280,7 @@ public class RobotContainer {
                 aimAngleRad
             );
 
-            double kFF = 0.25;
+            double kFF = 0.35; //0.25
             double rotationalRate = aimAngleVelocityFF * kFF + pidOutput;
 
             // ── 10. SMARTDASHBOARD ────────────────────────────────────────────
@@ -284,7 +292,100 @@ public class RobotContainer {
 
             return rotationalRate * MaxAngularRate;
         });
-    }));  
+    }));  */
+
+    NamedCommands.registerCommand("StartSOTMAlign", Commands.runOnce(() -> {
+    drivetrain.lastAimAngleRad = Double.NaN;
+    drivetrain.driveAngleFilter.reset();
+    drivetrain.lastCommandedSpeeds = new ChassisSpeeds();
+    
+    superstructure.setDesiredState(Superstructure.SuperstructureState.SOTMSPINUPAUTO);
+    
+    PPHolonomicDriveController.overrideRotationFeedback(() -> {
+        Pose2d currentPose = drivetrain.getPose();
+
+        ChassisSpeeds measuredSpeeds = drivetrain.getState().Speeds;
+        ChassisSpeeds robotRelativeSpeeds = 
+            (drivetrain.lastCommandedSpeeds.vxMetersPerSecond == 0
+            && drivetrain.lastCommandedSpeeds.vyMetersPerSecond == 0
+            && drivetrain.lastCommandedSpeeds.omegaRadiansPerSecond == 0)
+            ? measuredSpeeds
+            : drivetrain.lastCommandedSpeeds;
+
+        ChassisSpeeds fieldVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(
+            robotRelativeSpeeds.vxMetersPerSecond,
+            robotRelativeSpeeds.vyMetersPerSecond,
+            robotRelativeSpeeds.omegaRadiansPerSecond,
+            currentPose.getRotation()
+        );
+
+        // REMOVE PHASE DELAY — in auto, just use current pose
+        // No estimated pose, no velocity lookahead for position
+        Translation2d shooterOffsetFieldFrame = 
+            CommandSwerveDrivetrain.ROBOT_TO_SHOOTER.rotateBy(currentPose.getRotation());
+        Translation2d shooterPosition = currentPose.getTranslation().plus(shooterOffsetFieldFrame);
+
+        Translation2d target = drivetrain.getTargetPose(currentPose).getTranslation();
+
+        double omega = fieldVelocity.omegaRadiansPerSecond;
+        double shooterVelocityX = fieldVelocity.vxMetersPerSecond
+                + (-shooterOffsetFieldFrame.getY() * omega);
+        double shooterVelocityY = fieldVelocity.vyMetersPerSecond
+                + (shooterOffsetFieldFrame.getX() * omega);
+
+        double dampFactor = 0.3;  // tune this: lower = more dampening, higher = more responsive
+        shooterVelocityX = shooterVelocityX * dampFactor + (drivetrain.lastShooterVelocityX * (1.0 - dampFactor));
+        shooterVelocityY = shooterVelocityY * dampFactor + (drivetrain.lastShooterVelocityY * (1.0 - dampFactor));
+
+        // Cache for next loop
+        drivetrain.lastShooterVelocityX = shooterVelocityX;
+        drivetrain.lastShooterVelocityY = shooterVelocityY;
+
+        double timeOfFlight = 0.1;
+        Translation2d lookaheadShooterPosition = shooterPosition;
+        double lookaheadDistance = target.getDistance(shooterPosition);
+
+        for (int i = 0; i < 20; i++) {
+            double distInches = lookaheadDistance * 39.3701;
+            timeOfFlight = CommandSwerveDrivetrain.TOFmap.get(distInches);
+            timeOfFlight = Math.max(timeOfFlight, 0.05);
+
+            double offsetX = shooterVelocityX * timeOfFlight;
+            double offsetY = shooterVelocityY * timeOfFlight;
+            lookaheadShooterPosition = shooterPosition.plus(new Translation2d(offsetX, offsetY));
+            lookaheadDistance = target.getDistance(lookaheadShooterPosition);
+        }
+
+        Rotation2d aimAngle = target.minus(lookaheadShooterPosition).getAngle();
+        double aimAngleRad = aimAngle.getRadians();
+
+        double aimAngleVelocityFF = 0.0;
+        if (!Double.isNaN(drivetrain.lastAimAngleRad)) {
+            double rawDelta = aimAngleRad - drivetrain.lastAimAngleRad;
+            while (rawDelta > Math.PI)  rawDelta -= 2 * Math.PI;
+            while (rawDelta < -Math.PI) rawDelta += 2 * Math.PI;
+            double rawRate = rawDelta / 0.02;
+            aimAngleVelocityFF = drivetrain.driveAngleFilter.calculate(rawRate);
+        }
+        drivetrain.lastAimAngleRad = aimAngleRad;
+        drivetrain.ShootingLocation = new Pose2d(lookaheadShooterPosition, aimAngle);
+
+        double pidOutput = drivetrain.rotationController.calculate(
+            currentPose.getRotation().getRadians(),
+            aimAngleRad
+        );
+
+        double kFF = 0.25;
+        double rotationalRate = aimAngleVelocityFF * kFF + pidOutput;
+
+        SmartDashboard.putNumber("AutoSOTM/AimAngleDeg", Math.toDegrees(aimAngleRad));
+        SmartDashboard.putNumber("AutoSOTM/LookaheadDistanceInches", lookaheadDistance * 39.3701);
+        SmartDashboard.putNumber("AutoSOTM/TimeOfFlight", timeOfFlight);
+        SmartDashboard.putNumber("AutoSOTM/pidOutput", pidOutput);
+
+        return rotationalRate * MaxAngularRate;
+    });
+}));
         
         NamedCommands.registerCommand("Shoot", 
         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)));
@@ -446,7 +547,7 @@ public class RobotContainer {
 
         
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));
-        RobotModeTriggers.teleop().onTrue(Commands.runOnce(KickerSubsystem.getInstance()::setSlowCurrent));
+        if(!RobotBase.isSimulation()){RobotModeTriggers.teleop().onTrue(Commands.runOnce(KickerSubsystem.getInstance()::setSlowCurrent));}
         RobotModeTriggers.teleop().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand (() ->PPHolonomicDriveController.clearRotationFeedbackOverride()));

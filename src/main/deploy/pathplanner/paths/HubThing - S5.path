@@ -1,0 +1,116 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.73,
+        "y": 2.7915971606033714
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.73,
+        "y": 2.5415971606033714
+      },
+      "isLocked": false,
+      "linkedName": "HubThing"
+    },
+    {
+      "anchor": {
+        "x": 2.73,
+        "y": 0.9405767524401063
+      },
+      "prevControl": {
+        "x": 2.73,
+        "y": 1.3155767524401063
+      },
+      "nextControl": {
+        "x": 2.73,
+        "y": 0.6905767524401063
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.51033870967742,
+        "y": 0.5679193548387105
+      },
+      "prevControl": {
+        "x": 3.51033870967742,
+        "y": 0.5679193548387103
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "S5"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.85,
+      "rotationDegrees": 33.621
+    },
+    {
+      "waypointRelativePos": 1.6525198938992038,
+      "rotationDegrees": -90.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "SlowSTOM",
+      "minWaypointRelativePos": 0.0,
+      "maxWaypointRelativePos": 0.9026845637583891,
+      "constraints": {
+        "maxVelocity": 0.6,
+        "maxAcceleration": 6.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "StartSOTMAlign",
+      "waypointRelativePos": 0.1,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StartSOTMAlign"
+        }
+      }
+    },
+    {
+      "name": "ShooterOff",
+      "waypointRelativePos": 0.83,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ShooterOff"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.5,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 4.0,
+    "rotation": -90.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 33.621
+  },
+  "useDefaultConstraints": true
+}

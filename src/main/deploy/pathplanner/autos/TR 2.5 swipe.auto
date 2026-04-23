@@ -7,25 +7,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "S1-F1D"
+            "pathName": "RT far swipe no slow"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "F1D-F3D"
+            "pathName": "HubThing - S5"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "F3-bump"
+            "pathName": "S5 close swipe"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Shoot"
+            "pathName": "HubThing - S5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "S5 - taxi"
           }
         }
       ]

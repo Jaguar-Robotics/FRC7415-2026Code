@@ -1,0 +1,116 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.733,
+        "y": 5.334738243123336
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.733,
+        "y": 6.334738243123336
+      },
+      "isLocked": false,
+      "linkedName": "hubok"
+    },
+    {
+      "anchor": {
+        "x": 2.733,
+        "y": 6.968464951197871
+      },
+      "prevControl": {
+        "x": 2.7329651333252083,
+        "y": 6.441397050591169
+      },
+      "nextControl": {
+        "x": 2.7330346051464063,
+        "y": 7.491579414374447
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.598112903225807,
+        "y": 7.439
+      },
+      "prevControl": {
+        "x": 3.5981129032258066,
+        "y": 7.439
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "S1"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.045092838196289,
+      "rotationDegrees": -33.909
+    },
+    {
+      "waypointRelativePos": 1.5888594164456253,
+      "rotationDegrees": 90.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "SlowSOTm",
+      "minWaypointRelativePos": 0.0,
+      "maxWaypointRelativePos": 0.9697986577181208,
+      "constraints": {
+        "maxVelocity": 0.6,
+        "maxAcceleration": 6.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "StartSOTMAlign",
+      "waypointRelativePos": 0.01,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StartSOTMAlign"
+        }
+      }
+    },
+    {
+      "name": "ShooterOff",
+      "waypointRelativePos": 0.9,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ShooterOff"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.5,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 4.0,
+    "rotation": 90.61605990839922
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0.8,
+    "rotation": -33.909
+  },
+  "useDefaultConstraints": true
+}

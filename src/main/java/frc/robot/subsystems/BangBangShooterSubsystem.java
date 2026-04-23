@@ -47,6 +47,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     */
 
     Shooter1Map.put(200.0, 100.0);
+    Shooter1Map.put(190.0, 90.0);
     Shooter1Map.put(174.2 ,75.0);
     Shooter1Map.put(160.0 ,73.0);
     Shooter1Map.put(145.0 ,69.0);
@@ -59,6 +60,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
 
 
     Shooter2Map.put(200.0, 100.0);
+    Shooter2Map.put(190.0, 90.0);
     Shooter2Map.put(174.2 ,75.0);
     Shooter2Map.put(160.0 ,73.0);
     Shooter2Map.put(145.0 ,69.0);
@@ -69,6 +71,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     Shooter2Map.put(58.6, 46.0);
 
     Shooter3Map.put(200.0, 100.0);
+    Shooter3Map.put(190.0, 90.0);
     Shooter3Map.put(174.2 ,75.0);
     Shooter3Map.put(160.0 ,73.0);
     Shooter3Map.put(145.0 ,69.0);
@@ -80,6 +83,7 @@ public class BangBangShooterSubsystem extends SubsystemBase {
 
 
     Shooter4Map.put(200.0, 100.0);
+    Shooter4Map.put(190.0, 90.0);
     Shooter4Map.put(174.2 ,75.0);
     Shooter4Map.put(160.0 ,73.0);
     Shooter4Map.put(145.0 ,69.0);
@@ -218,12 +222,12 @@ public void setTargetVeloDistance(double distance) {//IN METERS
 
  public boolean atTargetVelo() {
   if (RobotBase.isSimulation()) return true;
-  boolean atTargBelo = Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1 - 1.0;
+  boolean atTargBelo = Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1 + 2.0;
   return atTargBelo;
   }
 
   public boolean atTargetVeloPassing() {
-  boolean atTargBelo = (Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1 - 1.0) || ShooterMotor.getVelocity().getValueAsDouble() >= 98.0;
+  boolean atTargBelo = (Math.abs(ShooterMotor.getVelocity().getValueAsDouble())  >=  targetVeloRPS1 + 2.0) || ShooterMotor.getVelocity().getValueAsDouble() >= 98.0;
   return atTargBelo;
   }
   

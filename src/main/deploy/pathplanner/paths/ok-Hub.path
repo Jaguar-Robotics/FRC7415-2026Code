@@ -64,16 +64,16 @@
     },
     {
       "anchor": {
-        "x": 2.6451934523809526,
-        "y": 2.6232983870967748
+        "x": 2.7300223214285713,
+        "y": 2.782142857142858
       },
       "prevControl": {
-        "x": 2.862592458801066,
-        "y": 2.4923231667559587
+        "x": 2.9474213278486845,
+        "y": 2.651167636802042
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "fart"
+      "linkedName": "HubThing"
     }
   ],
   "rotationTargets": [
@@ -147,7 +147,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 2.5,
+    "maxVelocity": 4.5,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -156,7 +156,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 36.21766692145154
+    "rotation": 33.621
   },
   "reversed": false,
   "folder": null,

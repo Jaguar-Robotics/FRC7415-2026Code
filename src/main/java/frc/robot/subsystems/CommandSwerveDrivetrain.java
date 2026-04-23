@@ -47,6 +47,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.JoystickDriveUtil;
+import frc.robot.utils.Zones;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -57,6 +58,7 @@ import frc.robot.util.JoystickDriveUtil;
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
     private Field2d field = new Field2d();
+
     private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -160,14 +162,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         super(drivetrainConstants, modules);
         if (Utils.isSimulation()) {
             startSimThread();
-        }
-
-        SmartDashboard.putNumber("AutoMoveP", 1);
-        SmartDashboard.putNumber("AutoMoveD", 1);  
-
-                // Set up the chooser options
-        BumDriveMode.setDefaultOption("Noah's driving", true);
-        BumDriveMode.addOption("Noah's not driving", false);
+        } 
+        
         
         // Put the chooser on the dashboard
         SmartDashboard.putData("height Chooser", BumDriveMode);
@@ -233,203 +229,203 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
         configureAutoBuilder();
     }
-
-    private void configureAutoBuilder() {
-        double tP = SmartDashboard.getNumber("AutoMoveP", 1);
-        double tD = SmartDashboard.getNumber("AutoMoveD", 1);
-
-        try {
-            var config = RobotConfig.fromGUISettings();
-            AutoBuilder.configure(
-                () -> getState().Pose,   // Supplier of current robot pose
-                this::resetPose,         // Consumer for seeding pose against auto
-                () -> getState().Speeds, // Supplier of current robot speeds
-                // Consumer of ChassisSpeeds and feedforwards to drive the robot
-                (speeds, feedforwards) -> setControl(
-                    m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
-                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-                ),
-                new PPHolonomicDriveController(
-                    // PID constants for translation
-                    new PIDConstants(5, 0, 0), //TP ,  TD
-                    // PID constants for rotation
-                    new PIDConstants(5,0,0)//okherejakegay
-                ),
-                config,
-                // Assume the path needs to be flipped for Red vs Blue, this is normally the case
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                this // Subsystem for requirements
-            );
-        } catch (Exception ex) {
-            DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
-        }
-    }
-
-    /**
-     * Returns a command that applies the specified control request to this swerve drivetrain.
-     *
-     * @param request Function returning the request to apply
-     * @return Command to run
-     */
-    public Command applyRequest(Supplier<SwerveRequest> request) {
-        return Commands.run(() -> this.setControl(request.get()), this);
-    }
-
-    /**
-     * Runs the SysId Quasistatic test in the given direction for the routine
-     * specified by {@link #m_sysIdRoutineToApply}.
-     *
-     * @param direction Direction of the SysId Quasistatic test
-     * @return Command to run
-     */
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineToApply.quasistatic(direction);
-    }
-
-    /**
-     * Runs the SysId Dynamic test in the given direction for the routine
-     * specified by {@link #m_sysIdRoutineToApply}.
-     *
-     * @param direction Direction of the SysId Dynamic test
-     * @return Command to run
-     */
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineToApply.dynamic(direction);
-    }
-
-
-
-    private void startSimThread() {
-        m_lastSimTime = Utils.getCurrentTimeSeconds();
-
-        /* Run simulation at a faster rate so PID gains behave more reasonably */
-        m_simNotifier = new Notifier(() -> {
-            final double currentTime = Utils.getCurrentTimeSeconds();
-            double deltaTime = currentTime - m_lastSimTime;
-            m_lastSimTime = currentTime;
-
-            /* use the measured time delta, get battery voltage from WPILib */
-            updateSimState(deltaTime, RobotController.getBatteryVoltage());
-        });
-        m_simNotifier.startPeriodic(kSimLoopPeriod);
-    }
-
-    public Pose2d getPose() {
-        return getState().Pose;
-    }   
-
-
-    /**
-     * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
-     * while still accounting for measurement noise.
-     *
-     * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
-     * @param timestampSeconds The timestamp of the vision measurement in seconds.
-     */
-    @Override
-    public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
-        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
-    }
-
-    /**
-     * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
-     * while still accounting for measurement noise.
-     * <p>
-     * Note that the vision measurement standard deviations passed into this method
-     * will continue to apply to future measurements until a subsequent call to
-     * {@link #setVisionMeasurementStdDevs(Matrix)} or this method.
-     *
-     * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
-     * @param timestampSeconds The timestamp of the vision measurement in seconds.
-     * @param visionMeasurementStdDevs Standard deviations of the vision pose measurement
-     *     in the form [x, y, theta]ᵀ, with units in meters and radians.
-     */
-    @Override
-    public void addVisionMeasurement(
-        Pose2d visionRobotPoseMeters,
-        double timestampSeconds,
-        Matrix<N3, N1> visionMeasurementStdDevs
-    ) {
-        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
-    }
-
-    /**
-     * Return the pose at a given timestamp, if the buffer is not empty.
-     *
-     * @param timestampSeconds The timestamp of the pose in seconds.
-     * @return The pose at the given timestamp (or Optional.empty() if the buffer is empty).
-     */
-    @Override
-    public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
-        return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
-    }
-
-    // --------------------- END GENERATED CODE -------------------
     
-    private double hubOffsetX = 0.0;
-    private double hubOffsetY = 0.0;
-    boolean Noahdrive = false;
-
-    public void setHubOffset(double offsetX, double offsetY) {
-    hubOffsetX += offsetX;
-    hubOffsetY += offsetY;
-    }
-
-    public void resetHubOffset() {
-    hubOffsetX = 0.0;
-    hubOffsetY = 0.0;
-    }
+        private void configureAutoBuilder() {
+            double tP = SmartDashboard.getNumber("AutoMoveP", 1);
+            double tD = SmartDashboard.getNumber("AutoMoveD", 1);
     
-    private final SendableChooser<Boolean> BumDriveMode = new SendableChooser<>();
-
-    // Get hub pose based on alliance
-// Replace the existing static getHubPose() with this instance version
-public Pose3d getHubPose() {
-    Pose3d base = DriverStation.getAlliance()
-        .map(alliance -> alliance == Alliance.Red ? Constants.FieldConstants.redHubPose : Constants.FieldConstants.blueHubPose).orElse(Constants.FieldConstants.blueHubPose);
-
-    // Apply offsets relative to alliance
-    // For Red alliance, flip X offset direction since field is mirrored
-    double adjustedX = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
-        ? base.getX() - hubOffsetX
-        : base.getX() + hubOffsetX;
-
-    double adjustedY = base.getY() + hubOffsetY;
-
-    return new Pose3d(adjustedX, adjustedY, base.getZ(), base.getRotation());
-}
-
-    
-    public static Distance getCloseBumpY(Pose2d currentPose){
-        if (currentPose.getMeasureY().gt(Inches.of(158.845))){
-            return Inches.of(218.84);
-        } else {
-            return Inches.of(98.84);
-        }
-    }
-
-    public static boolean isInAllianceZone(Pose2d robotPose){
-        double robotX = robotPose.getX();
-        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
-        if (alliance == Alliance.Red) {
-            return robotX > Inches.of(469.11).in(Meters);
-        } else {
-            return robotX < Inches.of(182.11).in(Meters);
+            try {
+                var config = RobotConfig.fromGUISettings();
+                AutoBuilder.configure(
+                    () -> getState().Pose,   // Supplier of current robot pose
+                    this::resetPose,         // Consumer for seeding pose against auto
+                    () -> getState().Speeds, // Supplier of current robot speeds
+                    // Consumer of ChassisSpeeds and feedforwards to drive the robot
+                    (speeds, feedforwards) -> setControl(
+                        m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
+                            .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                            .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+                    ),
+                    new PPHolonomicDriveController(
+                        // PID constants for translation
+                        new PIDConstants(5, 0, 0), //TP ,  TD
+                        // PID constants for rotation
+                        new PIDConstants(5,0,0)//okherejakegay
+                    ),
+                    config,
+                    // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+                    () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+                    this // Subsystem for requirements
+                );
+            } catch (Exception ex) {
+                DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
             }
+        }
+    
+        /**
+         * Returns a command that applies the specified control request to this swerve drivetrain.
+         *
+         * @param request Function returning the request to apply
+         * @return Command to run
+         */
+        public Command applyRequest(Supplier<SwerveRequest> request) {
+            return Commands.run(() -> this.setControl(request.get()), this);
+        }
+    
+        /**
+         * Runs the SysId Quasistatic test in the given direction for the routine
+         * specified by {@link #m_sysIdRoutineToApply}.
+         *
+         * @param direction Direction of the SysId Quasistatic test
+         * @return Command to run
+         */
+        public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+            return m_sysIdRoutineToApply.quasistatic(direction);
+        }
+    
+        /**
+         * Runs the SysId Dynamic test in the given direction for the routine
+         * specified by {@link #m_sysIdRoutineToApply}.
+         *
+         * @param direction Direction of the SysId Dynamic test
+         * @return Command to run
+         */
+        public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+            return m_sysIdRoutineToApply.dynamic(direction);
+        }
+    
+    
+    
+        private void startSimThread() {
+            m_lastSimTime = Utils.getCurrentTimeSeconds();
+    
+            /* Run simulation at a faster rate so PID gains behave more reasonably */
+            m_simNotifier = new Notifier(() -> {
+                final double currentTime = Utils.getCurrentTimeSeconds();
+                double deltaTime = currentTime - m_lastSimTime;
+                m_lastSimTime = currentTime;
+    
+                /* use the measured time delta, get battery voltage from WPILib */
+                updateSimState(deltaTime, RobotController.getBatteryVoltage());
+            });
+            m_simNotifier.startPeriodic(kSimLoopPeriod);
+        }
+    
+        public Pose2d getPose() {
+            return getState().Pose;
+        }   
+    
+    
+        /**
+         * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
+         * while still accounting for measurement noise.
+         *
+         * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
+         * @param timestampSeconds The timestamp of the vision measurement in seconds.
+         */
+        @Override
+        public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
+            super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
+        }
+    
+        /**
+         * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
+         * while still accounting for measurement noise.
+         * <p>
+         * Note that the vision measurement standard deviations passed into this method
+         * will continue to apply to future measurements until a subsequent call to
+         * {@link #setVisionMeasurementStdDevs(Matrix)} or this method.
+         *
+         * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
+         * @param timestampSeconds The timestamp of the vision measurement in seconds.
+         * @param visionMeasurementStdDevs Standard deviations of the vision pose measurement
+         *     in the form [x, y, theta]ᵀ, with units in meters and radians.
+         */
+        @Override
+        public void addVisionMeasurement(
+            Pose2d visionRobotPoseMeters,
+            double timestampSeconds,
+            Matrix<N3, N1> visionMeasurementStdDevs
+        ) {
+            super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+        }
+    
+        /**
+         * Return the pose at a given timestamp, if the buffer is not empty.
+         *
+         * @param timestampSeconds The timestamp of the pose in seconds.
+         * @return The pose at the given timestamp (or Optional.empty() if the buffer is empty).
+         */
+        @Override
+        public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
+            return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
+        }
+    
+        // --------------------- END GENERATED CODE -------------------
+        
+        private double hubOffsetX = 0.0;
+        private double hubOffsetY = 0.0;
+        boolean Noahdrive = false;
+    
+        public void setHubOffset(double offsetX, double offsetY) {
+        hubOffsetX += offsetX;
+        hubOffsetY += offsetY;
+        }
+    
+        public void resetHubOffset() {
+        hubOffsetX = 0.0;
+        hubOffsetY = 0.0;
+        }
+        
+        private final SendableChooser<Boolean> BumDriveMode = new SendableChooser<>();
+    
+        // Get hub pose based on alliance
+    // Replace the existing static getHubPose() with this instance version
+    public Pose3d getHubPose() {
+        Pose3d base = DriverStation.getAlliance()
+            .map(alliance -> alliance == Alliance.Red ? Constants.FieldConstants.redHubPose : Constants.FieldConstants.blueHubPose).orElse(Constants.FieldConstants.blueHubPose);
+    
+        // Apply offsets relative to alliance
+        // For Red alliance, flip X offset direction since field is mirrored
+        double adjustedX = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+            ? base.getX() - hubOffsetX
+            : base.getX() + hubOffsetX;
+    
+        double adjustedY = base.getY() + hubOffsetY;
+    
+        return new Pose3d(adjustedX, adjustedY, base.getZ(), base.getRotation());
     }
-
-
-    /**
-     * Calculates the closest point on the predefined circle to the current robot pose.
-     *
-     * @return The closest point on the circle to the current robot position
-     */
-
-    public static final PIDController rotationController = getRotationController();
-
-    private static PIDController getRotationController() {
-        PIDController controller = new PIDController(Constants.DriveConstants.rotP,Constants.DriveConstants.rotI,Constants.DriveConstants.rotD);
+    
+        
+        public static Distance getCloseBumpY(Pose2d currentPose){
+            if (currentPose.getMeasureY().gt(Inches.of(158.845))){
+                return Inches.of(218.84);
+            } else {
+                return Inches.of(98.84);
+            }
+        }
+    
+        public static boolean isInAllianceZone(Pose2d robotPose){
+            double robotX = robotPose.getX();
+            Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+            if (alliance == Alliance.Red) {
+                return robotX > Inches.of(469.11).in(Meters);
+            } else {
+                return robotX < Inches.of(182.11).in(Meters);
+                }
+        }
+    
+    
+        /**
+         * Calculates the closest point on the predefined circle to the current robot pose.
+         *
+         * @return The closest point on the circle to the current robot position
+         */
+    
+        public static final PIDController rotationController = getRotationController();
+    
+        private static PIDController getRotationController() {
+            PIDController controller = new PIDController(Constants.DriveConstants.rotP,Constants.DriveConstants.rotI,Constants.DriveConstants.rotD);
         controller.enableContinuousInput(-Math.PI, Math.PI); // CRITICAL: enables wraparound at ±180°
         return controller;
     }
@@ -616,6 +612,13 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
     // Moving average filter over ~5 samples (at 50Hz that's ~0.1s of smoothing)
     // Smooths the noisy derivative of the aim angle to get a clean feedforward
     public final LinearFilter driveAngleFilter = LinearFilter.movingAverage(5);
+
+    public final LinearFilter vxFilter = LinearFilter.movingAverage(5);
+    public final LinearFilter vyFilter = LinearFilter.movingAverage(5);
+    public final LinearFilter omegaFilter = LinearFilter.movingAverage(5);
+
+    public double lastShooterVelocityX = 0.0;
+    public double lastShooterVelocityY = 0.0;
  
     // Store last commanded speeds so we use setpoint velocity (not noisy measured)
     // Updated at the end of each SOTM loop, read at the start of the next
@@ -950,6 +953,11 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
     @Override
     public void periodic() {
         if(ShootingLocation != null){field.getObject("Shooting Target").setPose(ShootingLocation);}
+
+            
+    field.getObject("RedTower").setPoses(Zones.rectToPoses(Constants.FieldConstants.RedTower));
+    field.getObject("BlueTower").setPoses(Zones.rectToPoses(Constants.FieldConstants.BlueTower));
+
         field.setRobotPose(getPose());
         SmartDashboard.putNumber("distanceToCenterHubInches", getDistance(getPose()) * 39.3701);
         SmartDashboard.putNumber("Hub/OffsetX", hubOffsetX);
@@ -960,7 +968,6 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
         SmartDashboard.putNumber("Shooter3DistInches", getShooter3DistanceInches());
         SmartDashboard.putNumber("Shooter4DistInches", getShooter4DistanceInches());
 
-        Noahdrive = BumDriveMode.getSelected();
 
         /*
          * Periodically try to apply the operator perspective.

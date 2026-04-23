@@ -17,16 +17,15 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.handlers.ShooterHandler.ShooterState;
 import frc.robot.handlers.StateSubsystem.State;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.HopperSubsystem;
 
 public class DriveHandler extends SubsystemBase {
 
     public enum DriveState implements State {
         TELEOPDRIVE,
         TELEOPDRIVESLOW,
+        TOWERDRIVE,
         AUTOALLIGN,
         SHOOTONTHEMOVE,
         SNAKE,
@@ -58,17 +57,10 @@ public class DriveHandler extends SubsystemBase {
     return instance;
   }
 
-  Rectangle2d zone1 = new Rectangle2d(new Pose2d(1.0, 1.0, new Rotation2d()), 2.0, 2.0);
-  Rectangle2d zone2 = new Rectangle2d(new Pose2d(5.0, 3.0, new Rotation2d()), 1.5, 2.0);
-  Rectangle2d zone3 = new Rectangle2d(new Pose2d(10.0, 2.0, new Rotation2d()), 3.0, 1.0);
-  Rectangle2d zone4 = new Rectangle2d(new Pose2d(14.0, 5.0, new Rotation2d()), 2.0, 2.0);
-
-  Trigger inAnyZone = new Trigger(() -> {
+  Trigger inTower = new Trigger(() -> {
       Translation2d robotPos = drivetrain.getState().Pose.getTranslation();
-      return zone1.contains(robotPos) ||
-            zone2.contains(robotPos) ||
-            zone3.contains(robotPos) ||
-            zone4.contains(robotPos);
+      return Constants.FieldConstants.RedTower.contains(robotPos) ||
+            Constants.FieldConstants.BlueTower.contains(robotPos);
   });
 
 
@@ -114,6 +106,9 @@ public class DriveHandler extends SubsystemBase {
             case TELEOPDRIVESLOW:
                 drivetrain.setDefaultCommand(drivetrain.TeleopDriveSLOW(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
                 break;
+            case TOWERDRIVE:
+                drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed/3, maxAngularRate/3, drive, drivetrain));
+                break;
             case AUTOALLIGN:
                 drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, maxSpeed, maxAngularRate));
                 break;
@@ -142,8 +137,15 @@ public class DriveHandler extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if ((currentState.equals(DriveState.TELEOPDRIVE) || currentState.equals(DriveState.TELEOPDRIVESLOW)) && inTower.getAsBoolean()){
+      setDesiredState(DriveState.TOWERDRIVE);
+    }
+    if (currentState.equals(DriveState.TOWERDRIVE) && !inTower.getAsBoolean()){
+      setDesiredState(DriveState.TELEOPDRIVESLOW);
+    }
     SmartDashboard.putString("DriveState", currentState.toString());
     SmartDashboard.putString("Current Command", drivetrain.getCurrentCommand() != null ? drivetrain.getCurrentCommand().getName() : "null");
     // This method will be called once per scheduler run
   }
 }
+

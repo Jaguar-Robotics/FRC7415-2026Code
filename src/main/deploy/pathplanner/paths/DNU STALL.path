@@ -16,26 +16,45 @@
     },
     {
       "anchor": {
-        "x": 2.660603371783496,
-        "y": 2.8801242236024835
+        "x": 2.73,
+        "y": 2.7915971606033714
       },
       "prevControl": {
-        "x": 2.660603371783496,
-        "y": 3.1301242236024835
+        "x": 2.73,
+        "y": 3.0415971606033714
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
-  "constraintZones": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.7586206896551723,
+      "rotationDegrees": 29.999999999999996
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.65,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 4.5,
+        "maxAcceleration": 1.0,
+        "maxAngularVelocity": 560.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
       "name": "SOTM",
-      "waypointRelativePos": 0.19630872483221448,
-      "endWaypointRelativePos": 0.7634228187919465,
+      "waypointRelativePos": 0.2,
+      "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
@@ -45,9 +64,14 @@
     },
     {
       "name": "ShooterOff",
-      "waypointRelativePos": 0.9095890410958919,
+      "waypointRelativePos": 0.7,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ShooterOff"
+        }
+      }
     }
   ],
   "globalConstraints": {
@@ -60,13 +84,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 32.374
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 29.999999999999996
   },
   "useDefaultConstraints": false
 }
