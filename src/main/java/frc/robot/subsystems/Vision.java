@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
 
@@ -12,6 +13,22 @@ public class Vision extends SubsystemBase {
   /** Creates a new Vision subsystem */
   public Vision(CommandSwerveDrivetrain drivetrain) {
     this.drivetrain = drivetrain;
+
+    for (String llName : PosLimelights) {
+      LimelightHelpers.SetIMUMode(llName, 1);
+    }
+
+  }
+
+  public void SetLLsIMUMode(int mode){
+      for (String llName : PosLimelights) {
+      LimelightHelpers.SetIMUMode(llName, mode);
+    }
+  }
+
+  public void toggleMT1(){
+      if (useMegaTag2 == true) { useMegaTag2 = false;}
+      else if (useMegaTag2 == false) {useMegaTag2 = true;}
   }
 
   /**
@@ -102,5 +119,6 @@ public class Vision extends SubsystemBase {
     for (String limeLight : PosLimelights) {
       updateVisionMeasurements(limeLight); 
     }
+    SmartDashboard.putBoolean("Using MT2?", useMegaTag2);
   }
 }

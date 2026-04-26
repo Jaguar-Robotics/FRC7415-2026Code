@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -506,7 +507,8 @@ public class RobotContainer {
         joystick.povRight().whileTrue(IntakeSlide.manualDrive(() -> 0.67));
         joystick.povLeft().whileTrue(IntakeSlide.manualDrive(() -> -0.67));
 
-        joystick.start().onTrue(Commands.runOnce(() -> shooter.resetShooterMult()));
+        //joystick.start().onTrue(Commands.runOnce(() -> shooter.resetShooterMult()));
+        joystick.start().onTrue(Commands.runOnce(() -> vision.toggleMT1()));
 
 
         //CONTROLLER 2 / debug controller 
@@ -543,10 +545,13 @@ public class RobotContainer {
  
         opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
         opJoystick.y().onTrue(Commands.runOnce(() -> drivetrain.resetHubOffset()));
+        opJoystick.start().onTrue(Commands.runOnce(() -> vision.toggleMT1()));
         
 
         
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));
+        RobotModeTriggers.teleop().onTrue(Commands.runOnce(() -> vision.SetLLsIMUMode(4))); 
+        RobotModeTriggers.autonomous().onTrue(Commands.runOnce(() -> vision.SetLLsIMUMode(4)));
         if(!RobotBase.isSimulation()){RobotModeTriggers.teleop().onTrue(Commands.runOnce(KickerSubsystem.getInstance()::setSlowCurrent));}
         RobotModeTriggers.teleop().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
