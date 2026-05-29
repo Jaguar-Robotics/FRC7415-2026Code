@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6451934523809526,
-        "y": 2.6232983870967748
+        "x": 2.7300223214285713,
+        "y": 2.782142857142858
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.7728803624901017,
-        "y": 2.4792599230689185
+        "x": 1.85581188997338,
+        "y": 2.526015971606033
       },
       "isLocked": false,
-      "linkedName": "fart"
+      "linkedName": "HubThing"
     },
     {
       "anchor": {
         "x": 5.490223214285715,
-        "y": 2.396548387096775
+        "y": 2.5015550595238096
       },
       "prevControl": {
         "x": 5.143788413143582,
-        "y": 2.522262161499371
+        "y": 2.6272688339264056
       },
       "nextControl": {
         "x": 5.795944791190981,
-        "y": 2.2856085703625246
+        "y": 2.390615242789559
       },
       "isLocked": false,
       "linkedName": null
@@ -126,7 +126,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.3295964125560538,
+      "waypointRelativePos": 0.42705570291777195,
       "rotationDegrees": 180.0
     },
     {
@@ -155,7 +155,7 @@
     },
     {
       "waypointRelativePos": 6.591928251121064,
-      "rotationDegrees": 0.0
+      "rotationDegrees": -6.619116924659461
     }
   ],
   "constraintZones": [],
@@ -200,7 +200,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 36.21766692145154
+    "rotation": 33.621
   },
   "useDefaultConstraints": true
 }

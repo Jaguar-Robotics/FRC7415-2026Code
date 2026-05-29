@@ -17,6 +17,25 @@
               {
                 "type": "named",
                 "data": {
+                  "name": "Outtake"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.3
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
                   "name": "AutoShoot"
                 }
               },
@@ -38,7 +57,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Hub-Depot"
+            "pathName": "Hub-Depot Early intake"
           }
         },
         {

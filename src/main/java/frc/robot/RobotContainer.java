@@ -109,7 +109,7 @@ public class RobotContainer {
     !joystick.leftTrigger().getAsBoolean() &&
     !joystick.leftBumper().getAsBoolean()
     );
-
+ 
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
@@ -135,6 +135,9 @@ public class RobotContainer {
     private void configurePathPlanner() {
         NamedCommands.registerCommand("Intake",
          new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKEFAST)));
+
+         NamedCommands.registerCommand("Outtake",
+         new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
         
         NamedCommands.registerCommand("IntakeOff",
          new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
@@ -358,10 +361,10 @@ public class RobotContainer {
          * Left Stick in - Reverse shi 
          */
         joystick.rightTrigger().onTrue(new InstantCommand(() -> {
-            if (CommandSwerveDrivetrain.isInAllianceZone(drivetrain.getPose())) {
-                superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP);
-            } else {
+            if (CommandSwerveDrivetrain.isInNutZone(drivetrain.getPose())) {
                 superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE);
+            } else {
+                superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP);
             }
         }));
 
@@ -434,8 +437,13 @@ public class RobotContainer {
         opJoystick.a().onTrue(Commands.runOnce(() -> shooter.resetShooterMult()));
 
         // Change Shooter Power
-        opJoystick.povUp().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(0.05)));
-        opJoystick.povDown().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(-0.05)));
+        
+        /*
+        opJoystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1))); 
+        opJoystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1))); //in RPs
+        */
+        opJoystick.povUp().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(0.005)));
+        opJoystick.povDown().onTrue(Commands.runOnce(() -> shooter.changeShooterMult(-0.005)));
 
         // Adjust Y offset
         opJoystick.povRight().onTrue(Commands.runOnce(() -> drivetrain.setHubOffset(0.0, 0.1)));

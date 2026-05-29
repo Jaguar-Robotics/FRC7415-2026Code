@@ -3,45 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.523788819875776,
-        "y": 5.415217391304347
+        "x": 2.7330346051464063,
+        "y": 5.334738243123336
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.0510204081632648,
-        "y": 5.801517302573202
+        "x": 1.244170363797693,
+        "y": 5.616415261756877
       },
       "isLocked": false,
-      "linkedName": "ScoringDepot"
+      "linkedName": "hubok"
     },
     {
       "anchor": {
-        "x": 5.726858917480035,
-        "y": 5.622250000003312
+        "x": 5.581996450754215,
+        "y": 5.543984028393965
       },
       "prevControl": {
-        "x": 4.679254057301659,
-        "y": 5.222067435669919
+        "x": 4.7208695652173915,
+        "y": 5.40133473823981
       },
       "nextControl": {
-        "x": 6.186737090888823,
-        "y": 5.797922368194072
+        "x": 6.067667088508883,
+        "y": 5.62443741207996
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.191579414374446,
-        "y": 7.483531499556344
+        "x": 7.08695652173913,
+        "y": 7.346716947648624
       },
       "prevControl": {
-        "x": 6.312421314554432,
-        "y": 7.660352989145557
+        "x": 6.207798421919116,
+        "y": 7.523538437237837
       },
       "nextControl": {
-        "x": 8.038333728249462,
-        "y": 7.3132272515193595
+        "x": 7.933710835614146,
+        "y": 7.17641269961164
       },
       "isLocked": false,
       "linkedName": null
@@ -110,7 +110,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.4058355437665784,
+      "waypointRelativePos": 0.5411140583554377,
       "rotationDegrees": 180.0
     },
     {
@@ -143,6 +143,19 @@
     }
   ],
   "constraintZones": [
+    {
+      "name": "slow over bum",
+      "minWaypointRelativePos": 0.5335570469798656,
+      "maxWaypointRelativePos": 1.077181208053691,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 6.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    },
     {
       "name": "slowdownend",
       "minWaypointRelativePos": 5.577181208053702,
@@ -193,13 +206,13 @@
       }
     },
     {
-      "name": "StartSOTMAlign",
+      "name": "StartHubAlign",
       "waypointRelativePos": 5.567114093959739,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "StartSOTMAlign"
+          "name": "StartHubAlign"
         }
       }
     }
@@ -220,7 +233,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -32.64934171284159
+    "rotation": -33.90896151168027
   },
   "useDefaultConstraints": true
 }

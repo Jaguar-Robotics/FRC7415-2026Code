@@ -371,53 +371,58 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     hubOffsetY = 0.0;
     }
     
-    // Get hub pose based on alliance
-// Replace the existing static getHubPose() with this instance version
-public Pose3d getHubPose() {
-    Pose3d base = DriverStation.getAlliance()
-        .map(alliance -> alliance == Alliance.Red ? Constants.FieldConstants.redHubPose : Constants.FieldConstants.blueHubPose).orElse(Constants.FieldConstants.blueHubPose);
-
-    // Apply offsets relative to alliance
-    // For Red alliance, flip X offset direction since field is mirrored
-    double adjustedX = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
-        ? base.getX() - hubOffsetX
-        : base.getX() + hubOffsetX;
-
-    double adjustedY = base.getY() + hubOffsetY;
-
-    return new Pose3d(adjustedX, adjustedY, base.getZ(), base.getRotation());
-}
-
+        // Get hub pose based on alliance
+    // Replace the existing static getHubPose() with this instance version
+    public Pose3d getHubPose() {
+        Pose3d base = DriverStation.getAlliance()
+            .map(alliance -> alliance == Alliance.Red ? Constants.FieldConstants.redHubPose : Constants.FieldConstants.blueHubPose).orElse(Constants.FieldConstants.blueHubPose);
     
-    public static Distance getCloseBumpY(Pose2d currentPose){
-        if (currentPose.getMeasureY().gt(Inches.of(158.845))){
-            return Inches.of(218.84);
-        } else {
-            return Inches.of(98.84);
-        }
+        // Apply offsets relative to alliance
+        // For Red alliance, flip X offset direction since field is mirrored
+        double adjustedX = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+            ? base.getX() - hubOffsetX
+            : base.getX() + hubOffsetX;
+    
+        double adjustedY = base.getY() + hubOffsetY;
+    
+        return new Pose3d(adjustedX, adjustedY, base.getZ(), base.getRotation());
     }
-
-    public static boolean isInAllianceZone(Pose2d robotPose){
-        double robotX = robotPose.getX();
-        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
-        if (alliance == Alliance.Red) {
-            return robotX > Inches.of(469.11).in(Meters);
-        } else {
-            return robotX < Inches.of(182.11).in(Meters);
+    
+        
+        public static Distance getCloseBumpY(Pose2d currentPose){
+            if (currentPose.getMeasureY().gt(Inches.of(158.845))){
+                return Inches.of(218.84);
+            } else {
+                return Inches.of(98.84);
             }
-    }
+        }
+    
+        public static boolean isInAllianceZone(Pose2d robotPose){
+            double robotX = robotPose.getX();
+            Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+            if (alliance == Alliance.Red) {
+                return robotX > Inches.of(469.11).in(Meters);
+            } else {
+                return robotX < Inches.of(182.11).in(Meters);
+                }
+        }
 
-
-    /**
-     * Calculates the closest point on the predefined circle to the current robot pose.
-     *
-     * @return The closest point on the circle to the current robot position
-     */
-
-    public static final PIDController rotationController = getRotationController();
-
-    private static PIDController getRotationController() {
-        PIDController controller = new PIDController(Constants.DriveConstants.rotP,Constants.DriveConstants.rotI,Constants.DriveConstants.rotD);
+        public static boolean isInNutZone(Pose2d robotPose){
+            double robotX = robotPose.getX();
+            return (robotX >= Inches.of(182.11).in(Meters) && robotX<= Inches.of(469.11).in(Meters));
+        }
+    
+    
+        /**
+         * Calculates the closest point on the predefined circle to the current robot pose.
+         *
+         * @return The closest point on the circle to the current robot position
+         */
+    
+        public static final PIDController rotationController = getRotationController();
+    
+        private static PIDController getRotationController() {
+            PIDController controller = new PIDController(Constants.DriveConstants.rotP,Constants.DriveConstants.rotI,Constants.DriveConstants.rotD);
         controller.enableContinuousInput(-Math.PI, Math.PI); // CRITICAL: enables wraparound at ±180°
         return controller;
     }
@@ -737,7 +742,7 @@ public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, 
         // ── 14. APPLY REQUEST ─────────────────────────────────────────────────────
         return alignRequest
                 .withVelocityX(veloX * maxSpeed * 0.2)
-                .withVelocityY(veloY * maxSpeed*  0.2)
+                .withVelocityY(veloY * maxSpeed *  0.2)
                 .withRotationalRate(rotationalRate * maxAngularRate);
     });
 }
