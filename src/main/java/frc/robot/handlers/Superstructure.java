@@ -374,6 +374,7 @@ public class Superstructure extends SubsystemBase {
           setDesiredState(SuperstructureState.SOTMAUTO);
         }
 
+<<<<<<< HEAD
         if (currentState == SuperstructureState.SHOOTONTHEMOVE && (!DTFutAimed || !ShooterAtVelo)){
           setDesiredState(SuperstructureState.SHOOTONTHEMOVESPINUP);
         }
@@ -399,6 +400,10 @@ public class Superstructure extends SubsystemBase {
         SmartDashboard.putBoolean("shooterAtVelo?", ShooterAtVelo);
         SmartDashboard.putBoolean("Drivetrain aimed?",DTaimed);
         SmartDashboard.putBoolean("SOTM aimed?",DTFutAimed);
+=======
+        SmartDashboard.putBoolean("shooterAtVelo?", shooter.isAtTargetVelo());
+        SmartDashboard.putBoolean("Drivetrain aimed?", drivetrain.isAimedAtTarget());
+>>>>>>> main
          
   }
   public SuperstructureState getCurrentState() {
