@@ -1,48 +1,51 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.units.*;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.util.JoystickDriveUtil;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
@@ -156,6 +159,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        SmartDashboard.putNumber("AutoMoveP", 1);
+        SmartDashboard.putNumber("AutoMoveD", 1);
+
         configureAutoBuilder();
         SmartDashboard.putData("field", field);
     }
@@ -219,6 +226,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     private void configureAutoBuilder() {
+        double tP = SmartDashboard.getNumber("AutoMoveP", 1);
+        double tD = SmartDashboard.getNumber("AutoMoveD", 1);
+
         try {
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
@@ -233,9 +243,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 ),
                 new PPHolonomicDriveController(
                     // PID constants for translation
-                    new PIDConstants(Constants.DriveConstants.xyP, Constants.DriveConstants.xyI, Constants.DriveConstants.xyD),
+                    new PIDConstants(5, 0, 0), //TP ,  TD
                     // PID constants for rotation
-                    new PIDConstants(Constants.DriveConstants.rotP,Constants.DriveConstants.rotI,Constants.DriveConstants.rotD)
+                    new PIDConstants(5,0,0)//okherejakegay
                 ),
                 config,
                 // Assume the path needs to be flipped for Red vs Blue, this is normally the case
@@ -346,43 +356,73 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
-    // Hub poses for each alliance
+    // --------------------- END GENERATED CODE -------------------
     
-    // Get hub pose based on alliance
-    public static Pose3d getHubPose() {
-        return DriverStation.getAlliance()
-            .map(alliance -> alliance == Alliance.Red ? Constants.FieldConstants.redHubPose : Constants.FieldConstants.blueHubPose)
-            .orElse(Constants.FieldConstants.blueHubPose); // Default to blue if alliance unknown
+    private double hubOffsetX = 0.0;
+    private double hubOffsetY = 0.0;
+
+    public void setHubOffset(double offsetX, double offsetY) {
+    hubOffsetX += offsetX;
+    hubOffsetY += offsetY;
     }
 
-    /**
-     * Calculates the closest point on the predefined circle to the current robot pose.
-     *
-     * @return The closest point on the circle to the current robot position
-     */
-    public Pose2d getClosestPointOnHub() {
-
-        Pose2d hub = getHubPose().toPose2d();
-        Pose2d currentPose = getPose();
-        
-        // Calculate vector from center to current position
-        double deltaX = currentPose.getX() - hub.getX();
-        double deltaY = currentPose.getY() - hub.getY();
-        
-        // Calculate angle from center to current position
-        double angle = Math.atan2(deltaY, deltaX);
-        
-        // Calculate the closest point on the circle
-        double closestX = hub.getX() + Constants.ShooterConstants.ShootingDistance * Math.cos(angle);
-        double closestY = hub.getY() + Constants.ShooterConstants.ShootingDistance * Math.sin(angle);
-        
-        return new Pose2d(closestX, closestY, new Rotation2d(angle));
+    public void resetHubOffset() {
+    hubOffsetX = 0.0;
+    hubOffsetY = 0.0;
     }
+    
+        // Get hub pose based on alliance
+    // Replace the existing static getHubPose() with this instance version
+    public Pose3d getHubPose() {
+        Pose3d base = DriverStation.getAlliance()
+            .map(alliance -> alliance == Alliance.Red ? Constants.FieldConstants.redHubPose : Constants.FieldConstants.blueHubPose).orElse(Constants.FieldConstants.blueHubPose);
+    
+        // Apply offsets relative to alliance
+        // For Red alliance, flip X offset direction since field is mirrored
+        double adjustedX = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+            ? base.getX() - hubOffsetX
+            : base.getX() + hubOffsetX;
+    
+        double adjustedY = base.getY() + hubOffsetY;
+    
+        return new Pose3d(adjustedX, adjustedY, base.getZ(), base.getRotation());
+    }
+    
+        
+        public static Distance getCloseBumpY(Pose2d currentPose){
+            if (currentPose.getMeasureY().gt(Inches.of(158.845))){
+                return Inches.of(218.84);
+            } else {
+                return Inches.of(98.84);
+            }
+        }
+    
+        public static boolean isInAllianceZone(Pose2d robotPose){
+            double robotX = robotPose.getX();
+            Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+            if (alliance == Alliance.Red) {
+                return robotX > Inches.of(469.11).in(Meters);
+            } else {
+                return robotX < Inches.of(182.11).in(Meters);
+                }
+        }
 
-    public static final PIDController rotationController = getRotationController();
-
-    private static PIDController getRotationController() {
-        PIDController controller = new PIDController(Constants.DriveConstants.rotP,Constants.DriveConstants.rotI,Constants.DriveConstants.rotD);
+        public static boolean isInNutZone(Pose2d robotPose){
+            double robotX = robotPose.getX();
+            return (robotX >= Inches.of(182.11).in(Meters) && robotX<= Inches.of(469.11).in(Meters));
+        }
+    
+    
+        /**
+         * Calculates the closest point on the predefined circle to the current robot pose.
+         *
+         * @return The closest point on the circle to the current robot position
+         */
+    
+        public static final PIDController rotationController = getRotationController();
+    
+        private static PIDController getRotationController() {
+            PIDController controller = new PIDController(Constants.DriveConstants.rotP,Constants.DriveConstants.rotI,Constants.DriveConstants.rotD);
         controller.enableContinuousInput(-Math.PI, Math.PI); // CRITICAL: enables wraparound at ±180°
         return controller;
     }
@@ -401,208 +441,327 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return currentDistance;
     }
 
-    Pose2d ShootingLocation;
-    public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate, String tuning) {
+    public Pose2d getTargetPose(Pose2d currentPose2d){
+        final double thresholdY = Inches.of(158.32).in(Meters); //horizontal middle field line
+        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        if (alliance == Alliance.Red){
+            if(isInAllianceZone(currentPose2d)){
+                return getHubPose().toPose2d();
+            }
+            else if (currentPose2d.getY() >= thresholdY){
+                return Constants.FieldConstants.redTargetHighPose;
+            }
+            else {
+                return Constants.FieldConstants.redTargetLowPose;
+            }
+        }
+        if (alliance == Alliance.Blue){
+            if(isInAllianceZone(currentPose2d)){
+                return getHubPose().toPose2d();
+            }
+            else if (currentPose2d.getY() >= thresholdY){
+                return Constants.FieldConstants.blueTargetHighPose;
+            }
+            else {
+                return Constants.FieldConstants.blueTargetLowPose;
+            }
+        }
+        return null;
+    }
+
+    public Pose2d ShootingLocation;
+
+    public Command headingLocktoHub(CommandXboxController controller, double maxSpeed, double maxAngularRate) {
     return applyRequest(() -> {
         
         // Get current pose and target hub position
         Pose2d drivePose = getState().Pose;
-        Pose2d targetPose = getHubPose().toPose2d();
+        Pose2d targetPose = getTargetPose(drivePose);
 
         ShootingLocation = targetPose;
         
         // Calculate angle from hub to robot
         Translation2d toRobot = drivePose.getTranslation().minus(targetPose.getTranslation());
+
         Rotation2d angleToRobot = toRobot.getAngle();
         
         // Calculate desired rotation (face the hub)
         Rotation2d desiredAngle = angleToRobot.rotateBy(Rotation2d.k180deg); // Face toward hub | Take RotateBy out for back to face Hub
         Rotation2d currentAngle = drivePose.getRotation();
-
-        if(Math.abs(desiredAngle.getDegrees() - currentAngle.getDegrees()) <= 1) {desiredAngle = currentAngle;}
         
         // Calculate rotational rate to face hub
         double rotationalRate = rotationController.calculate(
             currentAngle.getRadians(), 
             desiredAngle.getRadians()
         );
-        double veloX = -controller.getLeftY();
-        if (Math.abs(veloX) < 0.1 ){
-            veloX = 0;
-        }
+        double xSpeed = MathUtil.applyDeadband(-controller.getLeftY(), 0.1);
+        double ySpeed = MathUtil.applyDeadband(-controller.getLeftX(), 0.1);
 
-        double veloY = -controller.getLeftX();
-        if (Math.abs(veloY) < 0.1 ){
-            veloY = 0;
-        }
-
-        if (tuning.equals("PovLeft")) { veloX = 0; veloY = 0.3;}
-        if (tuning.equals("PovRight")) { veloX = 0; veloY = -0.3;} 
-        // Apply the request: radial (distance maintenance) + tangential (circling)
         return alignRequest 
-            .withVelocityX(veloX * maxSpeed) 
-            .withVelocityY(veloY * maxSpeed) 
-            .withRotationalRate(rotationalRate * maxAngularRate); 
+            .withVelocityX(xSpeed * maxSpeed)
+            .withVelocityY(ySpeed * maxSpeed)
+            .withRotationalRate(rotationalRate * maxAngularRate*1.5); 
     });
 }
 
-    public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
-        return applyRequest(() -> {
-            // Polar shaping: deadband + square the magnitude, preserve direction.
-            // Per-axis deadband/squaring would snap diagonals toward cardinal axes.
-            double rawX = -joystick.getLeftY();
-            double rawY = -joystick.getLeftX();
-            Translation2d linear = JoystickDriveUtil.getLinearVelocityFromJoysticks(
-                rawX, rawY, Constants.DriveConstants.TranslationDeadband);
-            double omega = JoystickDriveUtil.getOmegaFromJoysticks(
-                -joystick.getRightX(), Constants.DriveConstants.RotationDeadband);
+private boolean SlowTele = false;
+public void ToggleSlowTele(){
+    if (SlowTele == false) {SlowTele = true;}
+    else if (SlowTele == true) {SlowTele = false;}
+}
+
+public Command TeleopDrive(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
+    return applyRequest(() -> {
+        double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband));
+        double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband));
+        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), Constants.DriveConstants.TranslationDeadband);
+        
+        if (SlowTele){
             return alignRequest
-                .withVelocityX(linear.getX() * MaxSpeed)
-                .withVelocityY(linear.getY() * MaxSpeed)
-                .withRotationalRate(omega * MaxAngularRate);
-        });
+                .withVelocityX(xSpeed * MaxSpeed * 0.5)
+                .withVelocityY(ySpeed * MaxSpeed * 0.5)
+                .withRotationalRate(rotSpeed * MaxAngularRate);
+        }
+        else {
+            return alignRequest
+            .withVelocityX(xSpeed * MaxSpeed * 0.8)
+            .withVelocityY(ySpeed * MaxSpeed * 0.8)
+            .withRotationalRate(rotSpeed * MaxAngularRate);
+        }
+    });
+}
+
+private double scaleAxis(double input) {
+    double abs = Math.abs(input);
+    if (abs == 0.0) return 0.0;
+    abs = Math.min(abs, 1.0);
+    double scaled = Math.pow(Math.sin((Math.PI / 2.0) * abs), 2); // no offset
+    return Math.copySign(scaled, input);
+}
+
+public Command TeleopDriveSLOW(CommandXboxController joystick, double MaxSpeed, double MaxAngularRate, SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain){
+    return applyRequest(() -> {
+        double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), 0.1));
+        double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), 0.1));
+        double rotSpeed = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
+
+        
+        return alignRequest
+            .withVelocityX(xSpeed * MaxSpeed * 0.75)
+            .withVelocityY(ySpeed * MaxSpeed* 0.75)
+            .withRotationalRate(rotSpeed * MaxAngularRate);
+    });
+}
+
+    public static final InterpolatingDoubleTreeMap TOFmap = new InterpolatingDoubleTreeMap();
+    static { //dist inch, time Sec
+        TOFmap.put(53.7, 0.2); //53.7, 0.83 is real value
+        TOFmap.put(70.8 , 1.0);
+        TOFmap.put(100.3 , 1.2);
+        TOFmap.put(112.5, 2.1);
     }
 
-    double futureDistance = 0.0;
-    public double GetFutureDistMeters(){
-        Pose2d robotPose = getPose();
-        double distance = getDistance();
-        ChassisSpeeds fieldSpeeds = getState().Speeds;
-        Pose2d actualHub = getHubPose().toPose2d();
 
-           // Convert field speeds to robot-relative
-        ChassisSpeeds robotSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-        fieldSpeeds.vxMetersPerSecond,
-        fieldSpeeds.vyMetersPerSecond,
-        fieldSpeeds.omegaRadiansPerSecond,
-        robotPose.getRotation().unaryMinus() // Inverse rotation
-            );
-        
-        // Step 2: Predict where ROBOT will be
-        double futureRobotX = robotPose.getX() + (robotSpeeds.vxMetersPerSecond);
-        double futureRobotY = robotPose.getY() + (robotSpeeds.vyMetersPerSecond);
-        Translation2d futureRobotPos = new Translation2d(futureRobotX, futureRobotY);
-        
-        // Step 3: Calculate angle from future robot position to hub
-        Translation2d futureToHub = actualHub.getTranslation().minus(futureRobotPos);
-        futureDistance = futureToHub.getNorm();
-        return futureDistance;
-    }
+
+    public double lastAimAngleRad = Double.NaN;
+ 
+    // Moving average filter over ~5 samples (at 50Hz that's ~0.1s of smoothing)
+    // Smooths the noisy derivative of the aim angle to get a clean feedforward
+    public final LinearFilter driveAngleFilter = LinearFilter.movingAverage(5);
+ 
+    // Store last commanded speeds so we use setpoint velocity (not noisy measured)
+    // Updated at the end of each SOTM loop, read at the start of the next
+    public ChassisSpeeds lastCommandedSpeeds = new ChassisSpeeds();
+ 
+    // Offset from robot center to the physical shooter position (measure from CAD)
+    // Example: shooter is 0.2m forward and 0.0m sideways from robot center
+    public static final Translation2d ROBOT_TO_SHOOTER = new Translation2d(0.2, 0.0);
 
     //BASED ON MECH A PRAISE THE FRC GODS FOR OPEN ALLIANCE
-    public Command shootOnTheMoveIterative(CommandXboxController controller, double maxSpeed, double maxAngularRate, String tuning) {
+    public Command shootOnTheMoveIterative(CommandXboxController controller, double maxSpeed, double maxAngularRate) {
     return applyRequest(() -> {
-        // === 6328 SHOOTING ALGORITHM ===
-        
-        // 1. Get current state
+ 
+        // ── 1. CURRENT STATE ─────────────────────────────────────────────────────
         Pose2d currentPose = getPose();
-        ChassisSpeeds robotRelativeSpeeds = getState().Speeds;
-        
-        // CRITICAL: Convert robot-relative speeds to field-relative
+ 
+        // Use setpoint speeds (what we COMMANDED last loop) rather than noisy
+        // measured wheel speeds. If first loop, fall back to measured.
+        ChassisSpeeds measuredSpeeds = getState().Speeds;
+        ChassisSpeeds robotRelativeSpeeds = (lastCommandedSpeeds.vxMetersPerSecond == 0
+                && lastCommandedSpeeds.vyMetersPerSecond == 0
+                && lastCommandedSpeeds.omegaRadiansPerSecond == 0)
+                ? measuredSpeeds
+                : lastCommandedSpeeds;
+ 
+        // Convert to field-relative so we can do field-frame geometry
         ChassisSpeeds fieldVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(
-            robotRelativeSpeeds.vxMetersPerSecond,
-            robotRelativeSpeeds.vyMetersPerSecond,
-            robotRelativeSpeeds.omegaRadiansPerSecond,
-            currentPose.getRotation()
+                robotRelativeSpeeds.vxMetersPerSecond,
+                robotRelativeSpeeds.vyMetersPerSecond,
+                robotRelativeSpeeds.omegaRadiansPerSecond,
+                currentPose.getRotation()
         );
-        
-        // 2. Phase delay - predict where robot will be
-        double phaseDelay = 0.25;
+ 
+        // ── 2. PHASE DELAY (account for code→hardware latency) ───────────────────
+        // 0.03s ≈ 1-2 loop cycles. This is NOT a full lookahead — it just shifts
+        // the starting pose slightly to compensate for pipeline delay.
+        double phaseDelay = 0.03;
         Pose2d estimatedPose = currentPose.exp(
-            new Twist2d(
-                fieldVelocity.vxMetersPerSecond * phaseDelay,
-                fieldVelocity.vyMetersPerSecond * phaseDelay,
-                fieldVelocity.omegaRadiansPerSecond * phaseDelay
-            )
+                new Twist2d(
+                        fieldVelocity.vxMetersPerSecond * phaseDelay,
+                        fieldVelocity.vyMetersPerSecond * phaseDelay,
+                        fieldVelocity.omegaRadiansPerSecond * phaseDelay
+                )
         );
-        
-        // 3. Get target (hub position)
-        Translation2d target = getHubPose().toPose2d().getTranslation();
-        
-        // 4. Shooter position
-        Translation2d shooterPosition = estimatedPose.getTranslation();
-        
-        // 5. Field-relative shooter velocity
-        double shooterVelocityX = fieldVelocity.vxMetersPerSecond;
-        double shooterVelocityY = fieldVelocity.vyMetersPerSecond;
-        
-        // 6. ITERATIVE LOOP
-        double timeOfFlight = 0.0;
+ 
+        // ── 3. SHOOTER POSITION (offset from robot center) ───────────────────────
+        // Rotate the robot-frame offset into field frame using current heading.
+        // If your shooter IS at center, set ROBOT_TO_SHOOTER = new Translation2d(0,0)
+        Translation2d shooterOffsetFieldFrame = ROBOT_TO_SHOOTER.rotateBy(estimatedPose.getRotation());
+        Translation2d shooterPosition = estimatedPose.getTranslation().plus(shooterOffsetFieldFrame);
+ 
+        // ── 4. TARGET ─────────────────────────────────────────────────────────────
+        Translation2d target = getTargetPose(currentPose).getTranslation();
+ 
+        // ── 5. SHOOTER VELOCITY (field-relative, at shooter position) ────────────
+        // The shooter is offset from the robot center, so it has additional
+        // tangential velocity from the robot's rotation: v_tangential = omega × r
+        // This is the same correction 6328 does with GeomUtil.transformVelocity()
+        double omega = fieldVelocity.omegaRadiansPerSecond;
+        // Tangential velocity added by rotation: perpendicular to the offset vector
+        // If offset is (rx, ry), tangential is (-ry*omega, rx*omega)
+        double shooterVelocityX = fieldVelocity.vxMetersPerSecond
+                + (-shooterOffsetFieldFrame.getY() * omega);
+        double shooterVelocityY = fieldVelocity.vyMetersPerSecond
+                + (shooterOffsetFieldFrame.getX() * omega);
+
+
+        double veloX = MathUtil.applyDeadband(-controller.getLeftY(), Constants.DriveConstants.TranslationDeadband);
+        double veloY = MathUtil.applyDeadband(-controller.getLeftX(), Constants.DriveConstants.TranslationDeadband);
+        //*************************************************************************************************************************** */
+        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        double allianceFlip = isRed ? -1.0 : 1.0;
+
+        shooterVelocityX = fieldVelocity.vxMetersPerSecond * allianceFlip; //if allanice flup put it here
+        shooterVelocityY = fieldVelocity.vyMetersPerSecond * allianceFlip;
+ 
+        // ── 6. ITERATIVE LOOKAHEAD LOOP ───────────────────────────────────────────
+        // Converges in ~3 iterations; 20 guarantees stability.
+        // Each iteration: estimate TOF → predict where we'll be → recalc distance → repeat
+        double timeOfFlight = 0.1; // initial guess
         Translation2d lookaheadShooterPosition = shooterPosition;
         double lookaheadDistance = target.getDistance(shooterPosition);
         
+ 
         for (int i = 0; i < 20; i++) {
+            // Your TOF regression (distance in inches → time in seconds).
+            // Replace this with your measured lookup table if you have one.
             double distInches = lookaheadDistance * 39.3701;
-            timeOfFlight = 0.0115177* distInches +0.330879;
-            
-            if (timeOfFlight < 0.01) {
-                timeOfFlight = 0.1;
-            }
-            
-            double offsetX = shooterVelocityX *timeOfFlight ; //times both of these by TOF for real robot
-            double offsetY = shooterVelocityY *timeOfFlight;
-            
+            timeOfFlight = TOFmap.get(distInches);
+            timeOfFlight = Math.max(timeOfFlight, 0.05); // guard against degenerate values
+            timeOfFlight = 1; //* ***************************************************************************************************** */
+ 
+            // Where will the shooter be when the note arrives?
+            double offsetX = shooterVelocityX * timeOfFlight * 0.15; //*0.25
+            double offsetY = shooterVelocityY * timeOfFlight * 0.15;
             lookaheadShooterPosition = shooterPosition.plus(new Translation2d(offsetX, offsetY));
             lookaheadDistance = target.getDistance(lookaheadShooterPosition);
         }
-        
-        // 7. Calculate aim angle
-        Rotation2d aimAngle = target.minus(lookaheadShooterPosition).getAngle();
-        
-        // === ROTATION CONTROL ===
-        Rotation2d currentAngle = currentPose.getRotation();
-        
-        double rotationalRate = rotationController.calculate(
-            currentAngle.getRadians(), 
-            aimAngle.getRadians()
-        );
-        
-        // Driver inputs
-        double veloX = -controller.getLeftY();
-        if (Math.abs(veloX) < Constants.DriveConstants.TranslationDeadband) {
-            veloX = 0;
-        }
 
-        double veloY = -controller.getLeftX();
-        if (Math.abs(veloY) < Constants.DriveConstants.TranslationDeadband) {
-            veloY = 0;
+ 
+        // ── 7. AIM ANGLE ──────────────────────────────────────────────────────────
+        Rotation2d aimAngle = target.minus(lookaheadShooterPosition).getAngle();
+ 
+        // ── 8. AIM ANGLE FEEDFORWARD ─────────────────────────────────────────────
+        // 6328's key insight: differentiate the required aim angle over time and feed
+        // that forward so the robot is already spinning at the right rate, not
+        // just reacting to error. The filter removes noise from the derivative.
+        double aimAngleRad = aimAngle.getRadians();
+        double aimAngleVelocityFF = 0.0;
+ 
+        if (!Double.isNaN(lastAimAngleRad)) {
+            // Wrap the delta to handle the ±π boundary cleanly
+            double rawDelta = aimAngleRad - lastAimAngleRad;
+            // Normalize to [-π, π]
+            while (rawDelta > Math.PI) rawDelta -= 2 * Math.PI;
+            while (rawDelta < -Math.PI) rawDelta += 2 * Math.PI;
+ 
+            double rawRate = rawDelta / 0.02; // 20ms loop period
+            aimAngleVelocityFF = driveAngleFilter.calculate(rawRate);
         }
-        
-        if (tuning.equals("PovLeft")) { veloX = 0; veloY = 0.3; }
-        if (tuning.equals("PovRight")) { veloX = 0; veloY = -0.3; }
-        
-        // Visualization
+        lastAimAngleRad = aimAngleRad;
+ 
+        // ── 9. ROTATION PID + FF ──────────────────────────────────────────────────
+        Rotation2d currentAngle = currentPose.getRotation();
+        double pidOutput = rotationController.calculate(currentAngle.getRadians(), aimAngleRad);
+ 
+        // FF is in rad/s; scale it to match your maxAngularRate units.
+        // Tune kFF: start at 1.0 and reduce if the robot overshoots on turns.
+        double kFF = 0.25;//********************************************************************************************************************************************* */
+        double rotationalRate = aimAngleVelocityFF * kFF + pidOutput;
+ 
+        // ── 10. DRIVER TRANSLATION INPUT ───────────────────────────────────────── *******************************************UN COMMENT
+        //double veloX = MathUtil.applyDeadband(-controller.getLeftY(), Constants.DriveConstants.TranslationDeadband);
+        //double veloY = MathUtil.applyDeadband(-controller.getLeftX(), Constants.DriveConstants.TranslationDeadband);
+ 
+        // ── 12. BUILD COMMANDED SPEEDS & CACHE THEM ───────────────────────────────
+        // Cache what we're about to command so next loop uses setpoint, not measured
+        // Convert field-relative driver input back to robot-relative for storage
+        ChassisSpeeds fieldRelativeCommanded = new ChassisSpeeds(
+                veloX * maxSpeed,
+                veloY * maxSpeed,
+                rotationalRate * maxAngularRate
+        );
+        lastCommandedSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                fieldRelativeCommanded, currentPose.getRotation()
+        );
+ 
+        // ── 13. VISUALIZATION ─────────────────────────────────────────────────────
         ShootingLocation = new Pose2d(lookaheadShooterPosition, aimAngle);
-        
-        // Debug
-        SmartDashboard.putNumber("Shot/Robot Vx", robotRelativeSpeeds.vxMetersPerSecond);
-        SmartDashboard.putNumber("Shot/Robot Vy", robotRelativeSpeeds.vyMetersPerSecond);
-        SmartDashboard.putNumber("Shot/Field Vx", fieldVelocity.vxMetersPerSecond);
-        SmartDashboard.putNumber("Shot/Field Vy", fieldVelocity.vyMetersPerSecond);
-        SmartDashboard.putNumber("Shot/Lookahead Distance", lookaheadDistance);
-        SmartDashboard.putNumber("Shot/Time of Flight", timeOfFlight);
-        SmartDashboard.putNumber("Shot/Current Angle", currentAngle.getDegrees());
-        SmartDashboard.putNumber("Shot/Aim Angle", aimAngle.getDegrees());
-        SmartDashboard.putNumber("Shot/Rotational Rate", rotationalRate);
-        SmartDashboard.putNumber("Shot/Prediction Offset X", lookaheadShooterPosition.getX() - currentPose.getX());
-        SmartDashboard.putNumber("Shot/Prediction Offset Y", lookaheadShooterPosition.getY() - currentPose.getY());
-        SmartDashboard.putNumber("Shot/Angle Error Deg", aimAngle.minus(currentAngle).getDegrees());
-        
+ 
+        SmartDashboard.putNumber("SOTM/AimAngleDeg", Math.toDegrees(aimAngleRad));
+        SmartDashboard.putNumber("SOTM/LookaheadDistanceMeters", lookaheadDistance);
+        SmartDashboard.putNumber("SOTM/LookaheadDistanceMeters", lookaheadDistance * 39.3701);
+        SmartDashboard.putNumber("SOTM/TimeOfFlight", timeOfFlight);
+        SmartDashboard.putNumber("SOTM/AimAngleFFRadPerSec", aimAngleVelocityFF);
+        SmartDashboard.putNumber("SOTM/AimErrorDeg",aimAngle.minus(currentAngle).getDegrees());
+        SmartDashboard.putNumber("SOTM/shooterVelocityX", shooterVelocityX);
+        SmartDashboard.putNumber("SOTM/shooterVelocityY", shooterVelocityY);
+        SmartDashboard.putNumber("SOTM/lookaheadOffsetX", lookaheadShooterPosition.getX() - shooterPosition.getX());
+        SmartDashboard.putNumber("SOTM/lookaheadOffsetY", lookaheadShooterPosition.getY() - shooterPosition.getY());
+        SmartDashboard.putNumber("SOTM/shooterPosX", shooterPosition.getX());
+        SmartDashboard.putNumber("SOTM/shooterPosY", shooterPosition.getY());
+        SmartDashboard.putNumber("SOTM/lookaheadPosX", lookaheadShooterPosition.getX());
+        SmartDashboard.putNumber("SOTM/lookaheadPosY", lookaheadShooterPosition.getY());
+        SmartDashboard.putNumber("SOTM/targetX", target.getX());
+        SmartDashboard.putNumber("SOTM/targetY", target.getY());
+        SmartDashboard.putNumber("SOTM/aimAngleDeg", Math.toDegrees(aimAngleRad));
+        SmartDashboard.putNumber("SOTM/currentAngleDeg", currentPose.getRotation().getDegrees());
+        SmartDashboard.putNumber("SOTM/pidOutput", pidOutput);
+        SmartDashboard.putNumber("SOTM/rotationalRate", rotationalRate);
+ 
+        // ── 14. APPLY REQUEST ─────────────────────────────────────────────────────
         return alignRequest
-            .withVelocityX(veloX * maxSpeed) 
-            .withVelocityY(veloY * maxSpeed) 
-            .withRotationalRate(rotationalRate);
+                .withVelocityX(veloX * maxSpeed * 0.2)
+                .withVelocityY(veloY * maxSpeed *  0.2)
+                .withRotationalRate(rotationalRate * maxAngularRate);
     });
 }
+
+public double getLookaheadDistance() {
+    if (ShootingLocation == null) return getDistance(); // fallback to current distance
+    Pose2d hubPose = getHubPose().toPose2d();
+    return ShootingLocation.getTranslation().getDistance(hubPose.getTranslation());
+}
+
 
 public boolean isAimedAtTarget() {
     Pose2d currentPose = getPose();
     Rotation2d currentAngle = currentPose.getRotation();
     
     // Calculate required aim angle (same as headingLocktoHub)
-    Translation2d target = getHubPose().toPose2d().getTranslation();
+    Translation2d target = getTargetPose(currentPose).getTranslation();
     Translation2d toTarget = target.minus(currentPose.getTranslation());
-    Rotation2d targetAngle = toTarget.getAngle(); // Face toward hub
+    Rotation2d targetAngle = toTarget.getAngle(); // Face towards from hub .plus(Krot180) or sum idk
     
     // Calculate angle error
     double errorDegrees = Math.abs(targetAngle.minus(currentAngle).getDegrees());
@@ -611,53 +770,142 @@ public boolean isAimedAtTarget() {
     return errorDegrees <= Constants.DriveConstants.RotationalToleranceDegrees;
 }
 
-public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate) {
-        return applyRequest(() -> {
-            // Get joystick inputs
-            double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband);
-            double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband);
-            
-            // Convert to velocities
-            double xVelocity = xSpeed * MaxSpeed;
-            double yVelocity = ySpeed * MaxSpeed;
-            
-            // Calculate rotation for snake drive
-            double rotationRate = 0;
-            double translationMagnitude = Math.hypot(xVelocity, yVelocity);
-            
-            if (translationMagnitude > Constants.DriveConstants.TranslationDeadband) {
-                // Calculate target heading from joystick direction
-                Rotation2d targetHeading = new Rotation2d(xVelocity, yVelocity).rotateBy(Rotation2d.k180deg);
-                
-                // Get current heading
-                Rotation2d currentHeading = drivetrain.getState().Pose.getRotation();
-                
-                // Calculate shortest path error
-                double headingError = targetHeading.minus(currentHeading).getRadians();
-                
-                // P controller for rotation
-                rotationRate = headingError * Constants.DriveConstants.rotP*5;
-                
-                // Clamp to max rotation rate 
-                
-                rotationRate = Math.max(-MaxAngularRate, 
-                                       Math.min(MaxAngularRate, rotationRate));
-                
+public boolean isAimedAtTargetAuto() {
+    Pose2d currentPose = getPose();
+    Rotation2d currentAngle = currentPose.getRotation();
+    
+    // Calculate required aim angle (same as headingLocktoHub)
+    Translation2d target = getTargetPose(currentPose).getTranslation();
+    Translation2d toTarget = target.minus(currentPose.getTranslation());
+    Rotation2d targetAngle = toTarget.getAngle(); // Face towards from hub .plus(Krot180) or sum idk
+    
+    // Calculate angle error
+    double errorDegrees = Math.abs(targetAngle.minus(currentAngle).getDegrees());
+    SmartDashboard.putNumber("errorDegrees", errorDegrees);
+    
+    return errorDegrees <= Constants.DriveConstants.RotationalToleranceDegreesAUTO;
+}
+
+public boolean isAimedAtTargetSOTM() {
+    if (ShootingLocation == null) return false;
+    
+    Pose2d currentPose = getPose();
+    Rotation2d currentAngle = currentPose.getRotation();
+    
+    // ShootingLocation.getRotation() is the SOTM aim angle (set each loop in step 13)
+    Rotation2d targetAngle = ShootingLocation.getRotation();
+    
+    double errorDegrees = Math.abs(targetAngle.minus(currentAngle).getDegrees());
+    SmartDashboard.putNumber("SOTM/errorDegrees", errorDegrees);
+    
+    return errorDegrees <= Constants.DriveConstants.RotationalToleranceDegrees + 2;
+}
+
+
+public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate){
+        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+
+        Rotation2d rotSetpoint = isInAllianceZone(drivetrain.getPose())
+            ? (isRed ? Rotation2d.kZero : Rotation2d.fromDegrees(180))
+            : (isRed ? Rotation2d.fromDegrees(180) : Rotation2d.kZero);
+    
+    return applyRequest(() -> {
+        double closeTrench = (double)getCloseBumpY(drivetrain.getPose()).in(Meters);
+        double xSpeed = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
+        double ySpeed = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
+
+        double robotY = drivetrain.getPose().getY();
+        double error = robotY - closeTrench;
+        double borderLimit = Inches.of(18).in(Meters);
+        double distToTrench = Math.abs(error);
+        double borderY = closeTrench + Math.copySign(borderLimit, error);
+
+        double ySpeedFieldRelative = isRed ? -ySpeed : ySpeed;
+        boolean pushingAway = (error > 0 && ySpeedFieldRelative > 0) || (error < 0 && ySpeedFieldRelative < 0);
+
+        double yVel;
+        if (distToTrench > borderLimit) {
+            distanceController.setSetpoint(closeTrench);
+            yVel = distanceController.calculate(robotY);
+            if (isRed) yVel = -yVel; // flip PID output for Red
+        } else if (pushingAway) {
+            distanceController.setSetpoint(borderY);
+            yVel = distanceController.calculate(robotY);
+            if (isRed) yVel = -yVel; // flip PID output for Red
+        } else {
+            if (ySpeed == 0) {
+                // No joystick input — auto-center to trench
+                distanceController.setSetpoint(closeTrench);
+                yVel = distanceController.calculate(robotY);
+                if (isRed) yVel = -yVel;
+            } else {
+                // Driver pushing inward — full driver control
+                yVel = ySpeed;
             }
-            
-            return drive
-                .withVelocityX(xVelocity)
-                .withVelocityY(yVelocity)
-                .withRotationalRate(rotationRate);
-        });
-    }
+        }
+        rotationController.setSetpoint(rotSetpoint.getRadians());
+
+        double rotSpeedToStraight = rotationController.calculate(drivetrain.getPose().getRotation().getRadians());
+        if (rotationController.atSetpoint()) rotSpeedToStraight = 0;
+
+        return drive
+            .withVelocityX(xSpeed * MaxSpeed)
+            .withVelocityY(yVel * MaxSpeed) // no negation
+            .withRotationalRate(rotSpeedToStraight * MaxAngularRate);
+    });
+}
+
+    private double SnakeDriveMult = 0.75;
+
+        public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate) {
+            return applyRequest(() -> {
+                Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+
+                double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband));
+                double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband));
+
+                double xVelocity = xSpeed * MaxSpeed;
+                double yVelocity = ySpeed * MaxSpeed;
+
+                double rotInput = MathUtil.applyDeadband(-joystick.getRightX(), 0.1); // override deadband
+
+                double rotationRate = 0;
+
+                if (Math.abs(rotInput) > 0) {
+                    // Joystick override — bypass snake drive
+                    rotationRate = rotInput * MaxAngularRate;
+                } else {
+                    double translationMagnitude = Math.hypot(xVelocity, yVelocity);
+                    if (translationMagnitude > Constants.DriveConstants.TranslationDeadband) {
+                        Rotation2d targetHeading;
+                        if (alliance.equals(Alliance.Red)) {
+                            targetHeading = new Rotation2d(xVelocity, yVelocity);
+                        } else {
+                            targetHeading = new Rotation2d(xVelocity, yVelocity).rotateBy(Rotation2d.k180deg);
+                        }
+                        Rotation2d currentHeading = drivetrain.getState().Pose.getRotation();
+                        double headingError = targetHeading.minus(currentHeading).getRadians();
+                        rotationRate = Math.max(-MaxAngularRate, Math.min(MaxAngularRate, headingError * Constants.DriveConstants.rotP * 5));
+                    }
+                }
+
+                return drive
+                    .withVelocityX(xVelocity *  SnakeDriveMult)
+                    .withVelocityY(yVelocity * SnakeDriveMult)
+                    .withRotationalRate(rotationRate);
+            });
+        }
 
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("ShootingDistance", Constants.ShooterConstants.ShootingDistance*3.28084); //3.28084 Feet per Meter (converting Meters to Feet)
         if(ShootingLocation != null){field.getObject("Shooting Target").setPose(ShootingLocation);}
         field.setRobotPose(getPose());
+        SmartDashboard.putNumber("distanceToCenterHubInches", getDistance() * 39.3701);
+        SmartDashboard.putNumber("distanceLookaheadHubInches", getLookaheadDistance() * 39.3701);
+        SmartDashboard.putNumber("Hub/OffsetX", hubOffsetX);
+        SmartDashboard.putNumber("Hub/OffsetY", hubOffsetY);
+        SmartDashboard.putBoolean("SlowDrive?", SlowTele);
 
         /*
          * Periodically try to apply the operator perspective.

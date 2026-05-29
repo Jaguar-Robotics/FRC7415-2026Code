@@ -1,0 +1,180 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.672395740905058,
+        "y": 3.1859449866903278
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 8.036610470275066,
+        "y": 3.049130434782609
+      },
+      "isLocked": false,
+      "linkedName": "F3Weird"
+    },
+    {
+      "anchor": {
+        "x": 7.247914818101154,
+        "y": 3.3951907719609573
+      },
+      "prevControl": {
+        "x": 7.771029281277728,
+        "y": 2.9445075421472926
+      },
+      "nextControl": {
+        "x": 6.866642784420841,
+        "y": 3.723671293285535
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.247914818101154,
+        "y": 6.735075421472937
+      },
+      "prevControl": {
+        "x": 7.913688438097598,
+        "y": 6.7290774609324275
+      },
+      "nextControl": {
+        "x": 6.354596273291925,
+        "y": 6.743123336291038
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.61418811002662,
+        "y": 5.495696539485359
+      },
+      "prevControl": {
+        "x": 6.1123674590532655,
+        "y": 5.5139226132302355
+      },
+      "nextControl": {
+        "x": 4.954259094942326,
+        "y": 5.471552795031057
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.3527240461401946,
+        "y": 5.342786157941436
+      },
+      "prevControl": {
+        "x": 4.052892635314995,
+        "y": 5.4876486246672584
+      },
+      "nextControl": {
+        "x": 3.107908941263419,
+        "y": 5.292134756932447
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.396443548387097,
+        "y": 5.227266129032258
+      },
+      "prevControl": {
+        "x": 2.7036532258064523,
+        "y": 5.344298387096774
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.35,
+      "rotationDegrees": -29.999999999999996
+    },
+    {
+      "waypointRelativePos": 1.2334217506631293,
+      "rotationDegrees": -100.0
+    },
+    {
+      "waypointRelativePos": 1.6511936339522553,
+      "rotationDegrees": -100.0
+    },
+    {
+      "waypointRelativePos": 2.194960212201591,
+      "rotationDegrees": 29.999999999999996
+    },
+    {
+      "waypointRelativePos": 2.904509283819631,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 3.890134529147986,
+      "rotationDegrees": 0.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Slow2Shoot",
+      "minWaypointRelativePos": 3.954489544895443,
+      "maxWaypointRelativePos": 5.0,
+      "constraints": {
+        "maxVelocity": 1.0,
+        "maxAcceleration": 6.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeOff",
+      "waypointRelativePos": 4.043624161073836,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeOff"
+        }
+      }
+    },
+    {
+      "name": "StartHubAlign",
+      "waypointRelativePos": 4.089790897908982,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StartHubAlign"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.75,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -33.554278016514424
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 75.0
+  },
+  "useDefaultConstraints": true
+}

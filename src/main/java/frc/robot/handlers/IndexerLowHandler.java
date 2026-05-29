@@ -11,6 +11,7 @@ import frc.robot.handlers.ShooterHandler.ShooterState;
 import frc.robot.handlers.StateSubsystem.State;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IndexerHighSubsystem;
+import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 
 public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
@@ -24,7 +25,7 @@ public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
   }
 
   private static IndexerLowHandler instance;
-  private final IndexerHighSubsystem index = new IndexerHighSubsystem();
+  private final IndexerLowSubsystem index = new IndexerLowSubsystem();
 
   private IndexerLowState desiredState = IndexerLowState.OFF;
   private IndexerLowState currentState = IndexerLowState.OFF;

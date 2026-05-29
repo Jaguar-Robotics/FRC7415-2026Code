@@ -1,0 +1,66 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.2903992901508423,
+        "y": 6.82360248447205
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.9523868677943668,
+        "y": 7.4674356699168225
+      },
+      "isLocked": false,
+      "linkedName": "LTshot"
+    },
+    {
+      "anchor": {
+        "x": 0.6615029761847733,
+        "y": 6.951808035709802
+      },
+      "prevControl": {
+        "x": 1.2763620230700972,
+        "y": 7.362812777284827
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "D1"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Intake",
+      "waypointRelativePos": 0.2667785234899327,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Intake"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.75,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 45.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -51.92216038470881
+  },
+  "useDefaultConstraints": true
+}
