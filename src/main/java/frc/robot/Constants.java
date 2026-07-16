@@ -20,7 +20,7 @@ import edu.wpi.first.units.measure.Distance;
 /** Add your docs here. */
 public class Constants {
         public static abstract class ExampleSubsystemConstants{
-            public static final int exampleMotorID = 67; 
+            public static final int exampleMotorID = 12; 
             public static final double fastSpeed = 1;
             public static final double slowSpeed = 0;
         }

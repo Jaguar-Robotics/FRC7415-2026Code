@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import org.ironmaple.simulation.SimulatedArena;
+
 import com.ctre.phoenix6.HootAutoReplay;
 
 import edu.wpi.first.cameraserver.CameraServer;
@@ -14,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.HubShiftUtil;
 import frc.robot.utils.HubShiftUtil.ShiftInfo;
+import frc.robot.utils.simulation.crystalcaverns.CrystalCavernsArena;
 
 
 public class Robot extends TimedRobot {
@@ -66,10 +69,6 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
-
-        if (isSimulation()) {
-        RoboRioSim.setVInVoltage(12.5);
-    }
     }
 
     @Override
@@ -90,5 +89,7 @@ public class Robot extends TimedRobot {
     public void testExit() {}
 
     @Override
-    public void simulationPeriodic() {}
+    public void simulationPeriodic() {
+        SimulatedArena.getInstance().simulationPeriodic();
+    }
 }
