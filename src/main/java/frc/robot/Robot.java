@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import org.ironmaple.simulation.SimulatedArena;
-
 import com.ctre.phoenix6.HootAutoReplay;
 
 import edu.wpi.first.cameraserver.CameraServer;
@@ -16,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.HubShiftUtil;
 import frc.robot.utils.HubShiftUtil.ShiftInfo;
-import frc.robot.utils.simulation.crystalcaverns.CrystalCavernsArena;
 
 
 public class Robot extends TimedRobot {
@@ -36,7 +33,26 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
-        CommandScheduler.getInstance().run();        
+        CommandScheduler.getInstance().run();
+
+        ShiftInfo official = HubShiftUtil.getOfficialShiftInfo();
+        ShiftInfo shifted  = HubShiftUtil.getShiftedShiftInfo();
+
+        // Official shift info 
+        SmartDashboard.putString("Shift/Official/CurrentShift",   official.currentShift().toString());
+        SmartDashboard.putNumber("Shift/Official/RemainingTime", Math.round(official.remainingTime()*10)/10.0);
+        SmartDashboard.putNumber("Shift/Official/ElapsedTime",   Math.round(official.elapsedTime()*10)/10.0);
+        SmartDashboard.putNumber("Shift/Official/MatchTime",        HubShiftUtil.getMatchTime());
+        SmartDashboard.putBoolean("Shift/Official/Active",        official.active());
+
+        // Shifted shift info
+        SmartDashboard.putString("Shift/Shifted/CurrentShift",   shifted.currentShift().toString());
+        SmartDashboard.putNumber("Shift/Shifted/ElapsedTime",    shifted.elapsedTime());
+        SmartDashboard.putNumber("Shift/Shifted/RemainingTime",  shifted.remainingTime());
+        SmartDashboard.putBoolean("Shift/Shifted/Active",        shifted.active());
+
+
+        
     }
 
     @Override
@@ -69,6 +85,10 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
+
+        if (isSimulation()) {
+        RoboRioSim.setVInVoltage(12.5);
+    }
     }
 
     @Override
@@ -89,7 +109,5 @@ public class Robot extends TimedRobot {
     public void testExit() {}
 
     @Override
-    public void simulationPeriodic() {
-        SimulatedArena.getInstance().simulationPeriodic();
-    }
+    public void simulationPeriodic() {}
 }
