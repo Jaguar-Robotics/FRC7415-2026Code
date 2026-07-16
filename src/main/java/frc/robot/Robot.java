@@ -33,26 +33,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
-        CommandScheduler.getInstance().run();
-
-        ShiftInfo official = HubShiftUtil.getOfficialShiftInfo();
-        ShiftInfo shifted  = HubShiftUtil.getShiftedShiftInfo();
-
-        // Official shift info 
-        SmartDashboard.putString("Shift/Official/CurrentShift",   official.currentShift().toString());
-        SmartDashboard.putNumber("Shift/Official/RemainingTime", Math.round(official.remainingTime()*10)/10.0);
-        SmartDashboard.putNumber("Shift/Official/ElapsedTime",   Math.round(official.elapsedTime()*10)/10.0);
-        SmartDashboard.putNumber("Shift/Official/MatchTime",        HubShiftUtil.getMatchTime());
-        SmartDashboard.putBoolean("Shift/Official/Active",        official.active());
-
-        // Shifted shift info
-        SmartDashboard.putString("Shift/Shifted/CurrentShift",   shifted.currentShift().toString());
-        SmartDashboard.putNumber("Shift/Shifted/ElapsedTime",    shifted.elapsedTime());
-        SmartDashboard.putNumber("Shift/Shifted/RemainingTime",  shifted.remainingTime());
-        SmartDashboard.putBoolean("Shift/Shifted/Active",        shifted.active());
-
-
-        
+        CommandScheduler.getInstance().run();        
     }
 
     @Override

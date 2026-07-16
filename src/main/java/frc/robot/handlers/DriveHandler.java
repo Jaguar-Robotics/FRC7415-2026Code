@@ -17,21 +17,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.handlers.ShooterHandler.ShooterState;
 import frc.robot.handlers.StateSubsystem.State;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.HopperSubsystem;
 
 public class DriveHandler extends SubsystemBase {
 
     public enum DriveState implements State {
         TELEOPDRIVE,
-        TELEOPDRIVESLOW,
-        AUTOALLIGN,
-        SHOOTONTHEMOVE,
-        SNAKE,
-        XDRIVE,
-        BUMP_LOCK
   }
 
 
@@ -46,7 +38,6 @@ public class DriveHandler extends SubsystemBase {
 
   private DriveState desiredState = DriveState.TELEOPDRIVE; 
   private DriveState currentState = DriveState.TELEOPDRIVE;
-  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
 
   /** Creates a new IntakeHandler. */
   private DriveHandler() {}
@@ -58,18 +49,6 @@ public class DriveHandler extends SubsystemBase {
     return instance;
   }
 
-  Rectangle2d zone1 = new Rectangle2d(new Pose2d(1.0, 1.0, new Rotation2d()), 2.0, 2.0);
-  Rectangle2d zone2 = new Rectangle2d(new Pose2d(5.0, 3.0, new Rotation2d()), 1.5, 2.0);
-  Rectangle2d zone3 = new Rectangle2d(new Pose2d(10.0, 2.0, new Rotation2d()), 3.0, 1.0);
-  Rectangle2d zone4 = new Rectangle2d(new Pose2d(14.0, 5.0, new Rotation2d()), 2.0, 2.0);
-
-  Trigger inAnyZone = new Trigger(() -> {
-      Translation2d robotPos = drivetrain.getState().Pose.getTranslation();
-      return zone1.contains(robotPos) ||
-            zone2.contains(robotPos) ||
-            zone3.contains(robotPos) ||
-            zone4.contains(robotPos);
-  });
 
 
   public void initialize(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, SwerveRequest.FieldCentric drive,  double maxSpeed,  double maxAngularRate) {
@@ -111,24 +90,6 @@ public class DriveHandler extends SubsystemBase {
             case TELEOPDRIVE:
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
                 break;
-            case TELEOPDRIVESLOW:
-                drivetrain.setDefaultCommand(drivetrain.TeleopDriveSLOW(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
-                break;
-            case AUTOALLIGN:
-                drivetrain.setDefaultCommand(drivetrain.headingLocktoHub(joystick, maxSpeed, maxAngularRate));
-                break;
-           case SHOOTONTHEMOVE:
-                drivetrain.setDefaultCommand(drivetrain.shootOnTheMoveIterative(joystick, maxSpeed, maxAngularRate));
-               break;
-            case SNAKE:
-                drivetrain.setDefaultCommand(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate));
-                break;
-            case XDRIVE:
-                drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> brake));
-                break;
-            case BUMP_LOCK:
-                drivetrain.setDefaultCommand(drivetrain.bumpLockCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate)); 
-                break;
             default:
                 drivetrain.setDefaultCommand(drivetrain.TeleopDrive(joystick, maxSpeed, maxAngularRate, drive, drivetrain));
                 break;
@@ -142,8 +103,5 @@ public class DriveHandler extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putString("DriveState", currentState.toString());
-    SmartDashboard.putString("Current Command", drivetrain.getCurrentCommand() != null ? drivetrain.getCurrentCommand().getName() : "null");
-    // This method will be called once per scheduler run
   }
 }

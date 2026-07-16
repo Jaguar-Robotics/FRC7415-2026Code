@@ -13,18 +13,18 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import edu.wpi.first.wpilibj2.command.Command;   
 import edu.wpi.first.wpilibj2.command.Commands; 
-public class HopperSubsystem extends SubsystemBase {
+public class ExampleSubsystem extends SubsystemBase {
 
-  private final TalonFX hopperMotor = new TalonFX(Constants.HopperConstants.HopperMotorID, "Upper");
+  private final TalonFX exampleMotor = new TalonFX(Constants.ExampleSubsystemConstants.exampleMotorID, "Upper");
   /** Creates a new Intake. */
-  public HopperSubsystem() {}
+  public ExampleSubsystem() {}
 
   public void set(double speed){
-    hopperMotor.set(speed);
+    exampleMotor.set(speed);
   }
 
   public void stop(){
-    hopperMotor.set(0.0);
+    exampleMotor.set(0.0);
   }
   @Override
   public void periodic() {
