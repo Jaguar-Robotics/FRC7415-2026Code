@@ -44,6 +44,8 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
+import frc.robot.subsystems.Vision;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -357,6 +359,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     // --------------------- END GENERATED CODE -------------------
+    Vision vision;
+    public void initalize(Vision vision){
+        this.vision = vision;
+    }
     
     private double hubOffsetX = 0.0;
     private double hubOffsetY = 0.0;
@@ -442,6 +448,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Pose2d getTargetPose(Pose2d currentPose2d){
+        if (RobotContainer.ShowCaseMode){
+            return vision.SingleTagpose;
+        }
         final double thresholdY = Inches.of(158.32).in(Meters); //horizontal middle field line
         Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
         if (alliance == Alliance.Red){

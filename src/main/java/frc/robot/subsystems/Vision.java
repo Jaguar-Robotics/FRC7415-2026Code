@@ -1,8 +1,12 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
+import frc.robot.RobotContainer;
 
 public class Vision extends SubsystemBase {
   
@@ -95,12 +99,38 @@ public class Vision extends SubsystemBase {
       }
     }
   } 
-  
 
+  public Pose2d getSingleTagPose(int Tag, String limelightName) {
+      LimelightHelpers.SetFiducialIDFiltersOverride(limelightName, new int[]{Tag});
+
+      if (!LimelightHelpers.getTV(limelightName)) {
+          return null;
+      }
+
+      Pose3d pose3d = LimelightHelpers.getTargetPose3d_RobotSpace(limelightName);
+
+      if (pose3d == null) {
+          return null;
+      }
+
+    return drivetrain.getPose().transformBy(
+        new Transform2d(pose3d.toPose2d().getTranslation(), pose3d.toPose2d().getRotation())
+    );
+
+    }
+
+  
+  public Pose2d SingleTagpose = new Pose2d();
   @Override
   public void periodic() {
     for (String limeLight : PosLimelights) {
-      updateVisionMeasurements(limeLight); 
+      if (RobotContainer.ShowCaseMode) {
+        SingleTagpose = getSingleTagPose(13, limeLight);
+      return;
+      }
+      else {
+         updateVisionMeasurements(limeLight); 
+      }       
     }
   }
 }
