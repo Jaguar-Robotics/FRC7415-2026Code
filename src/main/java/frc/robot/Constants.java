@@ -27,7 +27,7 @@ public class Constants {
         public static final int ShooterFollowerReversedID = 22; //
         public static final int ShooterFollowerReversed2ID = 23; //
         public static final double FastShot = 100; // IN RPS
-        public static final double SlowShot = 20; //HESKEL CHANGE ME SLOW
+        public static final double SlowShot = 50; //HESKEL CHANGE ME SLOW
         public static final double RPSHardStop = 200.0; 
         public static final double RPSTolarance = 1;
         public static final double kS = 0.28; 
