@@ -109,7 +109,6 @@ public class Superstructure extends SubsystemBase {
 
   /** Call this from commands or joystick logic to set the next goal. */
   public void setDesiredState(SuperstructureState newState) {
-    System.out.print("SetDesiredState:" + newState);
     if (desiredState != newState) {
       desiredState = newState;
       handleStateTransition();
@@ -256,6 +255,15 @@ public class Superstructure extends SubsystemBase {
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FAST);
         driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
         break;
+      case SPINUPSLOW: //dont use
+        shooterHandler.setDesiredState(ShooterHandler.ShooterState.SLOW);
+        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
+        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
+        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
+        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
+        //driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        ShooterAtVelo = false;
+        break;
       case SLOWSHOT: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.SLOW);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
@@ -270,16 +278,16 @@ public class Superstructure extends SubsystemBase {
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
-        driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        //driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
         ShooterAtVelo = false;
-         break;
+        break;
       case FASTSHOT: //dont use
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.FAST);
         intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
         hopperHandler.setDesiredState(HopperHandler.HopperState.FAST);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWINTAKE);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.SLOWINTAKE);
-        driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
+        //driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
         intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.SLOWIN);
         break;
       case REVERSE:
@@ -289,22 +297,6 @@ public class Superstructure extends SubsystemBase {
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.SLOWREVERSE);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.FASTREVERSE);
         intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.OUT);
-        break;
-      case AIM:
-        shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
-        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
-        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
-        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
-        driveHandler.setDesiredState(DriveHandler.DriveState.AUTOALLIGN);
-        break;
-      case BUMP:
-        shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
-        intakeHandler.setDesiredState(IntakeHandler.IntakeState.OFF);
-        hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
-        indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
-        indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
-        driveHandler.setDesiredState(DriveHandler.DriveState.BUMP_LOCK);
         break;
       case OFF:
         shooterHandler.setDesiredState(ShooterHandler.ShooterState.OFF);
@@ -387,11 +379,6 @@ public class Superstructure extends SubsystemBase {
         if ((currentState == SuperstructureState.SHOOTONTHEMOVE || currentState == SuperstructureState.SHOOTONTHEMOVESPINUP) && !driverIsMoving) {
           setDesiredState(SuperstructureState.SPINUP);
         }
-
-        /*
-        if (currentState == SuperstructureState.STATIONARYSHOT && !DTaimed){
-          setDesiredState(SuperstructureState.SPINUP);
-        } */
           
 
 

@@ -22,11 +22,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -53,7 +53,7 @@ import frc.robot.utils.RumbleUtils;
 
 public class RobotContainer {
 
-    public static boolean ShowCaseMode = false; //Set true if showcasing ts 
+    public static boolean ShowCaseMode = true; //Set true if showcasing ts 
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -115,6 +115,7 @@ public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
+        DriverStation.silenceJoystickConnectionWarning(true); //turn off chud ass "joystick on this shit not available"
         PPHolonomicDriveController.clearRotationFeedbackOverride();
         DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate);
         ShooterHandler.getInstance().initialize(drivetrain, shooter);
@@ -345,7 +346,8 @@ public class RobotContainer {
         joystick.rightTrigger().onTrue(new InstantCommand(() -> {
             if (CommandSwerveDrivetrain.isInNutZone(drivetrain.getPose())) {
                 superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE);
-            } else {
+            } 
+            else {
                 superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP);
             }
         }));
@@ -441,24 +443,24 @@ public class RobotContainer {
         }
         
         if (ShowCaseMode) {
-            joystick.rightTrigger().onTrue(
-                new ConditionalCommand(
-                    // Left bumper held → sequence
+
+            joystick.rightTrigger().onTrue(new InstantCommand(() -> {
+                if (joystick.leftBumper().getAsBoolean()) {
+                    superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP);
+                }
+                else {
                     new SequentialCommandGroup(
                         Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPFAST)),
-                        Commands.waitSeconds(0.2),
+                        Commands.waitSeconds(0.3),
                         Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT))
-                    ),
-                    // Left bumper not held → just spin up
-                    Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUP)),
-                    joystick.leftBumper() // BooleanSupplier — evaluated when RT is pressed
-                )
-            );
+                    ).schedule();
+                }
+            }));
 
             joystick.rightBumper().onTrue(new SequentialCommandGroup(
                 Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SPINUPSLOW)),
-                Commands.waitSeconds(0.2),
-                Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SHOOTONTHEMOVE))
+                Commands.waitSeconds(0.3),
+                Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.SLOWSHOT))
             ));
 
             joystick.leftBumper().onTrue(new InstantCommand(() -> DriveHandler.getInstance().setDesiredState(DriveHandler.DriveState.AUTOALLIGN)));
@@ -467,6 +469,8 @@ public class RobotContainer {
             joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
             joystick.povRight().whileTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().ManualDrive(0.67))); //  out
             joystick.povLeft().whileTrue(Commands.runOnce(() -> IntakeSlideHandler.getInstance().ManualDrive(-0.67))); //in
+
+            noButtonsHeld.onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
 
         }
 

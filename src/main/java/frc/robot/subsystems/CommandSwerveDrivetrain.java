@@ -448,7 +448,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Pose2d getTargetPose(Pose2d currentPose2d){
-        if (RobotContainer.ShowCaseMode){
+        if (RobotContainer.ShowCaseMode && vision.SingleTagpose!= null){
             return vision.SingleTagpose;
         }
         final double thresholdY = Inches.of(158.32).in(Meters); //horizontal middle field line
