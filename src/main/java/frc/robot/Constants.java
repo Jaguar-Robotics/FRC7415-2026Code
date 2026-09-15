@@ -4,27 +4,18 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
 
 /** Add your docs here. */
 public class Constants {
 
-    
     public static abstract class ShooterConstants {
         public static final int ShooterLeaderID = 20; 
         public static final int ShooterFollowerID = 21;
-<<<<<<< HEAD
         public static final int ShooterFollowerReversedID = 22; //
         public static final int ShooterFollowerReversed2ID = 23; //
         public static final double FastShot = 100; // IN RPS
@@ -33,16 +24,6 @@ public class Constants {
         public static final double RPSTolarance = 1;
         public static final double kS = 0.28; 
         public static final double kV = 0.13; //0.13 
-=======
-        public static final int ShooterFollowerReversedID = 22;
-        public static final int ShooterFollowerReversed2ID = 23;
-        public static final AngularVelocity FastShot = RPM.of(5000); //HESHEL CHANGE ME FAST
-        public static final AngularVelocity SlowShot = RPM.of(3500); //HESKEL CHANGE ME SLOW
-        public static final AngularVelocity SetRPMHardStop = RPM.of(3200);
-        public static  double ShootingDistance = Feet.of(6).in(Meter); //6ft starting
-        public static int RPMTolarance = 50;
-
->>>>>>> main
     }
 
     public static abstract class IntakeConstants {
@@ -122,6 +103,17 @@ public class Constants {
             new Rotation2d()
         ); 
     }
+
+        public static abstract class PowerManagerConstants{
+            //Drive/ Shooter/ HighIndex/ LowIndex/ HopperFloor/ Intake/ Kicker/ Lintake (all supply upper limits)
+            public static final int[] IdleIntake = {35, 20, 20, 20, 20, 60, 25, 30};
+            public static final int[] StillScore = {25, 50, 40, 30, 30, 30, 20, 30};
+            public static final int[] SOTMScore = {20, 55, 40, 30, 30, 30, 20, 30};
+            public static final int[] TurboDrive = {70, 10, 10, 10, 10, 10, 10, 20};
+            public static final int[] BeastMode = {18, 55, 45, 35, 30, 10, 10, 20}; //shooting in last 6 sec? 
+
+            //public static final int[] idk why this is here 
+        }
         public static abstract class DriveConstants{
             public static final double xyP = 20;
             public static final double xyI = 0;

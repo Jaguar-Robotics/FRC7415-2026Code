@@ -460,7 +460,7 @@ public class RobotContainer {
 
 
         RobotModeTriggers.teleop().onTrue(Commands.runOnce(HubShiftUtil::initialize));
-        RobotModeTriggers.teleop().onTrue(Commands.runOnce(KickerSubsystem.getInstance()::setSlowCurrent));
+        RobotModeTriggers.teleop().onTrue(Commands.runOnce(() -> KickerSubsystem.getInstance().setKickerSupplyCurrent(20)));
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand (() ->PPHolonomicDriveController.clearRotationFeedbackOverride()));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));

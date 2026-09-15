@@ -36,21 +36,18 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   
   //inches to center hub from Robot orign , RPS
   static {
-    Shooter1Map.put(138.4 ,105.0);
+    
+   /* Stuff for when its 35 deg eventually TODO
+    * Shooter1Map.put(10000.0, 100000.0) 
+    */
+
+    Shooter1Map.put(138.4 ,105.0); //USES SHOOTER 1 for everything lmaoo
     Shooter1Map.put(121.4 ,77.0);
     Shooter1Map.put(104.6 ,70.0);
-    /*
-    Shooter1Map.put(74.3, 56.0);
-    Shooter1Map.put(60.5, 52.0);
-    Shooter1Map.put(52.1, 50.0);
-    */
-    
     Shooter1Map.put(85.8, 64.0);
     Shooter1Map.put(69.0, 60.0);
     Shooter1Map.put(56.7,52.0);
     
-
-
     Shooter2Map.put(138.4 ,105.0);
     Shooter2Map.put(121.4 ,77.0);
     Shooter2Map.put(104.6 ,70.0);
@@ -58,14 +55,12 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     Shooter2Map.put(69.0, 60.0);
     Shooter2Map.put(56.7,52.0);
 
-
     Shooter3Map.put(138.4 ,105.0);
     Shooter3Map.put(121.4 ,77.0);
     Shooter3Map.put(104.6 ,70.0);
     Shooter3Map.put(85.8, 64.0);
     Shooter3Map.put(69.0, 60.0);
     Shooter3Map.put(56.7,52.0);
-
 
     Shooter4Map.put(138.4 ,105.0);
     Shooter4Map.put(121.4 ,77.0);
@@ -147,9 +142,9 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   public void setTargetVeloDistance(double  distance) {//IN METERS
     double inches = distance * 39.3701;
     targetVeloRPS1 = Shooter1Map.get(inches) * ShooterMult; //get rid of shootermult
-    targetVeloRPS2 = Shooter2Map.get(inches) * ShooterMult;
-    targetVeloRPS3 = Shooter3Map.get(inches) * ShooterMult;
-    targetVeloRPS4 = Shooter4Map.get(inches) * ShooterMult;
+    targetVeloRPS2 = Shooter1Map.get(inches) * ShooterMult;
+    targetVeloRPS3 = Shooter1Map.get(inches) * ShooterMult;
+    targetVeloRPS4 = Shooter1Map.get(inches) * ShooterMult;
 
     if (targetVeloRPS1 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS1 = Constants.ShooterConstants.RPSHardStop;}
     if (targetVeloRPS2 >= Constants.ShooterConstants.RPSHardStop) { targetVeloRPS2 = Constants.ShooterConstants.RPSHardStop;}

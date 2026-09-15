@@ -24,12 +24,12 @@ public class IntakeSubsystem extends SubsystemBase {
   private final TalonFX  intakeMotor = new TalonFX(Constants.IntakeConstants.IntakeMotorID, "Upper");
   private final TalonFX intakeFollowerMotor = new TalonFX(Constants.IntakeConstants.IntakeFollowerReversedMotorID, "Upper");
 
-  public IntakeSubsystem() {
-    intakeFollowerMotor.setControl(new Follower(Constants.IntakeConstants.IntakeMotorID, MotorAlignmentValue.Opposed));
-
     TalonFXConfigurator leaderConfigurator = intakeMotor.getConfigurator();
     TalonFXConfigurator followerConfigurator = intakeFollowerMotor.getConfigurator();
     CurrentLimitsConfigs limitConfigs = new CurrentLimitsConfigs();
+
+  public IntakeSubsystem() {
+    intakeFollowerMotor.setControl(new Follower(Constants.IntakeConstants.IntakeMotorID, MotorAlignmentValue.Opposed));
 
     // enable suply current limit
     limitConfigs.SupplyCurrentLimit = 60;
@@ -42,6 +42,13 @@ public class IntakeSubsystem extends SubsystemBase {
     intakeMotor.set(speed);
     SmartDashboard.putBoolean("ranSetMethod", true);
     //return Commands.run(() -> intakeMotor.set(speed));
+  }
+
+  public void setHighSupplyLimit(int limit){
+    limitConfigs.SupplyCurrentLimit = limit;
+    
+    leaderConfigurator.apply(limitConfigs);
+    followerConfigurator.apply(limitConfigs);
   }
 
   public void stop(){

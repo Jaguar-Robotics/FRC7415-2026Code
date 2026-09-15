@@ -134,6 +134,8 @@ public class Elevator extends SubsystemBase {
     leaderInitialConfigs.MotionMagic.MotionMagicCruiseVelocity = 50*6; // rps
     leaderInitialConfigs.MotionMagic.MotionMagicAcceleration = 160*6; // rps/s
     leaderInitialConfigs.MotionMagic.MotionMagicJerk = 1600*2; // rps/s/s
+
+    
     }
 
     public Elevator() {

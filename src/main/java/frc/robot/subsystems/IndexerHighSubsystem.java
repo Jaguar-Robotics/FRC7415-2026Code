@@ -4,20 +4,32 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import edu.wpi.first.wpilibj2.command.Command;   
-import edu.wpi.first.wpilibj2.command.Commands; 
+import frc.robot.Constants; 
 public class IndexerHighSubsystem extends SubsystemBase {
 
   private final TalonFX indexerHighMotor = new TalonFX(Constants.IndexerConstants.HighIndexerMotorID, "Upper");
+
+  TalonFXConfigurator HighindexterConfigurator = indexerHighMotor.getConfigurator();
+  CurrentLimitsConfigs limitConfigs = new CurrentLimitsConfigs();
+
   /** Creates a new Intake. */
-  public IndexerHighSubsystem() {}
+  public IndexerHighSubsystem() {
+    // enable suply current limit
+    limitConfigs.SupplyCurrentLimit = 20;
+    limitConfigs.SupplyCurrentLimitEnable = true;
+
+    HighindexterConfigurator.apply(limitConfigs);
+  }
+
+  public void setHighIndexerLimit(int limit){
+    limitConfigs.SupplyCurrentLimit = limit;
+    HighindexterConfigurator.apply(limitConfigs);
+  }
 
   public void set(double speed){
     indexerHighMotor.set(speed);

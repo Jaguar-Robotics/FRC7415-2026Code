@@ -25,16 +25,12 @@ public class KickerSubsystem extends SubsystemBase {
   private final TalonFX  kickerMotor = new TalonFX(Constants.IntakeConstants.KickerMotorID, "Upper");
   private static KickerSubsystem instance;
   TalonFXConfigurator  talonFXConfigurator = kickerMotor.getConfigurator();
-  TalonFXConfigurator AutotalonFXConfigurator = kickerMotor.getConfigurator();
 
   CurrentLimitsConfigs  teleoplimitConfig = new CurrentLimitsConfigs();
   CurrentLimitsConfigs  limitConfigs = new CurrentLimitsConfigs();
 
   
   public KickerSubsystem() {
-  
-  
-
     // enable suply current limit
     limitConfigs.SupplyCurrentLimit = 40;
     limitConfigs.SupplyCurrentLimitEnable = true;
@@ -43,7 +39,7 @@ public class KickerSubsystem extends SubsystemBase {
     teleoplimitConfig.SupplyCurrentLowerLimit = 20;
     teleoplimitConfig.SupplyCurrentLimitEnable = true;
 
-  talonFXConfigurator.apply(limitConfigs);
+    talonFXConfigurator.apply(limitConfigs);
   }
 
   public static KickerSubsystem getInstance(){
@@ -58,9 +54,9 @@ public class KickerSubsystem extends SubsystemBase {
     //System.out.println("peepeehouse");
   }
 
-  public void setSlowCurrent() {
-    AutotalonFXConfigurator.apply(teleoplimitConfig);
-    System.out.println(kickerMotor.getSupplyCurrent().toString());
+  public void setKickerSupplyCurrent(int limit) {
+    teleoplimitConfig.SupplyCurrentLimit = limit;
+    talonFXConfigurator.apply(teleoplimitConfig);
   }
 
   public void stop(){
