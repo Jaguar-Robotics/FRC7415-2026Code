@@ -21,7 +21,7 @@ public class HopperHandler extends SubsystemBase implements StateSubsystem {
   }
 
   private static HopperHandler instance;
-  private final HopperSubsystem hopper = new HopperSubsystem();
+  private final HopperSubsystem hopper = HopperSubsystem.getInstance();
 
   private HopperState desiredState = HopperState.OFF;
   private HopperState currentState = HopperState.OFF;

@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
 import frc.robot.handlers.IntakeSlideHandler;
+import frc.robot.handlers.PowerHandler;
 import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
 import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.Superstructure;
@@ -74,12 +75,13 @@ public class RobotContainer {
     
     public final Vision vision = new Vision(drivetrain);
 
-    public final BangBangShooterSubsystem shooter = new BangBangShooterSubsystem(); 
-    public final IntakeSubsystem intake = new IntakeSubsystem();
-    public final HopperSubsystem hopper = new HopperSubsystem();
-    public final IndexerHighSubsystem HighIndexer = new IndexerHighSubsystem();
-    public final IndexerLowSubsystem LowIndexer = new IndexerLowSubsystem();
-    public final Elevator IntakeSlide = new Elevator();
+    public final BangBangShooterSubsystem shooter = BangBangShooterSubsystem.getInstance();
+    public final IntakeSubsystem intake = IntakeSubsystem.getInstance();
+    public final HopperSubsystem hopper = HopperSubsystem.getInstance();
+    public final IndexerHighSubsystem HighIndexer = IndexerHighSubsystem.getInstance();
+    public final IndexerLowSubsystem LowIndexer = IndexerLowSubsystem.getInstance();
+    public final Elevator IntakeSlide = Elevator.getInstance();
+    public final KickerSubsystem kicker = KickerSubsystem.getInstance();
 
     public final Superstructure superstructure = Superstructure.getInstance(); 
 
@@ -118,7 +120,9 @@ public class RobotContainer {
         PPHolonomicDriveController.clearRotationFeedbackOverride();
         DriveHandler.getInstance().initialize(drivetrain, joystick, drive, MaxSpeed, MaxAngularRate);
         ShooterHandler.getInstance().initialize(drivetrain, shooter);
+        PowerHandler.getInstance().initialize(drivetrain, shooter, HighIndexer, LowIndexer, hopper, intake, kicker, IntakeSlide);
         Superstructure.getInstance().initialize(shooter, drivetrain, joystick);
+        
 
         configurePathPlanner();
 

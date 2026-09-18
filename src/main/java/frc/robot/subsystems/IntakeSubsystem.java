@@ -27,6 +27,7 @@ public class IntakeSubsystem extends SubsystemBase {
     TalonFXConfigurator leaderConfigurator = intakeMotor.getConfigurator();
     TalonFXConfigurator followerConfigurator = intakeFollowerMotor.getConfigurator();
     CurrentLimitsConfigs limitConfigs = new CurrentLimitsConfigs();
+    private static IntakeSubsystem instance;
 
   public IntakeSubsystem() {
     intakeFollowerMotor.setControl(new Follower(Constants.IntakeConstants.IntakeMotorID, MotorAlignmentValue.Opposed));
@@ -38,9 +39,19 @@ public class IntakeSubsystem extends SubsystemBase {
     leaderConfigurator.apply(limitConfigs);
     followerConfigurator.apply(limitConfigs);
   }
+
+  public static IntakeSubsystem getInstance(){
+    if (instance == null){
+      instance = new IntakeSubsystem();
+    }
+    return instance;
+  }
+  
   public void set(double speed){
     intakeMotor.set(speed);
   }
+
+  
 
   public void setHighSupplyLimit(int limit){
     limitConfigs.SupplyCurrentLimit = limit;

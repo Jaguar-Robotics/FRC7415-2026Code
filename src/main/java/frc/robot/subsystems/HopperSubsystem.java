@@ -9,10 +9,12 @@ import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants; 
+import frc.robot.Constants;
+import frc.robot.handlers.HopperHandler.HopperState; 
 public class HopperSubsystem extends SubsystemBase {
 
   private final TalonFX hopperMotor = new TalonFX(Constants.HopperConstants.HopperMotorID, "Upper");
+  private static HopperSubsystem instance;
 
   TalonFXConfigurator HopperConfigurator = hopperMotor.getConfigurator();
   CurrentLimitsConfigs limitConfigs = new CurrentLimitsConfigs();
@@ -23,6 +25,13 @@ public class HopperSubsystem extends SubsystemBase {
     limitConfigs.SupplyCurrentLimitEnable = true;
 
     HopperConfigurator.apply(limitConfigs);
+  }
+
+  public static HopperSubsystem getInstance(){
+    if (instance == null){
+      instance = new HopperSubsystem();
+    }
+    return instance;
   }
 
   public void set(double speed){

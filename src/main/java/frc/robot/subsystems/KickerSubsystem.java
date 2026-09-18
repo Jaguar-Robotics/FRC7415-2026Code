@@ -36,7 +36,6 @@ public class KickerSubsystem extends SubsystemBase {
     limitConfigs.SupplyCurrentLimitEnable = true;
 
     teleoplimitConfig.SupplyCurrentLimit = 20;
-    teleoplimitConfig.SupplyCurrentLowerLimit = 20;
     teleoplimitConfig.SupplyCurrentLimitEnable = true;
 
     talonFXConfigurator.apply(limitConfigs);

@@ -162,6 +162,14 @@ public class Elevator extends SubsystemBase {
         }
     }
 
+    private static Elevator instance;
+    public static Elevator getInstance(){
+    if (instance == null){
+      instance = new Elevator();
+    }
+    return instance;
+    }
+
     /**
      * @return The Position of the elevator
      */

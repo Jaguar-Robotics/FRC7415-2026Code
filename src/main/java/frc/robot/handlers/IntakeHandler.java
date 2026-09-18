@@ -29,14 +29,13 @@ public class IntakeHandler extends SubsystemBase implements StateSubsystem {
   }
 
   private static IntakeHandler instance;
-  private Elevator lintake;
-  private IntakeSubsystem intake = new IntakeSubsystem();
-  private KickerSubsystem kicker = new KickerSubsystem();
+  private IntakeSubsystem intake = IntakeSubsystem.getInstance();
+  private KickerSubsystem kicker = KickerSubsystem.getInstance();
+
   private IntakeState desiredState = IntakeState.OFF;
   private IntakeState currentState = IntakeState.OFF;
 
-    public void initialize(Elevator lintake) {
-    this.lintake = lintake;
+    public void initialize() {
     }
 
 

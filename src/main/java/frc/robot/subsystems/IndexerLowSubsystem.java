@@ -14,6 +14,7 @@ public class IndexerLowSubsystem extends SubsystemBase {
 
 
   private final TalonFX indexerLowMotor = new TalonFX(Constants.IndexerConstants.LowIndexerMotorID, "Upper");
+  private static IndexerLowSubsystem instance;
   TalonFXConfigurator lowindexterConfigurator = indexerLowMotor.getConfigurator();
   CurrentLimitsConfigs limitConfigs = new CurrentLimitsConfigs();
   
@@ -24,6 +25,13 @@ public class IndexerLowSubsystem extends SubsystemBase {
     limitConfigs.SupplyCurrentLimitEnable = true;
 
     lowindexterConfigurator.apply(limitConfigs);
+  }
+
+  public static IndexerLowSubsystem getInstance(){
+    if (instance == null){
+      instance = new IndexerLowSubsystem();
+    }
+    return instance;
   }
 
   public void set(double speed){

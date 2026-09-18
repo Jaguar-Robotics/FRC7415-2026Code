@@ -13,6 +13,7 @@ import frc.robot.Constants;
 public class IndexerHighSubsystem extends SubsystemBase {
 
   private final TalonFX indexerHighMotor = new TalonFX(Constants.IndexerConstants.HighIndexerMotorID, "Upper");
+  private static IndexerHighSubsystem instance;
 
   TalonFXConfigurator HighindexterConfigurator = indexerHighMotor.getConfigurator();
   CurrentLimitsConfigs limitConfigs = new CurrentLimitsConfigs();
@@ -24,6 +25,13 @@ public class IndexerHighSubsystem extends SubsystemBase {
     limitConfigs.SupplyCurrentLimitEnable = true;
 
     HighindexterConfigurator.apply(limitConfigs);
+  }
+
+  public static IndexerHighSubsystem getInstance(){
+    if (instance == null){
+      instance = new IndexerHighSubsystem();
+    }
+    return instance;
   }
 
   public void setHighIndexerLimit(int limit){

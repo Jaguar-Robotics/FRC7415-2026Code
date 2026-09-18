@@ -4,6 +4,8 @@
 
 package frc.robot.handlers;
 
+import dev.doglog.DogLog;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -20,21 +22,23 @@ import frc.robot.subsystems.IndexerHighSubsystem;
 import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.KickerSubsystem;
+import frc.robot.utils.HubShiftUtil;
 
 public class PowerHandler extends SubsystemBase implements StateSubsystem {
 
     
     public enum PowerState implements State {
-      IDLE, //norm
+      IDLEINTAKE, //norm
       STILLSCORE, //stationary shot
       SOTM, //sotm
       TURBODRIVE, //fast drive mode
       BEASTMODE, //prioritize feed for last x sec of match
-      AUTO //lowk im not using ts
+      INTAKEMAXXING, //prioritize intake and kicker
+      OUTAKE
   }
 
-  private PowerState desiredState = PowerState.AUTO;
-  private PowerState currentState = PowerState.AUTO;
+  private PowerState desiredState = PowerState.IDLEINTAKE;
+  private PowerState currentState = PowerState.IDLEINTAKE;
   private static PowerHandler instance;
   
   CommandSwerveDrivetrain drivetrain;
@@ -55,7 +59,7 @@ public class PowerHandler extends SubsystemBase implements StateSubsystem {
           IntakeSubsystem intake,
           KickerSubsystem kicker,
           Elevator lintake) 
-          {
+    {
     this.drivetrain = drivetrain;
     this.shooter = shooter;
     this.highIndexer = highIndexer;
@@ -80,19 +84,21 @@ public class PowerHandler extends SubsystemBase implements StateSubsystem {
   public void setDesiredState(State state){
         if (state instanceof PowerState powerState && desiredState != powerState) {
         desiredState = powerState;
+        if ((desiredState == PowerState.STILLSCORE || desiredState == PowerState.SOTM) && HubShiftUtil.getMatchTime() <= Constants.PowerManagerConstants.BeastModeTimeLimit && DriverStation.isTeleopEnabled()){
+          desiredState = PowerState.BEASTMODE;}
         handleStateTransition();
     }
   }
 
   private void setAllStates(int[] limitArray){
-    drivetrain.setDTCurrentLimits(limitArray[1]);
-    shooter.setShooterCurrentLimits(limitArray[2]);
-    highIndexer.setHighIndexerLimit(limitArray[3]);
-    lowIndexer.setLowIndexerLimit(limitArray[4]);
-    hopper.setHopperLimit(limitArray[5]);
-    intake.setHighSupplyLimit(limitArray[6]);
-    kicker.setKickerSupplyCurrent(limitArray[7]);
-    lintake.setMotorCurrentLimit(limitArray[8]);
+    drivetrain.setDTCurrentLimits(limitArray[0]);
+    shooter.setShooterCurrentLimits(limitArray[1]);
+    highIndexer.setHighIndexerLimit(limitArray[2]);
+    lowIndexer.setLowIndexerLimit(limitArray[3]);
+    hopper.setHopperLimit(limitArray[4]);
+    intake.setHighSupplyLimit(limitArray[5]);
+    kicker.setKickerSupplyCurrent(limitArray[6]);
+    lintake.setMotorCurrentLimit(limitArray[7]);
   }
 
   @Override
@@ -103,8 +109,28 @@ public class PowerHandler extends SubsystemBase implements StateSubsystem {
     @Override
     public void update() {
         switch (desiredState) {
-            case IDLE:
+            case IDLEINTAKE:
+              setAllStates(Constants.PowerManagerConstants.IdleIntake);
             break;
+            case STILLSCORE:
+              setAllStates(Constants.PowerManagerConstants.StillScore);
+            break;
+            case INTAKEMAXXING:
+              setAllStates(Constants.PowerManagerConstants.IntakeMode);
+            break;
+            case SOTM:
+              setAllStates(Constants.PowerManagerConstants.SOTMScore);
+            break;
+            case TURBODRIVE:
+              setAllStates(Constants.PowerManagerConstants.TurboDrive);
+            break;
+            case BEASTMODE:
+              setAllStates(Constants.PowerManagerConstants.BeastMode);
+            break;
+            case OUTAKE:
+              setAllStates(Constants.PowerManagerConstants.Outtake);
+            break;
+
         }
         currentState = desiredState;
     }
@@ -115,8 +141,7 @@ public class PowerHandler extends SubsystemBase implements StateSubsystem {
 
   @Override
   public void periodic() {
-    SmartDashboard.putString("IntakeHandlerState", currentState.toString());
     update();
-    // This method will be called once per scheduler run
+    DogLog.log("PowerManager/ Current State", currentState.toString());
   }
 } 

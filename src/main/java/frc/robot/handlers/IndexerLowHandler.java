@@ -25,7 +25,7 @@ public class IndexerLowHandler extends SubsystemBase implements StateSubsystem {
   }
 
   private static IndexerLowHandler instance;
-  private final IndexerLowSubsystem index = new IndexerLowSubsystem();
+  private final IndexerLowSubsystem index = IndexerLowSubsystem.getInstance();
 
   private IndexerLowState desiredState = IndexerLowState.OFF;
   private IndexerLowState currentState = IndexerLowState.OFF;
