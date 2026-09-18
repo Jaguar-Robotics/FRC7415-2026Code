@@ -107,10 +107,12 @@ public class Constants {
         public static abstract class PowerManagerConstants{
             //Drive/ Shooter/ HighIndex/ LowIndex/ HopperFloor/ Intake/ Kicker/ Lintake (all supply upper limits)
             public static final int[] IdleIntake = {35, 20, 20, 20, 20, 60, 25, 30};
+            public static final int[] Outtake = {25, 10, 10, 25, 20, 60, 30, 30};
             public static final int[] StillScore = {25, 50, 40, 30, 30, 30, 20, 30};
             public static final int[] SOTMScore = {20, 55, 40, 30, 30, 30, 20, 30};
             public static final int[] TurboDrive = {70, 10, 10, 10, 10, 10, 10, 20};
             public static final int[] BeastMode = {18, 55, 45, 35, 30, 10, 10, 20}; //shooting in last 6 sec? 
+            public static final int[] IntakeMode = {30, 10, 10, 10, 20, 60, 30, 20}; //mega intake mode
 
             //public static final int[] idk why this is here 
         }

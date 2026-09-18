@@ -12,7 +12,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.handlers.IntakeHandler.IntakeState;
+import frc.robot.subsystems.BangBangShooterSubsystem;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.HopperSubsystem;
+import frc.robot.subsystems.IndexerHighSubsystem;
+import frc.robot.subsystems.IndexerLowSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.KickerSubsystem;
 
@@ -20,20 +25,46 @@ public class PowerHandler extends SubsystemBase implements StateSubsystem {
 
     
     public enum PowerState implements State {
-      IDLE,
-      STILLSCORE,
-      SOTM,
-      TURBODRIVE,
-      BEASTMODE,
-      AUTO
+      IDLE, //norm
+      STILLSCORE, //stationary shot
+      SOTM, //sotm
+      TURBODRIVE, //fast drive mode
+      BEASTMODE, //prioritize feed for last x sec of match
+      AUTO //lowk im not using ts
   }
 
   private PowerState desiredState = PowerState.AUTO;
   private PowerState currentState = PowerState.AUTO;
   private static PowerHandler instance;
-
-    public void initialize() {
-    }
+  
+  CommandSwerveDrivetrain drivetrain;
+  BangBangShooterSubsystem shooter;
+  IndexerHighSubsystem highIndexer;
+  IndexerLowSubsystem lowIndexer;
+  HopperSubsystem hopper;
+  IntakeSubsystem intake;
+  KickerSubsystem kicker;
+  Elevator lintake;
+  //Drive/ Shooter/ HighIndex/ LowIndex/ HopperFloor/ Intake/ Kicker/ Lintake (all supply upper limits)
+  public void initialize(  
+          CommandSwerveDrivetrain drivetrain,
+          BangBangShooterSubsystem shooter,
+          IndexerHighSubsystem highIndexer,
+          IndexerLowSubsystem lowIndexer,
+          HopperSubsystem hopper,
+          IntakeSubsystem intake,
+          KickerSubsystem kicker,
+          Elevator lintake) 
+          {
+    this.drivetrain = drivetrain;
+    this.shooter = shooter;
+    this.highIndexer = highIndexer;
+    this.lowIndexer = lowIndexer;
+    this.hopper = hopper;
+    this.intake = intake;
+    this.kicker = kicker;
+    this.lintake = lintake;
+  }
 
 
   private PowerHandler() {}
@@ -51,6 +82,17 @@ public class PowerHandler extends SubsystemBase implements StateSubsystem {
         desiredState = powerState;
         handleStateTransition();
     }
+  }
+
+  private void setAllStates(int[] limitArray){
+    drivetrain.setDTCurrentLimits(limitArray[1]);
+    shooter.setShooterCurrentLimits(limitArray[2]);
+    highIndexer.setHighIndexerLimit(limitArray[3]);
+    lowIndexer.setLowIndexerLimit(limitArray[4]);
+    hopper.setHopperLimit(limitArray[5]);
+    intake.setHighSupplyLimit(limitArray[6]);
+    kicker.setKickerSupplyCurrent(limitArray[7]);
+    lintake.setMotorCurrentLimit(limitArray[8]);
   }
 
   @Override

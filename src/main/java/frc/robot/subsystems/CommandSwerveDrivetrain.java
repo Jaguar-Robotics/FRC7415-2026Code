@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -357,6 +358,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     // --------------------- END GENERATED CODE -------------------
+
+    public void setDTCurrentLimits(int limitAmps) {
+        var currentLimits = new CurrentLimitsConfigs()
+        .withSupplyCurrentLimit(limitAmps) // proportional supply cap; adjust as needed
+        .withSupplyCurrentLimitEnable(true);
+
+    for (var module : getModules()) {
+        module.getDriveMotor().getConfigurator().apply(currentLimits);
+    }
+}
     
     private double hubOffsetX = 0.0;
     private double hubOffsetY = 0.0;

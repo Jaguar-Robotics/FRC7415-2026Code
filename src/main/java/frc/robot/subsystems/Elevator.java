@@ -9,7 +9,6 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -17,6 +16,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -25,7 +25,6 @@ import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -121,8 +120,14 @@ public class Elevator extends SubsystemBase {
     /** Configs common across just the leader motors. */
     private static final TalonFXConfiguration leaderInitialConfigs = motorInitialConfigs.clone();
 
+    private static CurrentLimitsConfigs ElevatorCurLimits = new CurrentLimitsConfigs()
+         .withSupplyCurrentLimit(Amps.of(120))
+         .withSupplyCurrentLimitEnable(true);
+
     /** Configs for {@link #motor_id_35}. */
-    private final TalonFXConfiguration motor_id_35Configs = leaderInitialConfigs.clone();
+    private final TalonFXConfiguration motor_id_35Configs = leaderInitialConfigs.clone()
+        .withCurrentLimits(ElevatorCurLimits);
+
 
     static {
     // Configure MotionMagic for the leader motors
@@ -252,6 +257,10 @@ public class Elevator extends SubsystemBase {
 
     public boolean isAtSetpoint(Elevator.Setpoint setpoint){
         return getPosition().isNear(setpoint.target, Rotations.of(0.2));
+    }
+
+    public void setMotorCurrentLimit(int limit){
+        ElevatorCurLimits.withSupplyCurrentLimit(Amps.of(limit));
     }
 
     @Override

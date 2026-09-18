@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -26,6 +28,13 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   private final TalonFX ShooterMotor2 = new TalonFX(Constants.ShooterConstants.ShooterFollowerID, "Upper");
   private final TalonFX ShooterMotorRev3 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversed2ID, "Upper");
   private final TalonFX ShooterMotorRev4 = new TalonFX(Constants.ShooterConstants.ShooterFollowerReversedID, "Upper");
+
+  TalonFXConfigurator Shooter1Configurator = ShooterMotor.getConfigurator();
+  TalonFXConfigurator Shooter2Configurator = ShooterMotor2.getConfigurator();
+  TalonFXConfigurator Shooter3Configurator = ShooterMotorRev3.getConfigurator();
+  TalonFXConfigurator Shooter4Configurator = ShooterMotorRev4.getConfigurator();
+
+  CurrentLimitsConfigs limitConfigs = new CurrentLimitsConfigs();
 
   private final BangBangController controllerBangBang = new BangBangController();
 
@@ -97,6 +106,23 @@ public class BangBangShooterSubsystem extends SubsystemBase {
     ShooterMotorRev4.setNeutralMode(NeutralModeValue.Coast);
 
     controllerBangBang.setTolerance(Constants.ShooterConstants.RPSTolarance);
+
+    limitConfigs.SupplyCurrentLimit = 20;
+    limitConfigs.SupplyCurrentLimitEnable = true;
+
+    Shooter1Configurator.apply(limitConfigs);
+    Shooter2Configurator.apply(limitConfigs);
+    Shooter3Configurator.apply(limitConfigs);
+    Shooter4Configurator.apply(limitConfigs);
+  }
+
+  public void setShooterCurrentLimits(int limitAmps){
+    limitConfigs.SupplyCurrentLimit = limitAmps;
+
+    Shooter1Configurator.apply(limitConfigs);
+    Shooter2Configurator.apply(limitConfigs);
+    Shooter3Configurator.apply(limitConfigs);
+    Shooter4Configurator.apply(limitConfigs);
   }
 
 

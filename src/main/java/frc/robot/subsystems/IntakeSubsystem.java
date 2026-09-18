@@ -40,8 +40,6 @@ public class IntakeSubsystem extends SubsystemBase {
   }
   public void set(double speed){
     intakeMotor.set(speed);
-    SmartDashboard.putBoolean("ranSetMethod", true);
-    //return Commands.run(() -> intakeMotor.set(speed));
   }
 
   public void setHighSupplyLimit(int limit){
@@ -53,12 +51,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void stop(){
     intakeMotor.set(0);
-    //return Commands.run(() -> intakeMotor.set(0.0));
   }
   @Override
   public void periodic() {
     double IntakeRPS = Math.abs(intakeMotor.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("IntakeSpeed", IntakeRPS);
-    // This method will be called once per scheduler run
   }
 } 

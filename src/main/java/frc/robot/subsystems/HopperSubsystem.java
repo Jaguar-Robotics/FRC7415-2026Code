@@ -29,7 +29,7 @@ public class HopperSubsystem extends SubsystemBase {
     hopperMotor.set(speed);
   }
 
-  public void setHighIndexerLimit(int limit){
+  public void setHopperLimit(int limit){
     limitConfigs.SupplyCurrentLimit = limit;
     HopperConfigurator.apply(limitConfigs);
   }
