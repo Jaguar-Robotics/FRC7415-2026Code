@@ -99,6 +99,10 @@ public class RobotContainer {
         var info = HubShiftUtil.getOfficialShiftInfo();
         return info.remainingTime() <= 1.0;});
 
+    // WPI Trigger: while true, a running PathPlanner auto path reverses direction; once false,
+    // it resumes forward from wherever it left off. See CommandSwerveDrivetrain.isBeached().
+    Trigger beachedTrigger = new Trigger(drivetrain::isBeached);
+
     Trigger noButtonsHeld = new Trigger(() ->
     !joystick.a().getAsBoolean() &&
     !joystick.b().getAsBoolean() &&
@@ -141,6 +145,14 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("IntakeOff",
          new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+
+        // Bracket bump crossings in the PathPlanner GUI with these event markers so the gyro
+        // tilt from driving over the bump doesn't get mistaken for being beached on a ball.
+        NamedCommands.registerCommand("SuppressBeachDetection",
+         new InstantCommand(() -> drivetrain.setBeachDetectionSuppressed(true)));
+
+        NamedCommands.registerCommand("AllowBeachDetection",
+         new InstantCommand(() -> drivetrain.setBeachDetectionSuppressed(false)));
 
         NamedCommands.registerCommand("AutoShoot",
         new SequentialCommandGroup(
@@ -464,6 +476,7 @@ public class RobotContainer {
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand (() ->PPHolonomicDriveController.clearRotationFeedbackOverride()));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+        RobotModeTriggers.autonomous().onTrue(new InstantCommand(() -> drivetrain.setBeachDetectionSuppressed(false)));
 
         fiveSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.5));
         threeSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.25));
@@ -471,6 +484,8 @@ public class RobotContainer {
         oneSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 1));
 
         fiveSecWarning.onTrue(new InstantCommand(() -> SmartDashboard.putBoolean("isTsWorking", true)));
+
+        beachedTrigger.onTrue(RumbleUtils.rumble(joystick, 0.75, 0.3));
     }        
 
     public Command getAutonomousCommand() {

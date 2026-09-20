@@ -6,6 +6,8 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -17,10 +19,13 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.controllers.PathFollowingController;
+import com.pathplanner.lib.util.DriveFeedforwards;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -44,6 +49,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.commands.ReversiblePathFollowingCommand;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -58,6 +64,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+
+    /* "Beached on a ball" detection: debounced gyro tilt used to reverse a running auto path */
+    private final Debouncer beachedDebouncer =
+        new Debouncer(Constants.DriveConstants.BeachedDebounceSeconds, Debouncer.DebounceType.kRising);
+    private boolean beachDetectionSuppressed = false;
+    private boolean beached = false;
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -231,29 +243,68 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         try {
             var config = RobotConfig.fromGUISettings();
-            AutoBuilder.configure(
-                () -> getState().Pose,   // Supplier of current robot pose
-                this::resetPose,         // Consumer for seeding pose against auto
-                () -> getState().Speeds, // Supplier of current robot speeds
-                // Consumer of ChassisSpeeds and feedforwards to drive the robot
-                (speeds, feedforwards) -> setControl(
-                    m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
-                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+            var poseSupplier = (Supplier<Pose2d>) (() -> getState().Pose);
+            var speedsSupplier = (Supplier<ChassisSpeeds>) (() -> getState().Speeds);
+            BiConsumer<ChassisSpeeds, DriveFeedforwards> output = (speeds, feedforwards) -> setControl(
+                m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
+                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+            );
+            PathFollowingController controller = new PPHolonomicDriveController(
+                // PID constants for translation
+                new PIDConstants(5, 0, 0), //TP ,  TD
+                // PID constants for rotation
+                new PIDConstants(5,0,0)//okherejakegay
+            );
+            // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+            BooleanSupplier shouldFlipPath = () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+
+            AutoBuilder.configureCustom(
+                path -> new ReversiblePathFollowingCommand(
+                    path,
+                    poseSupplier,
+                    speedsSupplier,
+                    output,
+                    controller,
+                    config,
+                    shouldFlipPath,
+                    this::isBeached, // WPI Trigger-driven: back up along the path while beached
+                    this // Subsystem for requirements
                 ),
-                new PPHolonomicDriveController(
-                    // PID constants for translation
-                    new PIDConstants(5, 0, 0), //TP ,  TD
-                    // PID constants for rotation
-                    new PIDConstants(5,0,0)//okherejakegay
-                ),
-                config,
-                // Assume the path needs to be flipped for Red vs Blue, this is normally the case
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                this // Subsystem for requirements
+                poseSupplier,
+                this::resetPose, // Consumer for seeding pose against auto
+                shouldFlipPath,
+                config.isHolonomic
             );
         } catch (Exception ex) {
             DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
+        }
+    }
+
+    /**
+     * True when the robot appears to be beached (stuck riding up on a game piece), based on a
+     * debounced combined pitch/roll gyro tilt. While true, a running {@link
+     * ReversiblePathFollowingCommand} will drive backwards along its path instead of forwards.
+     *
+     * <p>Detection is suppressed while {@link #setBeachDetectionSuppressed} has been set, which
+     * auto paths should do (via the "SuppressBeachDetection"/"AllowBeachDetection" named commands)
+     * while intentionally driving over the field bump, since that also tilts the gyro.
+     */
+    public boolean isBeached() {
+        return beached;
+    }
+
+    /**
+     * Suppress (or re-enable) beach detection, e.g. while an auto path is intentionally driving
+     * over the field bump.
+     *
+     * @param suppressed true to ignore gyro tilt, false to resume normal detection
+     */
+    public void setBeachDetectionSuppressed(boolean suppressed) {
+        beachDetectionSuppressed = suppressed;
+        if (suppressed) {
+            beachedDebouncer.calculate(false);
+            beached = false;
         }
     }
 
@@ -901,6 +952,16 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
     public void periodic() {
         if(ShootingLocation != null){field.getObject("Shooting Target").setPose(ShootingLocation);}
         field.setRobotPose(getPose());
+
+        double pitchDegrees = getPigeon2().getPitch().getValueAsDouble();
+        double rollDegrees = getPigeon2().getRoll().getValueAsDouble();
+        double tiltDegrees = Math.hypot(pitchDegrees, rollDegrees);
+        boolean tilted = DriverStation.isAutonomousEnabled()
+            && !beachDetectionSuppressed
+            && tiltDegrees >= Constants.DriveConstants.BeachedTiltThresholdDegrees;
+        beached = beachedDebouncer.calculate(tilted);
+        SmartDashboard.putNumber("Drivetrain/TiltDegrees", tiltDegrees);
+        SmartDashboard.putBoolean("Drivetrain/Beached", beached);
         SmartDashboard.putNumber("distanceToCenterHubInches", getDistance() * 39.3701);
         SmartDashboard.putNumber("distanceLookaheadHubInches", getLookaheadDistance() * 39.3701);
         SmartDashboard.putNumber("Hub/OffsetX", hubOffsetX);
