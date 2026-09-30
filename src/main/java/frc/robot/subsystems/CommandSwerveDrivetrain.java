@@ -22,6 +22,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.controllers.PathFollowingController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
@@ -281,6 +282,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+
+    boolean beachOveride = false;
+
     /**
      * True when the robot appears to be beached (stuck riding up on a game piece), based on a
      * debounced combined pitch/roll gyro tilt. While true, a running {@link
@@ -291,7 +295,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * while intentionally driving over the field bump, since that also tilts the gyro.
      */
     public boolean isBeached() {
-        return beached;
+        return beached || beachOveride;
+    }
+
+    public void ManualSetIfBeached(boolean isBeached){
+        if(isBeached) beachOveride = true;
+        else beachOveride = false;
     }
 
     /**
@@ -460,7 +469,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         public static boolean isInNutZone(Pose2d robotPose){
             double robotX = robotPose.getX();
-            return (robotX >= Inches.of(182.11).in(Meters) && robotX<= Inches.of(469.11).in(Meters));
+            return (robotX >= Inches.of(182.11).in(Meters) && robotX<= Inches.of(469.11).in(Meters)); //initial values are the middle of bump, 40 is a buffer so its better for tilt detection
+        }
+
+        public static boolean IsSafeToReverse(Pose2d robotPose){
+            double robotX = robotPose.getX();
+            return (robotX >= Inches.of(182.11 + 40).in(Meters) && robotX<= Inches.of(469.11 - 40).in(Meters)); //initial values are the middle of bump, 40 is a buffer so its better for tilt detection
         }
     
     
@@ -958,10 +972,12 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
         double tiltDegrees = Math.hypot(pitchDegrees, rollDegrees);
         boolean tilted = DriverStation.isAutonomousEnabled()
             && !beachDetectionSuppressed
-            && tiltDegrees >= Constants.DriveConstants.BeachedTiltThresholdDegrees;
+            && tiltDegrees >= Constants.DriveConstants.BeachedTiltThresholdDegrees
+            && IsSafeToReverse(getPose());
         beached = beachedDebouncer.calculate(tilted);
-        SmartDashboard.putNumber("Drivetrain/TiltDegrees", tiltDegrees);
-        SmartDashboard.putBoolean("Drivetrain/Beached", beached);
+        DogLog.log("Drivetrain/TiltDegrees", tiltDegrees);
+        DogLog.log("Drivetrain/Beached", beached);
+        DogLog.log("beached overide", beachOveride);
         SmartDashboard.putNumber("distanceToCenterHubInches", getDistance() * 39.3701);
         SmartDashboard.putNumber("distanceLookaheadHubInches", getLookaheadDistance() * 39.3701);
         SmartDashboard.putNumber("Hub/OffsetX", hubOffsetX);

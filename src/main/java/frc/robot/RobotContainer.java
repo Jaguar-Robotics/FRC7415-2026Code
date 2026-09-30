@@ -17,11 +17,14 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -134,6 +137,10 @@ public class RobotContainer {
 
         // Warmup PathPlanner to avoid Java pauses
         FollowPathCommand.warmupCommand().schedule();
+        if(RobotBase.isSimulation()) DriverStation.silenceJoystickConnectionWarning(true);
+
+        SmartDashboard.putData("ONbeached trigger", new InstantCommand(() -> drivetrain.ManualSetIfBeached(true)));
+        SmartDashboard.putData("OFFbeached trigger", new InstantCommand(() -> drivetrain.ManualSetIfBeached(false)));
     }
 
     private void configurePathPlanner() {
@@ -468,6 +475,7 @@ public class RobotContainer {
         opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
         joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
         joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
+
         
 
 
@@ -485,7 +493,6 @@ public class RobotContainer {
 
         fiveSecWarning.onTrue(new InstantCommand(() -> SmartDashboard.putBoolean("isTsWorking", true)));
 
-        beachedTrigger.onTrue(RumbleUtils.rumble(joystick, 0.75, 0.3));
     }        
 
     public Command getAutonomousCommand() {
