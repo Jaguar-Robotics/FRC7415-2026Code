@@ -54,6 +54,7 @@ public class IntakeSubsystem extends SubsystemBase {
   
 
   public void setHighSupplyLimit(int limit){
+    if (limitConfigs.SupplyCurrentLimit == limit) return; // nothing changed
     limitConfigs.SupplyCurrentLimit = limit;
     
     leaderConfigurator.apply(limitConfigs);

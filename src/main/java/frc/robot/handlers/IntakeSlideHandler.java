@@ -30,9 +30,6 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
   private static IntakeSlideHandler instance;
   private final Elevator intakeSlide = Elevator.getInstance();
 
-  
-  Trigger intakeAboveFive = new Trigger(() -> intakeSlide.getPosition().in(Rotations) > 5.0);
-
 
   private IntakeSlideState desiredState = IntakeSlideState.IN;
   private IntakeSlideState currentState = IntakeSlideState.IN;
@@ -50,6 +47,8 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
   public void setDesiredState(State state){
         if (state instanceof IntakeSlideState IntakeSlideState && desiredState != IntakeSlideState) {
         desiredState = IntakeSlideState;
+
+        handleStateTransition();
     }
   }
 
@@ -126,11 +125,9 @@ public class IntakeSlideHandler extends SubsystemBase implements StateSubsystem 
 
   @Override
   public void periodic() {
-    update();
     isAtLowSetpoint = intakeSlide.isAtSetpoint(Elevator.Setpoint.IN);
     isAtOutSetpoint = intakeSlide.isAtSetpoint(Elevator.Setpoint.OUT);
     SmartDashboard.putBoolean("isAtLowSetpoint", isAtLowSetpoint);
     SmartDashboard.putString("IntakeSlide State", currentState.toString());
-    // This method will be called once per scheduler run
   }
 }

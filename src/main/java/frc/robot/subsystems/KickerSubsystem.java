@@ -54,6 +54,7 @@ public class KickerSubsystem extends SubsystemBase {
   }
 
   public void setKickerSupplyCurrent(int limit) {
+    if (limitConfigs.SupplyCurrentLimit == limit) return; // nothing changed
     teleoplimitConfig.SupplyCurrentLimit = limit;
     talonFXConfigurator.apply(teleoplimitConfig);
   }

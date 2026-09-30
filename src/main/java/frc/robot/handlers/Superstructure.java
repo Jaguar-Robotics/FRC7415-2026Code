@@ -110,7 +110,6 @@ public class Superstructure extends SubsystemBase {
 
   /** Call this from commands or joystick logic to set the next goal. */
   public void setDesiredState(SuperstructureState newState) {
-    System.out.print("SetDesiredState:" + newState);
     if (desiredState != newState) {
       desiredState = newState;
       handleStateTransition();
@@ -146,7 +145,7 @@ public class Superstructure extends SubsystemBase {
         hopperHandler.setDesiredState(HopperHandler.HopperState.OFF);
         indexerHighHandler.setDesiredState(IndexerHighHandler.IndexerHighState.OFF);
         indexerLowHandler.setDesiredState(IndexerLowHandler.IndexerLowState.OFF);
-        driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVESLOW);
+        driveHandler.setDesiredState(DriveHandler.DriveState.TELEOPDRIVE);
         intakeSlideHandler.setDesiredState(IntakeSlideHandler.IntakeSlideState.OUT);
         powerHandler.setDesiredState(PowerHandler.PowerState.IDLEINTAKE);
         break;

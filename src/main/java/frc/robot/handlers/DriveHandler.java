@@ -29,7 +29,6 @@ public class DriveHandler extends SubsystemBase {
         TELEOPDRIVESLOW,
         AUTOALLIGN,
         SHOOTONTHEMOVE,
-        SNAKE,
         XDRIVE,
         BUMP_LOCK
   }
@@ -120,9 +119,6 @@ public class DriveHandler extends SubsystemBase {
            case SHOOTONTHEMOVE:
                 drivetrain.setDefaultCommand(drivetrain.shootOnTheMoveIterative(joystick, maxSpeed, maxAngularRate));
                break;
-            case SNAKE:
-                drivetrain.setDefaultCommand(drivetrain.getSnakeDriveCommand(drive, drivetrain, joystick, maxSpeed, maxAngularRate));
-                break;
             case XDRIVE:
                 drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> brake));
                 break;

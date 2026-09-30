@@ -866,47 +866,6 @@ public Command bumpLockCommand(SwerveRequest.FieldCentric drive, CommandSwerveDr
     });
 }
 
-    private double SnakeDriveMult = 0.75;
-
-        public Command getSnakeDriveCommand(SwerveRequest.FieldCentric drive, CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, Double MaxSpeed, double MaxAngularRate) {
-            return applyRequest(() -> {
-                Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
-
-                double xSpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftY(), Constants.DriveConstants.TranslationDeadband));
-                double ySpeed   = scaleAxis(MathUtil.applyDeadband(-joystick.getLeftX(), Constants.DriveConstants.TranslationDeadband));
-
-                double xVelocity = xSpeed * MaxSpeed;
-                double yVelocity = ySpeed * MaxSpeed;
-
-                double rotInput = MathUtil.applyDeadband(-joystick.getRightX(), 0.1); // override deadband
-
-                double rotationRate = 0;
-
-                if (Math.abs(rotInput) > 0) {
-                    // Joystick override — bypass snake drive
-                    rotationRate = rotInput * MaxAngularRate;
-                } else {
-                    double translationMagnitude = Math.hypot(xVelocity, yVelocity);
-                    if (translationMagnitude > Constants.DriveConstants.TranslationDeadband) {
-                        Rotation2d targetHeading;
-                        if (alliance.equals(Alliance.Red)) {
-                            targetHeading = new Rotation2d(xVelocity, yVelocity);
-                        } else {
-                            targetHeading = new Rotation2d(xVelocity, yVelocity).rotateBy(Rotation2d.k180deg);
-                        }
-                        Rotation2d currentHeading = drivetrain.getState().Pose.getRotation();
-                        double headingError = targetHeading.minus(currentHeading).getRadians();
-                        rotationRate = Math.max(-MaxAngularRate, Math.min(MaxAngularRate, headingError * Constants.DriveConstants.rotP * 5));
-                    }
-                }
-
-                return drive
-                    .withVelocityX(xVelocity *  SnakeDriveMult)
-                    .withVelocityY(yVelocity * SnakeDriveMult)
-                    .withRotationalRate(rotationRate);
-            });
-        }
-
 
     @Override
     public void periodic() {

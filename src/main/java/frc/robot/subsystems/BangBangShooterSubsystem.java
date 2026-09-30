@@ -117,6 +117,8 @@ public class BangBangShooterSubsystem extends SubsystemBase {
   }
 
   public void setShooterCurrentLimits(int limitAmps){
+    if (limitConfigs.SupplyCurrentLimit == limitAmps) return; // nothing changed
+    
     limitConfigs.SupplyCurrentLimit = limitAmps;
 
     Shooter1Configurator.apply(limitConfigs);

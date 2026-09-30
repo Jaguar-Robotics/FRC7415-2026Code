@@ -129,6 +129,6 @@ public class Constants {
             public static final double RotationDeadband = 0.1;
 
             public static final double RotationalToleranceDegrees = 3.5;
-            public static final double RotationalToleranceDegreesAUTO = 6.0;
+            public static final double RotationalToleranceDegreesAUTO = 6.0; //unused
         }
 }

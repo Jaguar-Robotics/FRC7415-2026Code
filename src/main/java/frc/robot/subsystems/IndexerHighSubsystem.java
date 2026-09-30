@@ -35,6 +35,7 @@ public class IndexerHighSubsystem extends SubsystemBase {
   }
 
   public void setHighIndexerLimit(int limit){
+    if (limitConfigs.SupplyCurrentLimit == limit) return; // nothing changed
     limitConfigs.SupplyCurrentLimit = limit;
     HighindexterConfigurator.apply(limitConfigs);
   }

@@ -39,6 +39,7 @@ public class HopperSubsystem extends SubsystemBase {
   }
 
   public void setHopperLimit(int limit){
+    if (limitConfigs.SupplyCurrentLimit == limit) return; // nothing changed
     limitConfigs.SupplyCurrentLimit = limit;
     HopperConfigurator.apply(limitConfigs);
   }

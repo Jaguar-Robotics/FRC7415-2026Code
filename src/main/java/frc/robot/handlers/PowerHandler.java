@@ -4,9 +4,13 @@
 
 package frc.robot.handlers;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -80,25 +84,78 @@ public class PowerHandler extends SubsystemBase implements StateSubsystem {
       return instance;
   }
 
-  @Override
-  public void setDesiredState(State state){
-        if (state instanceof PowerState powerState && desiredState != powerState) {
-        desiredState = powerState;
-        if ((desiredState == PowerState.STILLSCORE || desiredState == PowerState.SOTM) && HubShiftUtil.getMatchTime() <= Constants.PowerManagerConstants.BeastModeTimeLimit && DriverStation.isTeleopEnabled()){
-          desiredState = PowerState.BEASTMODE;}
-        handleStateTransition();
-    }
-  }
+    // What Superstructure most recently asked for (kept up to date even during an override)
+    private PowerState requestedState = PowerState.IDLEINTAKE;
+    // Active override, or null if none
+    private PowerState powerOverride = null;
 
-  private void setAllStates(int[] limitArray){
-    drivetrain.setDTCurrentLimits(limitArray[0]);
-    shooter.setShooterCurrentLimits(limitArray[1]);
-    highIndexer.setHighIndexerLimit(limitArray[2]);
-    lowIndexer.setLowIndexerLimit(limitArray[3]);
-    hopper.setHopperLimit(limitArray[4]);
-    intake.setHighSupplyLimit(limitArray[5]);
-    kicker.setKickerSupplyCurrent(limitArray[6]);
-    lintake.setMotorCurrentLimit(limitArray[7]);
+    @Override
+    public void setDesiredState(State state) {
+        if (!(state instanceof PowerState powerState)) return;
+
+        requestedState = powerState;
+        if (powerOverride != null) return; // override wins; we'll restore requestedState on release
+
+        applyState(powerState);
+    }
+
+    /** Applies a power state, including the BEASTMODE end-of-match swap. */
+    private void applyState(PowerState requested) {
+        PowerState target = requested;
+        if ((target == PowerState.STILLSCORE || target == PowerState.SOTM)
+                && HubShiftUtil.getMatchTime() <= Constants.PowerManagerConstants.BeastModeTimeLimit
+                && DriverStation.isTeleopEnabled()) {
+            target = PowerState.BEASTMODE;
+        }
+        if (desiredState != target) {
+            desiredState = target;
+            handleStateTransition();
+        }
+    }
+
+    /** Forces a power state (e.g. TURBODRIVE, INTAKEMAXXING) until cleared. */
+    public void setPowerOverride(PowerState override) {
+        powerOverride = override;
+        applyState(override);
+    }
+
+    /** Clears the override only if it's the one that was set, then returns to whatever Superstructure wants. */
+    public void clearPowerOverride(PowerState override) {
+        if (powerOverride != override) return; // a different override has taken over; leave it alone
+        powerOverride = null;
+        applyState(requestedState);
+    }
+
+    /** Command factory: override while held, restore on release (or interrupt/disable). */
+    public Command overrideWhileHeld(PowerState override) {
+        return Commands.startEnd(
+            () -> setPowerOverride(override),
+            () -> clearPowerOverride(override));
+    }
+
+  // single thread = applies run in order, and config objects are only touched from that thread
+  private final ExecutorService configExecutor = Executors.newSingleThreadExecutor(r -> {
+      Thread t = new Thread(r, "PowerHandler-Config");
+      t.setDaemon(true);
+      return t;
+  });
+
+  private void setAllStates(int[] limitArray) {
+      final int[] limits = limitArray.clone(); // snapshot so later changes can't affect a queued apply
+      configExecutor.submit(() -> {
+          try {
+              drivetrain.setDTCurrentLimits(limits[0]);
+              shooter.setShooterCurrentLimits(limits[1]);
+              highIndexer.setHighIndexerLimit(limits[2]);
+              lowIndexer.setLowIndexerLimit(limits[3]);
+              hopper.setHopperLimit(limits[4]);
+              intake.setHighSupplyLimit(limits[5]);
+              kicker.setKickerSupplyCurrent(limits[6]);
+              lintake.setMotorCurrentLimit(limits[7]);
+          } catch (Exception e) {
+              DogLog.log("PowerManager/ Config Error", e.toString());
+          }
+      });
   }
 
   @Override
@@ -141,7 +198,6 @@ public class PowerHandler extends SubsystemBase implements StateSubsystem {
 
   @Override
   public void periodic() {
-    update();
     DogLog.log("PowerManager/ Current State", currentState.toString());
   }
 } 

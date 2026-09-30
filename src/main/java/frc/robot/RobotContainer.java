@@ -37,6 +37,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.handlers.DriveHandler;
 import frc.robot.handlers.IntakeSlideHandler;
 import frc.robot.handlers.PowerHandler;
+import frc.robot.handlers.PowerHandler.PowerState;
 import frc.robot.handlers.IntakeSlideHandler.IntakeSlideState;
 import frc.robot.handlers.ShooterHandler;
 import frc.robot.handlers.Superstructure;
@@ -386,7 +387,7 @@ public class RobotContainer {
         joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.REVERSE)));
         //joystick.y().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)));
 
-        joystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState. BUMP)));
+        joystick.a().whileTrue(PowerHandler.getInstance().overrideWhileHeld(PowerState.TURBODRIVE));
 
         joystick.x().onTrue(new InstantCommand(() -> IntakeSlideHandler.getInstance().setDesiredState(IntakeSlideState.REZEROIN))); 
 
@@ -396,8 +397,7 @@ public class RobotContainer {
             Commands.runOnce(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.FASTSHOT)))
         );
 
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKESLOW)));
-        joystick.leftBumper().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
+        joystick.leftTrigger().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.INTAKE)));
 
         noButtonsHeld.onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
         
@@ -423,11 +423,11 @@ public class RobotContainer {
         //CONTROLLER 2 / debug controller 
         /*
          *  RT - Shoot
-         *  B - re-zero intake IN
+         *  B - powermode to max INTAKE
+         *  A - powermode to max DRIVE
          *  Y - overide alliance winner (on a switch)
          *  DPAD - shift hub by 0.1 M in direction (up is away, down is closer)
-         *  A - Reset Shifted Hub to where it should be
-         *  X - toggle hopperfullness
+         *  X - reset HUB location if moved with DPAD
          */
 
          
@@ -437,8 +437,11 @@ public class RobotContainer {
             HubShiftUtil.setAllianceWinOverride(() -> Optional.of(current.orElse(true) == false));
         }));
 
-        opJoystick.a().onTrue(Commands.runOnce(() -> drivetrain.resetHubOffset()));
-        opJoystick.a().onTrue(Commands.runOnce(() -> shooter.resetShooterMult()));
+        opJoystick.x().onTrue(Commands.runOnce(() -> drivetrain.resetHubOffset()));
+        opJoystick.x().onTrue(Commands.runOnce(() -> shooter.resetShooterMult()));
+
+        opJoystick.a().whileTrue(PowerHandler.getInstance().overrideWhileHeld(PowerState.TURBODRIVE));
+        opJoystick.b().whileTrue(PowerHandler.getInstance().overrideWhileHeld(PowerState.INTAKEMAXXING));
 
         // Change Shooter Power
         
@@ -457,7 +460,7 @@ public class RobotContainer {
 
         opJoystick.leftStick().onTrue(new InstantCommand(() -> drivetrain.ToggleSlowTele()));
  
-        opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
+        //opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
         joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
         joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
         
