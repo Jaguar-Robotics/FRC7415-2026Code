@@ -57,20 +57,6 @@ public class DriveHandler extends SubsystemBase {
     return instance;
   }
 
-  Rectangle2d zone1 = new Rectangle2d(new Pose2d(1.0, 1.0, new Rotation2d()), 2.0, 2.0);
-  Rectangle2d zone2 = new Rectangle2d(new Pose2d(5.0, 3.0, new Rotation2d()), 1.5, 2.0);
-  Rectangle2d zone3 = new Rectangle2d(new Pose2d(10.0, 2.0, new Rotation2d()), 3.0, 1.0);
-  Rectangle2d zone4 = new Rectangle2d(new Pose2d(14.0, 5.0, new Rotation2d()), 2.0, 2.0);
-
-  Trigger inAnyZone = new Trigger(() -> {
-      Translation2d robotPos = drivetrain.getState().Pose.getTranslation();
-      return zone1.contains(robotPos) ||
-            zone2.contains(robotPos) ||
-            zone3.contains(robotPos) ||
-            zone4.contains(robotPos);
-  });
-
-
   public void initialize(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, SwerveRequest.FieldCentric drive,  double maxSpeed,  double maxAngularRate) {
     this.drivetrain = drivetrain;
     this.joystick = joystick;
@@ -132,7 +118,7 @@ public class DriveHandler extends SubsystemBase {
         currentState = desiredState;
     }
 
-      public DriveState getCurrentState() {
+  public DriveState getCurrentState() {
       return currentState;
   }
 

@@ -392,7 +392,6 @@ public class Superstructure extends SubsystemBase {
         SmartDashboard.putBoolean("shooterAtVelo?", ShooterAtVelo);
         SmartDashboard.putBoolean("Drivetrain aimed?",DTaimed);
         SmartDashboard.putBoolean("SOTM aimed?",DTFutAimed);
-         
   }
   public SuperstructureState getCurrentState() {
     return currentState;
