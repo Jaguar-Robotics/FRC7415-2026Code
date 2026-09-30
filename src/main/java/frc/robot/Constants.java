@@ -24,25 +24,14 @@ public class Constants {
     public static abstract class ShooterConstants {
         public static final int ShooterLeaderID = 20; 
         public static final int ShooterFollowerID = 21;
-<<<<<<< HEAD
         public static final int ShooterFollowerReversedID = 22; //
         public static final int ShooterFollowerReversed2ID = 23; //
         public static final double FastShot = 100; // IN RPS
         public static final double SlowShot = 20; //HESKEL CHANGE ME SLOW
-        public static final double RPSHardStop = 200.0; 
+        public static final double RPSHardStop = 200.0;
         public static final double RPSTolarance = 1;
-        public static final double kS = 0.28; 
-        public static final double kV = 0.13; //0.13 
-=======
-        public static final int ShooterFollowerReversedID = 22;
-        public static final int ShooterFollowerReversed2ID = 23;
-        public static final AngularVelocity FastShot = RPM.of(5000); //HESHEL CHANGE ME FAST
-        public static final AngularVelocity SlowShot = RPM.of(3500); //HESKEL CHANGE ME SLOW
-        public static final AngularVelocity SetRPMHardStop = RPM.of(3200);
-        public static  double ShootingDistance = Feet.of(6).in(Meter); //6ft starting
-        public static int RPMTolarance = 50;
-
->>>>>>> main
+        public static final double kS = 0.28;
+        public static final double kV = 0.13; //0.13
     }
 
     public static abstract class IntakeConstants {
@@ -136,5 +125,11 @@ public class Constants {
 
             public static final double RotationalToleranceDegrees = 3.5;
             public static final double RotationalToleranceDegreesAUTO = 6.0;
+
+            // Auto "beached on a ball" detection: if the gyro's combined pitch/roll tilt
+            // exceeds this for BeachedDebounceSeconds, the running auto path is considered
+            // stuck and will back up. Tune on the actual field/carpet.
+            public static final double BeachedTiltThresholdDegrees = 12.0;
+            public static final double BeachedDebounceSeconds = 0.2;
         }
 }

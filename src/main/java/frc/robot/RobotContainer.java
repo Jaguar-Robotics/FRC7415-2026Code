@@ -17,11 +17,14 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -99,6 +102,10 @@ public class RobotContainer {
         var info = HubShiftUtil.getOfficialShiftInfo();
         return info.remainingTime() <= 1.0;});
 
+    // WPI Trigger: while true, a running PathPlanner auto path reverses direction; once false,
+    // it resumes forward from wherever it left off. See CommandSwerveDrivetrain.isBeached().
+    Trigger beachedTrigger = new Trigger(drivetrain::isBeached);
+
     Trigger noButtonsHeld = new Trigger(() ->
     !joystick.a().getAsBoolean() &&
     !joystick.b().getAsBoolean() &&
@@ -130,6 +137,10 @@ public class RobotContainer {
 
         // Warmup PathPlanner to avoid Java pauses
         FollowPathCommand.warmupCommand().schedule();
+        if(RobotBase.isSimulation()) DriverStation.silenceJoystickConnectionWarning(true);
+
+        SmartDashboard.putData("ONbeached trigger", new InstantCommand(() -> drivetrain.ManualSetIfBeached(true)));
+        SmartDashboard.putData("OFFbeached trigger", new InstantCommand(() -> drivetrain.ManualSetIfBeached(false)));
     }
 
     private void configurePathPlanner() {
@@ -141,6 +152,14 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("IntakeOff",
          new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+
+        // Bracket bump crossings in the PathPlanner GUI with these event markers so the gyro
+        // tilt from driving over the bump doesn't get mistaken for being beached on a ball.
+        NamedCommands.registerCommand("SuppressBeachDetection",
+         new InstantCommand(() -> drivetrain.setBeachDetectionSuppressed(true)));
+
+        NamedCommands.registerCommand("AllowBeachDetection",
+         new InstantCommand(() -> drivetrain.setBeachDetectionSuppressed(false)));
 
         NamedCommands.registerCommand("AutoShoot",
         new SequentialCommandGroup(
@@ -456,6 +475,7 @@ public class RobotContainer {
         opJoystick.a().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.TUNING)));
         joystick.povUp().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(1)));
         joystick.povDown().onTrue(Commands.runOnce(() -> ShooterHandler.getInstance().adjustFastShot(-1)));
+
         
 
 
@@ -464,6 +484,7 @@ public class RobotContainer {
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(HubShiftUtil::initialize));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand (() ->PPHolonomicDriveController.clearRotationFeedbackOverride()));
         RobotModeTriggers.autonomous().onTrue(new InstantCommand(() -> superstructure.setDesiredState(Superstructure.SuperstructureState.IDLE)));
+        RobotModeTriggers.autonomous().onTrue(new InstantCommand(() -> drivetrain.setBeachDetectionSuppressed(false)));
 
         fiveSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.5));
         threeSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 0.25));
@@ -471,6 +492,7 @@ public class RobotContainer {
         oneSecWarning.onTrue(RumbleUtils.rumble(joystick, 0.5, 1));
 
         fiveSecWarning.onTrue(new InstantCommand(() -> SmartDashboard.putBoolean("isTsWorking", true)));
+
     }        
 
     public Command getAutonomousCommand() {
